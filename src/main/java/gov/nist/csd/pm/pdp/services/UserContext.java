@@ -9,6 +9,9 @@ public class UserContext {
         this.process = process;
     }
 
+    public UserContext() {
+    }
+
     public UserContext(String user) {
         this.user = user;
         this.process = "";
