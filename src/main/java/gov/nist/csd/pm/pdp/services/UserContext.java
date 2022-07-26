@@ -16,10 +16,6 @@ public class UserContext {
         this.user = user;
         this.process = "";
     }
-    
-    public UserContext() {
-    }
-
 
     public String getUser() {
         return user;
