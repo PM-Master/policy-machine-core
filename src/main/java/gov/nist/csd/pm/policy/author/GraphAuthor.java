@@ -149,6 +149,8 @@ public interface GraphAuthor {
      */
     void dissociate(String ua, String target) throws PMException;
 
+    List<Node> getNodes() throws PMException;
+
     List<Association> getAssociationsWithSource(String ua) throws PMException;
     List<Association> getAssociationsWithTarget(String target) throws PMException;
 
