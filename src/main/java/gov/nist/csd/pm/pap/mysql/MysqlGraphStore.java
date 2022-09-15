@@ -51,7 +51,7 @@ class MysqlGraphStore extends GraphStore {
         return graph;
     }
 
-    private List<Node> getNodes() throws MysqlPolicyException {
+    public List<Node> getNodes() throws MysqlPolicyException {
         List<Node> nodes = new ArrayList<>();
         String sql = """
                     SELECT name, node_type_id, properties from node
