@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pap.memory;
 
 import gov.nist.csd.pm.pap.store.GraphStore;
+import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.exceptions.TransactionNotStartedException;
 import gov.nist.csd.pm.policy.model.access.AccessRightSet;
 import gov.nist.csd.pm.policy.exceptions.NodeNameExistsException;
@@ -218,6 +219,18 @@ class MemoryGraphStore extends GraphStore {
     @Override
     public synchronized void dissociate(String ua, String target) {
         graph.removeEdge(ua, target);
+    }
+
+    @Override
+    public List<Node> getNodes() throws PMException {
+        List<Node> nodes = new ArrayList<>();
+
+        for (String name : graph.getNodes().keySet()) {
+            Node node = graph.getNode(name);
+            nodes.add(node);
+        }
+
+        return nodes;
     }
 
     @Override
