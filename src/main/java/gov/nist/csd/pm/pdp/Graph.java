@@ -236,6 +236,11 @@ class Graph implements GraphAuthor, PolicyEventEmitter {
     }
 
     @Override
+    public List<Node> getNodes() throws PMException {
+        return adjudicator.graph().getNodes();
+    }
+
+    @Override
     public List<Association> getAssociationsWithSource(String ua) throws PMException {
         return adjudicator.graph().getAssociationsWithSource(ua);
     }

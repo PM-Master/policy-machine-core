@@ -419,6 +419,11 @@ class Graph implements GraphAuthor, PolicyEventEmitter {
     }
 
     @Override
+    public List<Node> getNodes() throws PMException {
+        return store.graph().getNodes();
+    }
+
+    @Override
     public List<Association> getAssociationsWithSource(String ua) throws PMException {
         if (!nodeExists(ua)) {
             throw new NodeDoesNotExistException(ua);

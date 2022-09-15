@@ -247,6 +247,21 @@ class Graph implements GraphAuthor {
     }
 
     @Override
+    public List<Node> getNodes() throws PMException {
+        List<Node> nodes = pap.graph().getNodes();
+        nodes.removeIf(parent -> {
+            try {
+                accessRightChecker.check(userCtx, parent.getName());
+                return false;
+            } catch (PMException e) {
+                return true;
+            }
+        });
+
+        return nodes;
+    }
+
+    @Override
     public List<Association> getAssociationsWithSource(String ua) throws PMException {
         List<Association> associations = pap.graph().getAssociationsWithSource(ua);
 
