@@ -131,6 +131,11 @@ class TxGraph extends GraphStore implements PolicyEventEmitter {
     }
 
     @Override
+    public List<Node> getNodes() throws PMException {
+        return store.getNodes();
+    }
+
+    @Override
     public List<Association> getAssociationsWithSource(String ua) throws PMException {
         return store.getAssociationsWithSource(ua);
     }
