@@ -249,14 +249,14 @@ class Graph implements GraphAuthor {
     @Override
     public List<Node> getNodes() throws PMException {
         List<Node> nodes = pap.graph().getNodes();
-        nodes.removeIf(parent -> {
+        /*nodes.removeIf(node -> {
             try {
-                accessRightChecker.check(userCtx, parent.getName());
+                accessRightChecker.check(userCtx, node.getName());
                 return false;
             } catch (PMException e) {
                 return true;
             }
-        });
+        });*/
 
         return nodes;
     }
