@@ -63,6 +63,14 @@ public class Prohibition {
         return containers;
     }
 
+    public HashMap<String, Boolean> getContainers_map() {
+        HashMap<String, Boolean> map = new HashMap<>();
+        for (ContainerCondition c: containers){
+            map.put(c.name(), c.complement());
+        }
+        return map;
+    }
+
     public String getLabel() {
         return label;
     }
