@@ -15,6 +15,14 @@ public class Prohibition {
     private final AccessRightSet accessRightSet;
     private final boolean      intersection;
 
+    public Prohibition() {
+        label = null;
+        subject = null;
+        containers = null;
+        accessRightSet = null;
+        intersection = false;
+    }
+
     public Prohibition(String label, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, List<ContainerCondition> containers) {
         if (subject == null) {
             throw new IllegalArgumentException("Prohibition subject cannot be null");
