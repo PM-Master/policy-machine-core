@@ -16,8 +16,11 @@ public class ProhibitionSubject {
         return new ProhibitionSubject(process, Type.PROCESS);
     }
 
-    private final String name;
-    private final Type type;
+    private String name;
+    private Type type;
+
+    public ProhibitionSubject() {
+    }
 
     public ProhibitionSubject(String name, Type type) {
         this.name = name;
