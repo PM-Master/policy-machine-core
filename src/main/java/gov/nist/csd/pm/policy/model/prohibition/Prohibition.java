@@ -57,6 +57,7 @@ public class Prohibition {
     public ProhibitionSubject getSubject() {
         return subject;
     }
+    public String getSubjectName() { return subject.name();}
 
     public List<ContainerCondition> getContainers() {
         return containers;
