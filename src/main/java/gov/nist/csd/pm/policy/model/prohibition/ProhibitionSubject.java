@@ -1,7 +1,9 @@
 package gov.nist.csd.pm.policy.model.prohibition;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import gov.nist.csd.pm.policy.exceptions.InvalidProhibitionSubjectException;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProhibitionSubject {
 
     public static ProhibitionSubject userAttribute(String ua) {
