@@ -1,9 +1,7 @@
 package gov.nist.csd.pm.policy.model.prohibition;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import gov.nist.csd.pm.policy.exceptions.InvalidProhibitionSubjectException;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProhibitionSubject {
 
     public static ProhibitionSubject userAttribute(String ua) {
@@ -46,6 +44,18 @@ public class ProhibitionSubject {
         USER_ATTRIBUTE,
         USER,
         PROCESS
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public void setType(String type) throws InvalidProhibitionSubjectException {
+        this.type = typeFromString(type);
     }
 
     private Type typeFromString(String s) throws InvalidProhibitionSubjectException {
