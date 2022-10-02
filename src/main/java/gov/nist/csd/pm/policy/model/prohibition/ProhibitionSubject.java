@@ -46,17 +46,12 @@ public class ProhibitionSubject {
         PROCESS
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getName() {return name;}
+    public Type getType() {return type;}
 
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public void setType(String type) throws InvalidProhibitionSubjectException {
-        this.type = typeFromString(type);
-    }
+    public void setName(String name) {this.name = name;}
+    public void setType(Type type) {this.type = type;}
+    public void setType(String type) throws InvalidProhibitionSubjectException {this.type = typeFromString(type);}
 
     private Type typeFromString(String s) throws InvalidProhibitionSubjectException {
         switch (s) {
