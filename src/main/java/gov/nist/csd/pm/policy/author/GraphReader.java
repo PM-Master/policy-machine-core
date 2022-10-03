@@ -15,6 +15,7 @@ public interface GraphReader {
     AccessRightSet getResourceAccessRights() throws PMException;
     boolean nodeExists(String name) throws PMException;
     Node getNode(String name) throws PMException;
+    List<Node> getNodes() throws PMException;
     List<String> search(NodeType type, Map<String, String> properties) throws PMException;
     List<String> getPolicyClasses() throws PMException;
     List<String> getChildren(String node) throws PMException;
