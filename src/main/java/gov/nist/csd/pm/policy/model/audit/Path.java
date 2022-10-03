@@ -61,4 +61,13 @@ public class Path {
         return this.userDagPath.equals(p.userDagPath) && this.targetDagPath.equals(p.targetDagPath)
                 && this.association.equals(p.association);
     }
+
+    @Override
+    public String toString() {
+        return "Path{" +
+                "userDagPath=" + userDagPath +
+                ", targetDagPath=" + targetDagPath +
+                ", association=" + association +
+                '}';
+    }
 }
