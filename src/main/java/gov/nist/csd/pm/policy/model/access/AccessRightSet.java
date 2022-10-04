@@ -9,6 +9,8 @@ public class AccessRightSet extends HashSet<String> {
     public AccessRightSet(){
     }
 
+    public AccessRightSet(String op) {this.add(op);}
+
     public AccessRightSet(String ... ops) {
         this.addAll(Arrays.asList(ops));
     }
