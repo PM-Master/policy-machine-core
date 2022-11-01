@@ -10,10 +10,13 @@ import gov.nist.csd.pm.policy.model.obligation.event.Target;
 
 public class EventContext implements PolicyEvent {
 
-    private final UserContext userCtx;
-    private final String eventName;
-    private final String target;
-    private final PolicyEvent event;
+    private UserContext userCtx;
+    private String eventName;
+    private String target;
+    private PolicyEvent event;
+
+    public EventContext() {
+    }
 
     public EventContext(UserContext userCtx, String target, PolicyEvent event) {
         this.userCtx = userCtx;
