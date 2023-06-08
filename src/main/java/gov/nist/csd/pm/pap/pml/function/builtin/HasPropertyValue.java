@@ -1,0 +1,38 @@
+package gov.nist.csd.pm.pap.pml.function.builtin;
+
+
+import gov.nist.csd.pm.common.graph.node.Node;
+import gov.nist.csd.pm.pap.pml.function.FormalArgument;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.type.Type;
+import gov.nist.csd.pm.pap.pml.value.BoolValue;
+
+
+public class HasPropertyValue extends FunctionDefinitionStatement {
+
+    public HasPropertyValue() {
+        super(new FunctionDefinitionStatement.Builder("hasPropertyValue")
+                      .returns(Type.bool())
+                      .args(
+                              new FormalArgument("nodeName", Type.string()),
+                              new FormalArgument("key", Type.string()),
+                              new FormalArgument("value", Type.string())
+                      )
+                      .executor((ctx, pap) -> {
+                          String nodeName = ctx.scope().getVariable("nodeName").getStringValue();
+                          String key = ctx.scope().getVariable("key").getStringValue();
+                          String value = ctx.scope().getVariable("value").getStringValue();
+                          Node node = pap.query().graph().getNode(nodeName);
+                          boolean has = node.getProperties().containsKey(key);
+                          if (!has) {
+                              return new BoolValue(false);
+                          }
+
+                          has = node.getProperties().get(key).equals(value);
+                          return new BoolValue(has);
+                      })
+                      .build()
+        );
+    }
+
+}

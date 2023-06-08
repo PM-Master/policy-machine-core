@@ -1,102 +1,158 @@
 package gov.nist.csd.pm.pdp;
 
-import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pdp.adjudicator.Adjudicator;
-import gov.nist.csd.pm.policy.*;
-import gov.nist.csd.pm.policy.events.PolicyEvent;
-import gov.nist.csd.pm.policy.events.PolicyEventEmitter;
-import gov.nist.csd.pm.policy.events.PolicyEventListener;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.pml.PMLExecutable;
-import gov.nist.csd.pm.policy.pml.PMLExecutor;
-import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.common.obligation.EventContext;
+import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
+import gov.nist.csd.pm.pap.serialization.PolicySerializer;
+import gov.nist.csd.pm.epp.EventEmitter;
+import gov.nist.csd.pm.epp.EventProcessor;
+import gov.nist.csd.pm.pap.*;
+import gov.nist.csd.pm.pap.op.Operation;
+import gov.nist.csd.pm.pap.query.UserContext;
+import gov.nist.csd.pm.pap.exception.BootstrapExistingPolicyException;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.pml.PMLExecutable;
+import gov.nist.csd.pm.pap.pml.PMLExecutor;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.value.Value;
+import gov.nist.csd.pm.common.tx.TxRunner;
+import gov.nist.csd.pm.pdp.adjudicator.PolicyModificationAdjudicator;
+import gov.nist.csd.pm.pdp.adjudicator.PolicyQueryAdjudicator;
+import gov.nist.csd.pm.pdp.adjudicator.PrivilegeChecker;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-public abstract class PDP implements PolicyEventEmitter {
+import static gov.nist.csd.pm.pap.AdminPolicy.ALL_NODE_NAMES;
+import static gov.nist.csd.pm.common.graph.node.NodeType.ANY;
+import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
+
+public class PDP implements EventEmitter, AccessAdjudication {
 
     protected final PAP pap;
-    protected final List<PolicyEventListener> eventListeners;
+    protected final List<EventProcessor> eventProcessors;
 
-    protected PDP(PAP pap) {
+    public PDP(PAP pap) {
         this.pap = pap;
-        this.eventListeners = new ArrayList<>();
+        this.eventProcessors = new ArrayList<>();
     }
 
-    public abstract PolicyReviewer reviewer() throws PMException;
+    public void runTx(UserContext userCtx, PDPTxRunner txRunner) throws PMException {
+        TxRunner.runTx(pap, () -> {
+            PDPTx pdpTx = new PDPTx(userCtx, pap, eventProcessors);
+            txRunner.run(pdpTx);
+        });
+    }
 
-    public abstract void runTx(UserContext userCtx, PDPTxRunner txRunner) throws PMException;
+    public void bootstrap(PolicyBootstrapper bootstrapper) throws PMException {
+        if(!isPolicyEmpty()) {
+            throw new BootstrapExistingPolicyException();
+        }
+
+        bootstrapper.bootstrap(pap);
+    }
+
+    private boolean isPolicyEmpty() throws PMException {
+        Set<String> nodes = new HashSet<>(pap.query().graph().search(ANY, NO_PROPERTIES));
+
+        boolean prohibitionsEmpty = pap.query().prohibitions().getAll().isEmpty();
+        boolean obligationsEmpty = pap.query().obligations().getAll().isEmpty();
+
+        return (nodes.isEmpty() || (nodes.size() == ALL_NODE_NAMES.size() && nodes.containsAll(ALL_NODE_NAMES))) &&
+                prohibitionsEmpty &&
+                obligationsEmpty;
+    }
 
     @Override
-    public void addEventListener(PolicyEventListener listener, boolean sync) throws PMException {
-        eventListeners.add(listener);
+    public void addEventListener(EventProcessor processor) {
+        eventProcessors.add(processor);
+    }
 
-        if (sync) {
-            listener.handlePolicyEvent(pap.policySync());
+    @Override
+    public void removeEventListener(EventProcessor processor) {
+        eventProcessors.remove(processor);
+    }
+
+    @Override
+    public void emitEvent(EventContext event) throws PMException {
+        for (EventProcessor listener : eventProcessors) {
+            listener.processEvent(event);
         }
     }
 
     @Override
-    public void removeEventListener(PolicyEventListener listener) {
-        eventListeners.remove(listener);
+    public ResourceAdjudicationResponse adjudicateResourceAccess(UserContext user, Operation... operations)
+            throws PMException {
+        /*
+        TODO
+        runTx(user, (pdpTx) -> {
+            for (Operation operation : operations) {
+                operation.apply(pdpTx);
+            }
+        });*/
+        throw new PMException("not yet implemented");
     }
 
     @Override
-    public void emitEvent(PolicyEvent event) throws PMException {
-        for (PolicyEventListener listener : eventListeners) {
-            listener.handlePolicyEvent(event);
-        }
+    public AdminAdjudicationResponse adjudicateAdminAccess(UserContext user, Operation... operations)
+            throws PMException {
+        // TODO
+        throw new PMException("not yet implemented");
     }
 
     public interface PDPTxRunner {
         void run(PDPTx policy) throws PMException;
     }
 
-    public static class PDPTx implements PolicyEventEmitter, PolicyEventListener, PMLExecutable, Policy {
+    public static class PDPTx extends PAP {
 
         private final UserContext userCtx;
-        private final Adjudicator adjudicator;
         private final PAP pap;
-        private List<PolicyEventListener> epps;
+        private final PDPEventEmitter eventEmitter;
 
-        private PDPGraph pdpGraph;
-        private PDPProhibitions pdpProhibitions;
-        private PDPObligations pdpObligations;
-        private PDPUserDefinedPML pdpUserDefinedPML;
+        private final PolicyModificationAdjudicator pdpModifier;
+        private final PolicyQueryAdjudicator pdpQuerier;
 
-        public PDPTx(UserContext userCtx, PAP pap, PolicyReviewer policyReviewer, List<PolicyEventListener> epps) throws PMException {
+        public PDPTx(UserContext userCtx, PAP pap, List<EventProcessor> epps) {
             this.userCtx = userCtx;
-            this.adjudicator = new Adjudicator(userCtx, pap, policyReviewer);
             this.pap = pap;
-            this.epps = epps;
-
-            this.pdpGraph = new PDPGraph(userCtx, adjudicator.graph(), pap, this);
-            this.pdpProhibitions = new PDPProhibitions(userCtx, adjudicator.prohibitions(), pap, this);
-            this.pdpObligations = new PDPObligations(userCtx, adjudicator.obligations(), pap, this);
-            this.pdpUserDefinedPML = new PDPUserDefinedPML(userCtx, adjudicator.userDefinedPML(), pap, this);
+            this.eventEmitter = new PDPEventEmitter(epps);
+            this.pdpModifier = new PolicyModificationAdjudicator(userCtx, pap, eventEmitter);
+            this.pdpQuerier = new PolicyQueryAdjudicator(userCtx, pap);
         }
 
         @Override
-        public void addEventListener(PolicyEventListener listener, boolean sync) throws PMException {
-            epps.add(listener);
-            
-            if (sync) {
-                listener.handlePolicyEvent(pap.policySync());
-            }
+        public PolicyModificationAdjudicator modify() {
+            return pdpModifier;
         }
 
         @Override
-        public void removeEventListener(PolicyEventListener listener) {
-            epps.remove(listener);
+        public PolicyQueryAdjudicator query() {
+            return pdpQuerier;
         }
 
         @Override
-        public void emitEvent(PolicyEvent event) throws PMException {
-            for (PolicyEventListener epp : epps) {
-                epp.handlePolicyEvent(event);
-            }
+        public void reset() throws PMException {
+            PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(), RESET);
+
+            pap.reset();
+        }
+
+        @Override
+        public String serialize(PolicySerializer serializer) throws PMException {
+            PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(), SERIALIZE_POLICY);
+
+            return pap.serialize(serializer);
+        }
+
+        @Override
+        public void deserialize(UserContext author, String input, PolicyDeserializer policyDeserializer)
+                throws PMException {
+            PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(), DESERIALIZE_POLICY);
+
+            pap.deserialize(author, input, policyDeserializer);
         }
 
         @Override
@@ -105,44 +161,27 @@ public abstract class PDP implements PolicyEventEmitter {
         }
 
         @Override
-        public Graph graph() {
-            return pdpGraph;
+        public void executePMLFunction(UserContext userContext, String functionName, Value... values) throws PMException {
+            String pml = String.format("%s(%s)", functionName, PMLExecutable.valuesToArgs(values));
+
+            // execute function as pml
+            PMLExecutor.compileAndExecutePML(this, userContext, pml);
         }
 
         @Override
-        public Prohibitions prohibitions() {
-            return pdpProhibitions;
+        public void beginTx() throws PMException {
+            pap.beginTx();
         }
 
         @Override
-        public Obligations obligations() {
-            return pdpObligations;
+        public void commit() throws PMException {
+            pap.commit();
         }
 
         @Override
-        public UserDefinedPML userDefinedPML() {
-            return pdpUserDefinedPML;
-        }
-
-        @Override
-        public PolicySerializer serialize() throws PMException {
-            adjudicator.serialize();
-
-            return pap.serialize();
-        }
-
-        @Override
-        public PolicyDeserializer deserialize() throws PMException {
-            adjudicator.deserialize();
-
-            return pap.deserialize();
-        }
-
-        @Override
-        public void handlePolicyEvent(PolicyEvent event) throws PMException {
-            for (PolicyEventListener listener : epps) {
-                listener.handlePolicyEvent(event);
-            }
+        public void rollback() throws PMException {
+            pap.rollback();
         }
     }
+
 }

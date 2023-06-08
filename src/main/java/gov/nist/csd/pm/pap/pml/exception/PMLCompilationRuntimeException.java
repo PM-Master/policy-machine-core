@@ -1,0 +1,27 @@
+package gov.nist.csd.pm.pap.pml.exception;
+
+import gov.nist.csd.pm.pap.pml.compiler.error.CompileError;
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import java.util.List;
+
+public class PMLCompilationRuntimeException extends RuntimeException {
+
+    private List<CompileError> errors;
+
+    public PMLCompilationRuntimeException(ParserRuleContext ctx, String message) {
+        this.errors = List.of(CompileError.fromParserRuleContext(ctx, message));
+    }
+
+    public PMLCompilationRuntimeException(List<CompileError> errors) {
+        this.errors = errors;
+    }
+
+    public PMLCompilationRuntimeException(Throwable cause) {
+        super(cause);
+    }
+
+    public List<CompileError> getErrors() {
+        return errors;
+    }
+}

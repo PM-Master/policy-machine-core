@@ -1,0 +1,94 @@
+package gov.nist.csd.pm.common.graph.dag;
+
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.modification.GraphModification;
+import gov.nist.csd.pm.pap.query.GraphQuery;
+import gov.nist.csd.pm.pap.query.PolicyQuery;
+
+import java.util.Collection;
+import java.util.List;
+
+public class BreadthFirstGraphWalker implements GraphWalker {
+
+    private GraphQuery graphQuery;
+    private Direction direction;
+    private Visitor visitor;
+    private Propagator propagator;
+    private ShortCircuit allPathsShortCircuit;
+    private ShortCircuit singlePathShortCircuit;
+
+    public BreadthFirstGraphWalker(GraphQuery graphQuery) {
+        this.graphQuery = graphQuery;
+        this.visitor = new NoopVisitor();
+        this.propagator = new NoopPropagator();
+        this.direction = Direction.PARENTS;
+        this.allPathsShortCircuit = new NoopShortCircuit();
+        this.singlePathShortCircuit = new NoopShortCircuit();
+    }
+
+    public BreadthFirstGraphWalker withVisitor(Visitor visitor) {
+        this.visitor = visitor == null ? new NoopVisitor(): visitor;
+        return this;
+    }
+
+    public BreadthFirstGraphWalker withPropagator(Propagator propagator) {
+        this.propagator = propagator == null ? new NoopPropagator(): propagator;
+        return this;
+    }
+
+    public BreadthFirstGraphWalker withDirection(Direction direction) {
+        this.direction = direction;
+        return this;
+    }
+
+    public BreadthFirstGraphWalker withAllPathShortCircuit(ShortCircuit shortCircuit) {
+        this.allPathsShortCircuit = shortCircuit;
+        return this;
+    }
+
+    public BreadthFirstGraphWalker withSinglePathShortCircuit(ShortCircuit shortCircuit) {
+        this.singlePathShortCircuit = shortCircuit;
+        return this;
+    }
+
+    @Override
+    public void walk(String start) throws PMException {
+        visitor.visit(start);
+        if (allPathsShortCircuit.evaluate(start)
+                || singlePathShortCircuit.evaluate(start)){
+            return;
+        }
+
+        walkInternal(start);
+    }
+
+    private boolean walkInternal(String start) throws PMException {
+        Collection<String> nextLevel = getNextLevel(start);
+        for (String n : nextLevel) {
+            visitor.visit(n);
+            if (allPathsShortCircuit.evaluate(n)){
+                return true;
+            } else if (singlePathShortCircuit.evaluate(n)){
+                return false;
+            }
+
+            propagator.propagate(n, start);
+        }
+
+        for (String n : nextLevel) {
+            if (walkInternal(n)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private Collection<String> getNextLevel(String node) throws PMException {
+        if (direction == Direction.PARENTS) {
+            return graphQuery.getParents(node);
+        } else {
+            return graphQuery.getChildren(node);
+        }
+    }
+}

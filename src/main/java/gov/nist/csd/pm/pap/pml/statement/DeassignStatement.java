@@ -1,0 +1,66 @@
+package gov.nist.csd.pm.pap.pml.statement;
+
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.pml.expression.Expression;
+import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
+import gov.nist.csd.pm.pap.pml.value.Value;
+import gov.nist.csd.pm.pap.pml.value.VoidValue;
+import org.antlr.v4.runtime.ParserRuleContext;
+
+import java.util.List;
+import java.util.Objects;
+
+
+public class DeassignStatement extends PMLStatement {
+
+    private Expression child;
+    private Expression deassignFrom;
+
+    public DeassignStatement(Expression child, Expression deassignFrom) {
+        this.child = child;
+        this.deassignFrom = deassignFrom;
+    }
+
+    public Expression getChild() {
+        return child;
+    }
+
+    public Expression getDeassignFrom() {
+        return deassignFrom;
+    }
+
+    @Override
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        Value childValue = child.execute(ctx, pap);
+        Value deassignFromValue = deassignFrom.execute(ctx, pap);
+
+        String childStringValue = childValue.getStringValue();
+
+        List<Value> valueArr = deassignFromValue.getArrayValue();
+        for (Value value : valueArr) {
+            String parent = value.getStringValue();
+            pap.modify().graph().deassign(childStringValue, parent);
+        }
+
+        return new VoidValue();
+    }
+
+    @Override
+    public String toFormattedString(int indentLevel) {
+        return indent(indentLevel) + String.format("deassign %s from %s", child, deassignFrom);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DeassignStatement that = (DeassignStatement) o;
+        return Objects.equals(child, that.child) && Objects.equals(deassignFrom, that.deassignFrom);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(child, deassignFrom);
+    }
+}

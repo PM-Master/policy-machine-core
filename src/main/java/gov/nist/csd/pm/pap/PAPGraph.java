@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap;
 
 import gov.nist.csd.pm.policy.Graph;
 import gov.nist.csd.pm.policy.events.*;
+import gov.nist.csd.pm.policy.events.graph.*;
 import gov.nist.csd.pm.policy.exceptions.*;
 import gov.nist.csd.pm.policy.model.access.AccessRightSet;
 import gov.nist.csd.pm.policy.model.graph.nodes.Node;
@@ -33,8 +34,6 @@ class PAPGraph implements Graph, PolicyEventEmitter {
     public PAPGraph(PolicyStore policyStore, PolicyEventListener listener) throws PMException {
         this.policyStore = policyStore;
         this.listener = listener;
-
-        SuperPolicy.verifySuperPolicy(this.policyStore);
     }
 
     @Override

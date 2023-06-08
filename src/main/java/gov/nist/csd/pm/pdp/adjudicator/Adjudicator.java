@@ -1,70 +1,76 @@
 package gov.nist.csd.pm.pdp.adjudicator;
 
+import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pdp.PolicyReviewer;
-import gov.nist.csd.pm.policy.Policy;
-import gov.nist.csd.pm.policy.PolicyDeserializer;
-import gov.nist.csd.pm.policy.PolicySerializer;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.query.PolicyQuery;
+import gov.nist.csd.pm.pap.query.UserContext;
+import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
+import gov.nist.csd.pm.pap.serialization.PolicySerializer;
+import gov.nist.csd.pm.pdp.PDPEventEmitter;
 
-import static gov.nist.csd.pm.pap.SuperPolicy.SUPER_PC_REP;
-import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.FROM_STRING;
-import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.TO_STRING;
+import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 
-public class Adjudicator implements Policy {
+public class Adjudicator extends PAP {
 
     private final UserContext userCtx;
     private final PAP pap;
-    private final AccessRightChecker accessRightChecker;
 
-    private final GraphAdjudicator graphAdjudicator;
-    private final ProhibitionsAdjudicator prohibitionsAdjudicator;
-    private final ObligationsAdjudicator obligationsAdjudicator;
-    private final UserDefinedPMLAdjudicator userDefinedPMLAdjudicator;
+    private final PolicyModificationAdjudicator modifier;
+    private final PolicyQueryAdjudicator query;
 
-    public Adjudicator(UserContext userCtx, PAP pap, PolicyReviewer policyReviewer) {
+    public Adjudicator(UserContext userCtx, PAP pap, PDPEventEmitter eventEmitter) {
         this.userCtx = userCtx;
         this.pap = pap;
-        this.accessRightChecker = new AccessRightChecker(pap, policyReviewer);
-
-        graphAdjudicator = new GraphAdjudicator(userCtx, pap, accessRightChecker);
-        prohibitionsAdjudicator = new ProhibitionsAdjudicator(userCtx, pap, accessRightChecker);
-        obligationsAdjudicator = new ObligationsAdjudicator(userCtx, pap, accessRightChecker);
-        userDefinedPMLAdjudicator = new UserDefinedPMLAdjudicator(userCtx, pap, accessRightChecker);
+        this.modifier = new PolicyModificationAdjudicator(userCtx, pap, eventEmitter);
+        this.query = new PolicyQueryAdjudicator(userCtx, pap);
     }
 
     @Override
-    public GraphAdjudicator graph() {
-        return graphAdjudicator;
+    public PolicyModification modify() {
+        return modifier;
     }
 
     @Override
-    public ProhibitionsAdjudicator prohibitions() {
-        return prohibitionsAdjudicator;
+    public PolicyQuery query() {
+        return query;
     }
 
     @Override
-    public ObligationsAdjudicator obligations() {
-        return obligationsAdjudicator;
+    public String serialize(PolicySerializer serializer) throws PMException {
+        PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(), SERIALIZE_POLICY);
+
+        return pap.serialize(serializer);
     }
 
     @Override
-    public UserDefinedPMLAdjudicator userDefinedPML() {
-        return userDefinedPMLAdjudicator;
+    public void deserialize(UserContext author, String input, PolicyDeserializer policyDeserializer)
+            throws PMException {
+        PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(), DESERIALIZE_POLICY);
+
+        pap.deserialize(author, input, policyDeserializer);
     }
 
     @Override
-    public PolicySerializer serialize() throws PMException {
-        accessRightChecker.check(userCtx, SUPER_PC_REP, TO_STRING);
+    public void reset() throws PMException {
+        PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(), RESET);
 
-        return null;
+        pap.reset();
     }
 
     @Override
-    public PolicyDeserializer deserialize() throws PMException {
-        accessRightChecker.check(userCtx, SUPER_PC_REP, FROM_STRING);
+    public void beginTx() throws PMException {
+        pap.beginTx();
+    }
 
-        return null;
+    @Override
+    public void commit() throws PMException {
+        pap.commit();
+    }
+
+    @Override
+    public void rollback() throws PMException {
+        pap.rollback();
     }
 }
