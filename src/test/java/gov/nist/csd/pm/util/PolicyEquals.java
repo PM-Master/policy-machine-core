@@ -7,9 +7,8 @@ import gov.nist.csd.pm.policy.model.graph.nodes.NodeType;
 import gov.nist.csd.pm.policy.model.graph.relationships.Association;
 import gov.nist.csd.pm.policy.model.obligation.Obligation;
 import gov.nist.csd.pm.policy.model.prohibition.Prohibition;
-import gov.nist.csd.pm.policy.pml.model.expression.Value;
+import gov.nist.csd.pm.policy.pml.value.Value;
 import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
-import org.testcontainers.shaded.com.google.common.util.concurrent.AsyncFunction;
 
 import java.util.List;
 import java.util.Map;
@@ -20,9 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PolicyEquals {
 
-    public static void check(Policy a, Policy b) throws PMException {
-        assertEquals(a.graph().getResourceAccessRights(), b.graph().getResourceAccessRights());
-
+    public static void assertPolicyEquals(Policy a, Policy b) throws PMException {
+        // check nodes
+        // assignments
+        // associations
         List<String> aNodes = a.graph().search(NodeType.ANY, NO_PROPERTIES);
         List<String> bNodes = b.graph().search(NodeType.ANY, NO_PROPERTIES);
         assertTrue(aNodes.containsAll(bNodes));
