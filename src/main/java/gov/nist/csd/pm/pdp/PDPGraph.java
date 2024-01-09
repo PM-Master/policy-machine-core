@@ -59,92 +59,63 @@ class PDPGraph implements Graph, EventEmitter {
     }
 
     @Override
-    public String createPolicyClass(String name) throws PMException {
-        return createPolicyClass(name, NO_PROPERTIES);
-    }
+    public String createUserAttribute(String name, Map<String, String> properties, List<String> parents) throws PMException {
+        adjudicator.createUserAttribute(name, properties, parents);
 
-    @Override
-    public String createUserAttribute(String name, Map<String, String> properties, String parent, String... parents) throws PMException {
-        adjudicator.createUserAttribute(name, properties, parent, parents);
-
-        pap.graph().createUserAttribute(name, properties, parent, parents);
+        pap.graph().createUserAttribute(name, properties, parents);
 
         CreateUserAttributeEvent event =
-                new CreateUserAttributeEvent(name, new HashMap<>(), parent, parents);
+                new CreateUserAttributeEvent(name, new HashMap<>(), parents);
 
-        emitCreateNodeEvent(event, name, parent, parents);
+        emitCreateNodeEvent(event, name, parents);
 
         return name;
     }
 
     @Override
-    public String createUserAttribute(String name, String parent, String... parents) throws PMException {
-        return createUserAttribute(name, NO_PROPERTIES, parent, parents);
-    }
+    public String createObjectAttribute(String name, Map<String, String> properties, List<String> parents) throws PMException {
+        adjudicator.createObjectAttribute(name, properties, parents);
 
-    @Override
-    public String createObjectAttribute(String name, Map<String, String> properties, String parent, String... parents) throws PMException {
-        adjudicator.createObjectAttribute(name, properties, parent, parents);
-
-        pap.graph().createObjectAttribute(name, properties, parent, parents);
+        pap.graph().createObjectAttribute(name, properties, parents);
 
         CreateObjectAttributeEvent event =
-                new CreateObjectAttributeEvent(name, new HashMap<>(), parent, parents);
+                new CreateObjectAttributeEvent(name, new HashMap<>(), parents);
 
-        emitCreateNodeEvent(event, name, parent, parents);
-
+        emitCreateNodeEvent(event, name, parents);
 
         return name;
     }
 
     @Override
-    public String createObjectAttribute(String name, String parent, String... parents) throws PMException {
-        return createObjectAttribute(name, NO_PROPERTIES, parent, parents);
-    }
+    public String createObject(String name, Map<String, String> properties, List<String> parents) throws PMException {
+        adjudicator.createObject(name, properties, parents);
 
-    @Override
-    public String createObject(String name, Map<String, String> properties, String parent, String... parents) throws PMException {
-        adjudicator.createObject(name, properties, parent, parents);
-
-        pap.graph().createObject(name, properties, parent, parents);
+        pap.graph().createObject(name, properties, parents);
 
         CreateObjectEvent event =
-                new CreateObjectEvent(name, new HashMap<>(), parent, parents);
+                new CreateObjectEvent(name, new HashMap<>(), parents);
 
-        emitCreateNodeEvent(event, name, parent, parents);
-
-        return name;
-    }
-
-    @Override
-    public String createObject(String name, String parent, String... parents) throws PMException {
-        return createObject(name, NO_PROPERTIES, parent, parents);
-    }
-
-    @Override
-    public String createUser(String name, Map<String, String> properties, String parent, String... parents) throws PMException {
-        adjudicator.createUser(name, properties, parent, parents);
-
-        pap.graph().createUser(name, properties, parent, parents);
-
-        CreateUserEvent event = new CreateUserEvent(name, new HashMap<>(), parent, parents);
-
-        emitCreateNodeEvent(event, name, parent, parents);
+        emitCreateNodeEvent(event, name, parents);
 
         return name;
     }
 
     @Override
-    public String createUser(String name, String parent, String... parents) throws PMException {
-        return createUser(name, NO_PROPERTIES, parent, parents);
+    public String createUser(String name, Map<String, String> properties, List<String> parents) throws PMException {
+        adjudicator.createUser(name, properties, parents);
+
+        pap.graph().createUser(name, properties, parents);
+
+        CreateUserEvent event = new CreateUserEvent(name, new HashMap<>(), parents);
+
+        emitCreateNodeEvent(event, name, parents);
+
+        return name;
     }
 
-    private void emitCreateNodeEvent(PolicyEvent event, String name, String parent, String ... parents) throws PMException {
+    private void emitCreateNodeEvent(PolicyEvent event, String name, List<String> parents) throws PMException {
         // emit event for the new node
         emitEvent(new EventContext(userCtx, name, event));
-
-        // emit event for creating a node in a parent
-        emitEvent(new EventContext(userCtx, parent, event));
 
         // do the same for any additional parents
         for (String p : parents) {

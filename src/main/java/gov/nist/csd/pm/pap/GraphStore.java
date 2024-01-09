@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.*;
+import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.UA;
 
 /**
  * GraphStore extends the {@link Graph} interface and outlines how a concrete implementation of the interface
@@ -61,7 +62,7 @@ public interface GraphStore extends Graph {
      * {@link AdminPolicyNode#POLICY_CLASS_TARGETS} node and assign it to ADMIN_POLICY before creating
      * {@link AdminPolicyNode#ADMIN_POLICY_TARGET} <p>
      *
-     * See {@link Graph#createPolicyClass(String)} <p>
+     * See {@link Graph#createPolicyClass(String, Map)} <p>
      *
      * @throws NodeNameExistsException If a node of any type already exists with the provided name.
      * @throws PMBackendException      If there is an error executing the command in the PIP.
@@ -71,13 +72,7 @@ public interface GraphStore extends Graph {
     throws NodeNameExistsException, PMBackendException;
 
     /**
-     * See {@link GraphStore#createPolicyClass(String, Map)}
-     */
-    @Override
-    String createPolicyClass(String name) throws NodeNameExistsException, PMBackendException;
-
-    /**
-     * See {@link Graph#createUserAttribute(String, Map, String, String...)} <p>
+     * See {@link Graph#createUserAttribute(String, Map, List)} <p>
      *
      * @throws NodeNameExistsException    If a node already exists with the provided name.
      * @throws NodeDoesNotExistException  If any of the provided parent nodes do not exist.
@@ -85,18 +80,12 @@ public interface GraphStore extends Graph {
      * @throws PMBackendException         If there is an error executing the command in the PIP.
      */
     @Override
-    String createUserAttribute(String name, Map<String, String> properties, String parent, String... parents)
-    throws NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException, PMBackendException, AssignmentCausesLoopException;
+    String createUserAttribute(String name, Map<String, String> properties, List<String> parents)
+            throws NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException, PMBackendException,
+                   AssignmentCausesLoopException, DisconnectedNodeException;
 
     /**
-     * See {@link GraphStore#createUserAttribute(String, Map, String, String...)} <p>
-     */
-    @Override
-    String createUserAttribute(String name, String parent, String... parents)
-    throws NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException, PMBackendException, AssignmentCausesLoopException;
-
-    /**
-     * See {@link Graph#createObjectAttribute(String, Map, String, String...)} <p>
+     * See {@link Graph#createObjectAttribute(String, Map, List)} <p>
      *
      * @throws NodeNameExistsException    If a node already exists with the provided name.
      * @throws NodeDoesNotExistException  If any of the provided parent nodes do not exist.
@@ -104,18 +93,12 @@ public interface GraphStore extends Graph {
      * @throws PMBackendException         If there is an error executing the command in the PIP.
      */
     @Override
-    String createObjectAttribute(String name, Map<String, String> properties, String parent, String... parents)
-    throws NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException, PMBackendException, AssignmentCausesLoopException;
+    String createObjectAttribute(String name, Map<String, String> properties, List<String> parents)
+            throws NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException, PMBackendException,
+                   AssignmentCausesLoopException, DisconnectedNodeException;
 
     /**
-     * See {@link GraphStore#createObjectAttribute(String, Map, String, String...)}
-     */
-    @Override
-    String createObjectAttribute(String name, String parent, String... parents)
-    throws NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException, PMBackendException, AssignmentCausesLoopException;
-
-    /**
-     * See {@link Graph#createObject(String, Map, String, String...)} <p>
+     * See {@link Graph#createObject(String, Map, List)} <p>
      *
      * @throws NodeNameExistsException    If a node already exists with the provided name.
      * @throws NodeDoesNotExistException  If any of the provided parent nodes do not exist.
@@ -123,18 +106,12 @@ public interface GraphStore extends Graph {
      * @throws PMBackendException         If there is an error executing the command in the PIP.
      */
     @Override
-    String createObject(String name, Map<String, String> properties, String parent, String... parents)
-    throws NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException, PMBackendException, AssignmentCausesLoopException;
+    String createObject(String name, Map<String, String> properties, List<String> parents)
+            throws NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException, PMBackendException,
+                   AssignmentCausesLoopException, DisconnectedNodeException;
 
     /**
-     * See {@link GraphStore#createObject(String, Map, String, String...)} <p>
-     */
-    @Override
-    String createObject(String name, String parent, String... parents)
-    throws NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException, PMBackendException, AssignmentCausesLoopException;
-
-    /**
-     * See {@link Graph#createUser(String, Map, String, String...)} <p>
+     * See {@link Graph#createUser(String, Map, List)} <p>
      *
      * @throws NodeNameExistsException    If a node already exists with the provided name.
      * @throws NodeDoesNotExistException  If any of the provided parent nodes do not exist.
@@ -142,15 +119,9 @@ public interface GraphStore extends Graph {
      * @throws PMBackendException         If there is an error executing the command in the PIP.
      */
     @Override
-    String createUser(String name, Map<String, String> properties, String parent, String... parents)
-    throws NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException, PMBackendException, AssignmentCausesLoopException;
-
-    /**
-     * See {@link GraphStore#createUser(String, Map, String, String...)}  <p>
-     */
-    @Override
-    String createUser(String name, String parent, String... parents)
-    throws NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException, PMBackendException, AssignmentCausesLoopException;
+    String createUser(String name, Map<String, String> properties, List<String> parents)
+            throws NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException, PMBackendException,
+                   AssignmentCausesLoopException, DisconnectedNodeException;
 
     /**
      * See {@link Graph#setNodeProperties <p>
@@ -370,37 +341,37 @@ public interface GraphStore extends Graph {
      *
      * @param name    The name of the new node.
      * @param type    The type of the new node.
-     * @param parent  The initial parent to assign the new node to.
-     * @param parents Additional parents to assign the new node to.
+     * @param parents Parents to assign the new node to.
      * @throws PMBackendException         If there is an error in the backend implementation.
      * @throws NodeNameExistsException    If a node already exists with the given name.
      * @throws NodeDoesNotExistException  If a given parent node does not exist.
      * @throws InvalidAssignmentException If assigning the new node to a given parent node would make an invalid
      * assignment.
      */
-    default void checkCreateNodeInput(String name, NodeType type, String parent, String... parents)
-    throws PMBackendException, NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException,
-           AssignmentCausesLoopException {
+    default void checkCreateNodeInput(String name, NodeType type, List<String> parents)
+            throws PMBackendException, NodeNameExistsException, NodeDoesNotExistException, InvalidAssignmentException,
+                   AssignmentCausesLoopException, DisconnectedNodeException {
         if (nodeExists(name)) {
             throw new NodeNameExistsException(name);
         }
 
         // when creating a node the only loop that can occur is to itself
-        if (name.equals(parent)) {
-            throw new AssignmentCausesLoopException(name, parent);
+        if (parents.contains(name)) {
+            throw new AssignmentCausesLoopException(name, name);
+        }
+
+        // object attributes, objects, and users need to be assigned to at least one node initially
+        if (type != UA && parents.isEmpty()) {
+            throw new DisconnectedNodeException(name, type);
         }
 
         // check assign inputs
-        // getNode will ensure parent node exists
-        Node parentNode = getNode(parent);
-        Assignment.checkAssignment(type, parentNode.getType());
-
         for (String p : parents) {
             if (name.equals(p)) {
                 throw new AssignmentCausesLoopException(name, p);
             }
 
-            parentNode = getNode(p);
+            Node parentNode = getNode(p);
             Assignment.checkAssignment(type, parentNode.getType());
         }
     }

@@ -15,6 +15,7 @@ import gov.nist.csd.pm.policy.pml.scope.GlobalScope;
 import gov.nist.csd.pm.policy.pml.type.Type;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static gov.nist.csd.pm.policy.pml.PMLUtil.buildArrayLiteral;
@@ -36,11 +37,11 @@ class CreateProhibitionStatementTest {
 
         MemoryPolicyStore store = new MemoryPolicyStore();
         store.graph().setResourceAccessRights(new AccessRightSet("read"));
-        store.graph().createPolicyClass("pc2");
-        store.graph().createUserAttribute("ua2", "pc2");
-        store.graph().createUser("u2", "ua2");
-        store.graph().createObjectAttribute("oa1", "pc2");
-        store.graph().createObjectAttribute("oa2", "pc2");
+        store.graph().createPolicyClass("pc2", new HashMap<>());
+        store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc2"));
+        store.graph().createUser("u2", new HashMap<>(), List.of("ua2"));
+        store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc2"));
+        store.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc2"));
 
         ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));
 

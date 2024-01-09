@@ -79,56 +79,31 @@ class MysqlGraphStore implements GraphStore {
     }
 
     @Override
-    public String createPolicyClass(String name) throws PMBackendException, NodeNameExistsException {
-        return createPolicyClass(name, NO_PROPERTIES);
+    public String createUserAttribute(String name, Map<String, String> properties, List<String> parents)
+            throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException,
+                   AssignmentCausesLoopException, DisconnectedNodeException {
+        return createNode(name, UA, properties, parents);
     }
 
     @Override
-    public String createUserAttribute(String name, Map<String, String> properties, String parent, String... parents)
-    throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException, AssignmentCausesLoopException {
-        return createNode(name, UA, properties, parent, parents);
+    public String createObjectAttribute(String name, Map<String, String> properties, List<String> parents)
+            throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException,
+                   AssignmentCausesLoopException, DisconnectedNodeException {
+        return createNode(name, OA, properties, parents);
     }
 
     @Override
-    public String createUserAttribute(String name, String parent, String... parents)
-    throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException, AssignmentCausesLoopException {
-        return createUserAttribute(name, NO_PROPERTIES, parent, parents);
+    public String createObject(String name, Map<String, String> properties, List<String> parents)
+            throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException,
+                   AssignmentCausesLoopException, DisconnectedNodeException {
+        return createNode(name, O, properties, parents);
     }
 
     @Override
-    public String createObjectAttribute(String name, Map<String, String> properties, String parent, String... parents)
-    throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException, AssignmentCausesLoopException {
-        return createNode(name, OA, properties, parent, parents);
-    }
-
-    @Override
-    public String createObjectAttribute(String name, String parent, String... parents)
-    throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException, AssignmentCausesLoopException {
-        return createObjectAttribute(name, NO_PROPERTIES, parent, parents);
-    }
-
-    @Override
-    public String createObject(String name, Map<String, String> properties, String parent, String... parents)
-    throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException, AssignmentCausesLoopException {
-        return createNode(name, O, properties, parent, parents);
-    }
-
-    @Override
-    public String createObject(String name, String parent, String... parents)
-    throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException, AssignmentCausesLoopException {
-        return createObject(name, NO_PROPERTIES, parent, parents);
-    }
-
-    @Override
-    public String createUser(String name, Map<String, String> properties, String parent, String... parents)
-    throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException, AssignmentCausesLoopException {
-        return createNode(name, U, properties, parent, parents);
-    }
-
-    @Override
-    public String createUser(String name, String parent, String... parents)
-    throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException, AssignmentCausesLoopException {
-        return createUser(name, NO_PROPERTIES, parent, parents);
+    public String createUser(String name, Map<String, String> properties, List<String> parents)
+            throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException,
+                   AssignmentCausesLoopException, DisconnectedNodeException {
+        return createNode(name, U, properties, parents);
     }
 
     @Override
@@ -544,18 +519,15 @@ class MysqlGraphStore implements GraphStore {
         GraphStore.super.checkAssignmentDoesNotCreateLoop(child, parent);
     }
 
-    private String createNode(String name, NodeType type, Map<String, String> properties,
-                              String initialParent, String ... parents)
-    throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException, AssignmentCausesLoopException {
-        checkCreateNodeInput(name, type, initialParent, parents);
+    private String createNode(String name, NodeType type, Map<String, String> properties, List<String> parents)
+            throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException,
+                   AssignmentCausesLoopException, DisconnectedNodeException {
+        checkCreateNodeInput(name, type, parents);
 
         connection.beginTx();
 
         // create the node in the node table
         createNodeInternal(name, type, properties);
-
-        // assign the node to the initial parent
-        assignInternal(name, initialParent);
 
         // assign the node to any additional parents
         for (String p : parents) {

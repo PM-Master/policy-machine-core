@@ -8,6 +8,8 @@ import gov.nist.csd.pm.policy.pml.context.ExecutionContext;
 import gov.nist.csd.pm.policy.pml.scope.GlobalScope;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static gov.nist.csd.pm.policy.pml.PMLUtil.buildMapLiteral;
@@ -23,9 +25,9 @@ class SetNodePropertiesStatementTest {
         );
 
         MemoryPolicyStore store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc1");
-        store.graph().createUserAttribute("ua1", "pc1");
-        store.graph().createUser("u1", "ua1");
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
 
         stmt.execute(new ExecutionContext(userContext, GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore())), store);

@@ -4,9 +4,7 @@ import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.policy.Graph;
-import gov.nist.csd.pm.policy.exceptions.NodeDoesNotExistException;
 import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.exceptions.UnauthorizedException;
 import gov.nist.csd.pm.policy.model.access.AccessRightSet;
 import gov.nist.csd.pm.policy.model.access.UserContext;
 import gov.nist.csd.pm.policy.model.graph.nodes.Node;
@@ -50,63 +48,38 @@ public class AdjudicatorGraph implements Graph {
     }
 
     @Override
-    public String createPolicyClass(String name) throws PMException {
-        return createPolicyClass(name, NO_PROPERTIES);
-    }
-
-    @Override
-    public String createUserAttribute(String name, Map<String, String> properties, String parent, String... parents) throws PMException {
-        checkParents(CREATE_USER_ATTRIBUTE, parent);
-        checkParents(CREATE_USER_ATTRIBUTE, parents);
+    public String createUserAttribute(String name, Map<String, String> properties, List<String> parents) throws PMException {
+        if (!parents.isEmpty()) {
+            checkParents(CREATE_USER_ATTRIBUTE, parents);
+        } else {
+            checkParents(CREATE_USER_ATTRIBUTE, List.of(AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName()));
+        }
 
         return null;
     }
 
     @Override
-    public String createUserAttribute(String name, String parent, String... parents) throws PMException {
-        return createUserAttribute(name, NO_PROPERTIES, parent, parents);
-    }
-
-    @Override
-    public String createObjectAttribute(String name, Map<String, String> properties, String parent, String... parents) throws PMException {
-        checkParents(CREATE_OBJECT_ATTRIBUTE, parent);
+    public String createObjectAttribute(String name, Map<String, String> properties, List<String> parents) throws PMException {
         checkParents(CREATE_OBJECT_ATTRIBUTE, parents);
 
         return null;
     }
 
     @Override
-    public String createObjectAttribute(String name, String parent, String... parents) throws PMException {
-        return createObjectAttribute(name, NO_PROPERTIES, parent, parents);
-    }
-
-    @Override
-    public String createObject(String name, Map<String, String> properties, String parent, String... parents) throws PMException {
-        checkParents(CREATE_OBJECT, parent);
+    public String createObject(String name, Map<String, String> properties, List<String> parents) throws PMException {
         checkParents(CREATE_OBJECT, parents);
 
         return null;
     }
 
     @Override
-    public String createObject(String name, String parent, String... parents) throws PMException {
-        return createObject(name, NO_PROPERTIES, parent, parents);
-    }
-
-    @Override
-    public String createUser(String name, Map<String, String> properties, String parent, String... parents) throws PMException {
-        checkParents(CREATE_USER, parent);
+    public String createUser(String name, Map<String, String> properties, List<String> parents) throws PMException {
         checkParents(CREATE_USER, parents);
 
         return null;
     }
 
-    @Override
-    public String createUser(String name, String parent, String... parents) throws PMException {
-        return createUser(name, NO_PROPERTIES, parent, parents);
-    }
-
-    private void checkParents(String accessRight, String ... parents) throws PMException {
+    private void checkParents(String accessRight, List<String> parents) throws PMException {
         for (String parent : parents) {
             privilegeChecker.check(userCtx, parent, accessRight);
         }

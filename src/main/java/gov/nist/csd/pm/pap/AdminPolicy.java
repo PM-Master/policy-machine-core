@@ -3,6 +3,7 @@ package gov.nist.csd.pm.pap;
 import gov.nist.csd.pm.policy.exceptions.*;
 import gov.nist.csd.pm.policy.model.graph.relationships.InvalidAssignmentException;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -70,7 +71,7 @@ public class AdminPolicy {
 
     private static void verifyPolicyClasses(GraphStore graphStore)
             throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException,
-                   AssignmentCausesLoopException {
+                   AssignmentCausesLoopException, DisconnectedNodeException {
         List<String> policyClasses = graphStore.getPolicyClasses();
         for (String pc : policyClasses) {
             String repOA = policyClassTargetName(pc);
@@ -78,7 +79,7 @@ public class AdminPolicy {
                 continue;
             }
 
-            graphStore.createObjectAttribute(repOA, POLICY_CLASS_TARGETS.nodeName());
+            graphStore.createObjectAttribute(repOA, new HashMap<>(), List.of(POLICY_CLASS_TARGETS.nodeName()));
         }
     }
 

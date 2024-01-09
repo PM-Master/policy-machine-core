@@ -5,9 +5,11 @@ import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.util.PolicyEquals;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.List;
 
 class PMLSerializerTest {
 
@@ -56,7 +58,7 @@ class PMLSerializerTest {
         UserContext userContext = new UserContext("u1");
         pap.deserialize(userContext, input, new PMLDeserializer());
 
-        pap.graph().createObjectAttribute("test-oa", "pc1");
+        pap.graph().createObjectAttribute("test-oa", new HashMap<>(), List.of("pc1"));
         pap.graph().assign(AdminPolicy.policyClassTargetName("pc1"), "test-oa");
 
         String expected = input + " create object attribute \"test-oa\" assign to [\"pc1\"]\n" + "assign \"pc1:target\" to [\"test-oa\"]";

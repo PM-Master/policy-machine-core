@@ -2,11 +2,12 @@ package gov.nist.csd.pm.policy.events.graph;
 
 import gov.nist.csd.pm.policy.model.graph.nodes.NodeType;
 
+import java.util.List;
 import java.util.Map;
 
 public class CreateObjectEvent extends CreateNodeEvent{
-    public CreateObjectEvent(String name, Map<String, String> properties, String initialParent, String... parents) {
-        super(name, NodeType.O, properties, initialParent, parents);
+    public CreateObjectEvent(String name, Map<String, String> properties, List<String> parents) {
+        super(name, NodeType.O, properties, parents);
     }
 
     @Override

@@ -11,6 +11,7 @@ import gov.nist.csd.pm.policy.pml.scope.UnknownVariableInScopeException;
 import gov.nist.csd.pm.policy.pml.value.StringValue;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static gov.nist.csd.pm.policy.pml.PMLUtil.buildArrayLiteral;
@@ -27,9 +28,9 @@ class ForeachStatementTest {
         );
 
         MemoryPolicyStore store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc1");
-        store.graph().createUserAttribute("ua1", "pc1");
-        store.graph().createUser("u1", "ua1");
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
 
         stmt.execute(new ExecutionContext(userContext, GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore())), store);
@@ -44,9 +45,9 @@ class ForeachStatementTest {
         ));
 
         store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc1");
-        store.graph().createUserAttribute("ua1", "pc1");
-        store.graph().createUser("u1", "ua1");
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
         stmt.execute(new ExecutionContext(userContext, GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore())), store);
 
@@ -59,9 +60,9 @@ class ForeachStatementTest {
         ));
 
         store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc1");
-        store.graph().createUserAttribute("ua1", "pc1");
-        store.graph().createUser("u1", "ua1");
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
         stmt.execute(new ExecutionContext(userContext, GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore())), store);
 
@@ -76,9 +77,9 @@ class ForeachStatementTest {
         ));
 
         MemoryPolicyStore store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc1");
-        store.graph().createUserAttribute("ua1", "pc1");
-        store.graph().createUser("u1", "ua1");
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
 
         ExecutionContext executionContext = new ExecutionContext(userContext, GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));

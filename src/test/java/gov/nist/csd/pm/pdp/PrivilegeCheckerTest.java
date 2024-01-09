@@ -13,6 +13,9 @@ import gov.nist.csd.pm.policy.model.access.UserContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class PrivilegeCheckerTest {
@@ -25,15 +28,15 @@ class PrivilegeCheckerTest {
 
         pap.graph().setResourceAccessRights(new AccessRightSet("read"));
 
-        pap.graph().createPolicyClass("pc1");
-        pap.graph().createUserAttribute("ua1", "pc1");
-        pap.graph().createObjectAttribute("oa1", "pc1");
+        pap.graph().createPolicyClass("pc1", new HashMap<>());
+        pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
         pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
         pap.graph().associate("ua1", AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName(), new AccessRightSet(AdminAccessRights.ASSIGN_TO));
 
-        pap.graph().createUser("u1", "ua1");
-        pap.graph().createObject("o1", "oa1");
+        pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        pap.graph().createObject("o1", new HashMap<>(), List.of("oa1"));
     }
 
     @Test

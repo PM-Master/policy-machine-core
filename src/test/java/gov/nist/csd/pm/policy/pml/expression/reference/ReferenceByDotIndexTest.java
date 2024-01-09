@@ -16,6 +16,7 @@ import gov.nist.csd.pm.policy.pml.value.MapValue;
 import gov.nist.csd.pm.policy.pml.value.StringValue;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,9 +65,9 @@ class ReferenceByDotIndexTest {
                 create policy class a.b.c.d
                 """;
         MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
-        memoryPolicyStore.graph().createPolicyClass("pc1");
-        memoryPolicyStore.graph().createUserAttribute("ua1", "pc1");
-        memoryPolicyStore.graph().createUserAttribute("u1", "ua1");
+        memoryPolicyStore.graph().createPolicyClass("pc1", new HashMap<>());
+        memoryPolicyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        memoryPolicyStore.graph().createUserAttribute("u1", new HashMap<>(), List.of("ua1"));
         PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext("u1"), pml);
 
         assertTrue(memoryPolicyStore.graph().nodeExists("e"));

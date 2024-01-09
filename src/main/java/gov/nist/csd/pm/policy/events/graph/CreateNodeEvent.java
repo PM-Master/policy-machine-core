@@ -3,6 +3,7 @@ package gov.nist.csd.pm.policy.events.graph;
 import gov.nist.csd.pm.policy.model.graph.nodes.NodeType;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -11,15 +12,13 @@ public abstract class CreateNodeEvent extends GraphEvent {
     protected final String name;
     protected final NodeType type;
     protected final Map<String, String> properties;
-    protected String initialParent;
-    protected String[] additionalParents;
+    protected List<String> parents;
 
-    protected CreateNodeEvent(String name, NodeType type, Map<String, String> properties, String initialParent, String ... parents) {
+    protected CreateNodeEvent(String name, NodeType type, Map<String, String> properties, List<String> parents) {
         this.name = name;
         this.type = type;
         this.properties = properties;
-        this.initialParent = initialParent;
-        this.additionalParents = parents;
+        this.parents = parents;
     }
 
     protected CreateNodeEvent(String name, NodeType type, Map<String, String> properties) {
@@ -40,26 +39,27 @@ public abstract class CreateNodeEvent extends GraphEvent {
         return properties;
     }
 
-    public String getInitialParent() {
-        return initialParent;
-    }
-
-    public String[] getAdditionalParents() {
-        return additionalParents;
+    public List<String> getParents() {
+        return parents;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         CreateNodeEvent that = (CreateNodeEvent) o;
-        return Objects.equals(name, that.name) && type == that.type && Objects.equals(properties, that.properties) && Objects.equals(initialParent, that.initialParent) && Arrays.equals(additionalParents, that.additionalParents);
+        return Objects.equals(name, that.name) && type == that.type && Objects.equals(
+                properties,
+                that.properties
+        ) && Objects.equals(parents, that.parents);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(name, type, properties, initialParent);
-        result = 31 * result + Arrays.hashCode(additionalParents);
-        return result;
+        return Objects.hash(name, type, properties, parents);
     }
 }

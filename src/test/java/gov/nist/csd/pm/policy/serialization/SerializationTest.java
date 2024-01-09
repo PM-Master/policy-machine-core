@@ -14,6 +14,7 @@ import gov.nist.csd.pm.util.SamplePolicy;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import static gov.nist.csd.pm.util.PolicyEquals.assertPolicyEquals;
 
@@ -42,8 +43,8 @@ public class SerializationTest {
     void testPolicyClassTargets() throws PMException {
         PAP pap = new PAP(new MemoryPolicyStore());
 
-        pap.graph().createPolicyClass("pc1");
-        pap.graph().createPolicyClass("pc2");
+        pap.graph().createPolicyClass("pc1", new HashMap<>());
+        pap.graph().createPolicyClass("pc2", new HashMap<>());
         pap.graph().assign(AdminPolicy.policyClassTargetName("pc1"), "pc2");
         pap.graph().assign(AdminPolicy.policyClassTargetName("pc2"), "pc1");
 

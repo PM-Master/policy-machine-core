@@ -14,6 +14,7 @@ import gov.nist.csd.pm.policy.pml.context.ExecutionContext;
 import gov.nist.csd.pm.policy.pml.scope.GlobalScope;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static gov.nist.csd.pm.policy.pml.PMLUtil.buildArrayLiteral;
@@ -37,11 +38,11 @@ class CreateObligationStatementTest {
         ));
 
         MemoryPolicyStore store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc1");
-        store.graph().createUserAttribute("ua2", "pc1");
-        store.graph().createUser("u2", "ua2");
-        store.graph().createObjectAttribute("oa1", "pc1");
-        store.graph().createObjectAttribute("oa2", "pc1");
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+        store.graph().createUser("u2", new HashMap<>(), List.of("ua2"));
+        store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        store.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
         ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.withValuesAndDefinitions(store));
 
         stmt.execute(execCtx, store);

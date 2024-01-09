@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -66,8 +68,8 @@ class MysqlPAPTest extends PAPTest {
 
             PAP pap = new PAP(new MysqlPolicyStore(connection));
             pap.beginTx();
-            pap.graph().createPolicyClass("pc1");
-            pap.graph().createObjectAttribute("oa1", "pc1");
+            pap.graph().createPolicyClass("pc1", new HashMap<>());
+            pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
             pap.commit();
 
 

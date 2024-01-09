@@ -9,6 +9,8 @@ import gov.nist.csd.pm.policy.pml.context.ExecutionContext;
 import gov.nist.csd.pm.policy.pml.scope.GlobalScope;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static gov.nist.csd.pm.policy.pml.PMLUtil.buildArrayLiteral;
@@ -25,9 +27,9 @@ class CreateNonPCStatementTest {
         CreateNonPCStatement stmt4 = new CreateNonPCStatement(new StringLiteral("o1"), NodeType.O, buildArrayLiteral("oa1"));
 
         MemoryPolicyStore store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc1");
-        store.graph().createUserAttribute("ua2", "pc1");
-        store.graph().createUser("u2", "ua2");
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+        store.graph().createUser("u2", new HashMap<>(), List.of("ua2"));
         ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));
 
         stmt1.execute(execCtx, store);
@@ -52,9 +54,9 @@ class CreateNonPCStatementTest {
                                                               buildMapLiteral("a", "b", "c", "d"));
 
         MemoryPolicyStore store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc1");
-        store.graph().createUserAttribute("ua2", "pc1");
-        store.graph().createUser("u1", "ua2");
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+        store.graph().createUser("u1", new HashMap<>(), List.of("ua2"));
         ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));
 
         stmt1.execute(execCtx, store);

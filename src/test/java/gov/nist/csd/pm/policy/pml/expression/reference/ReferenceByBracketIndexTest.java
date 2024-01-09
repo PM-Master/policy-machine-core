@@ -15,6 +15,7 @@ import gov.nist.csd.pm.policy.pml.type.Type;
 import gov.nist.csd.pm.policy.pml.value.*;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -81,9 +82,9 @@ class ReferenceByBracketIndexTest {
                 create policy class a[true]["c"]["d"]
                 """;
         MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
-        memoryPolicyStore.graph().createPolicyClass("pc1");
-        memoryPolicyStore.graph().createUserAttribute("ua1", "pc1");
-        memoryPolicyStore.graph().createUserAttribute("u1", "ua1");
+        memoryPolicyStore.graph().createPolicyClass("pc1", new HashMap<>());
+        memoryPolicyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        memoryPolicyStore.graph().createUserAttribute("u1", new HashMap<>(), List.of("ua1"));
         PMLCompilationException e = assertThrows(PMLCompilationException.class,
                                                  () -> PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext("u1"), pml));
         assertEquals("expected expression type string, got bool", e.getErrors().get(0).errorMessage());

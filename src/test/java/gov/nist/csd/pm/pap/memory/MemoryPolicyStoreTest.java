@@ -19,6 +19,7 @@ import gov.nist.csd.pm.policy.pml.context.ExecutionContext;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,10 +61,10 @@ class MemoryPolicyStoreTest {
 
     @Test
     void getChildren() throws PMException {
-        policyStore.graph().createPolicyClass("pc1", null);
-        policyStore.graph().createObjectAttribute("oa1", "pc1");
-        policyStore.graph().createObjectAttribute("oa2", "pc1");
-        policyStore.graph().createObjectAttribute("oa3", "pc1");
+        policyStore.graph().createPolicyClass("pc1", new HashMap<>());
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
         List<String> children = policyStore.graph().getChildren("pc1");
         assertThrows(UnsupportedOperationException.class, () -> children.add("test"));
         assertFalse(policyStore.graph().getChildren("pc1").contains("test"));
@@ -72,10 +73,10 @@ class MemoryPolicyStoreTest {
     @Test
     void getParents() throws PMException {
         policyStore.graph().createPolicyClass("pc1", null);
-        policyStore.graph().createObjectAttribute("oa1", "pc1");
-        policyStore.graph().createObjectAttribute("oa2", "pc1");
-        policyStore.graph().createObjectAttribute("oa3", "pc1");
-        policyStore.graph().createObject("o1", "oa1", "oa2", "oa3");
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObject("o1", new HashMap<>(), List.of("oa1", "oa2", "oa3"));
         List<String> parents = policyStore.graph().getParents("o1");
         assertThrows(UnsupportedOperationException.class, () -> parents.add("test"));
         assertFalse(policyStore.graph().getParents("o1").contains("test"));
@@ -84,8 +85,8 @@ class MemoryPolicyStoreTest {
     @Test
     void getAssociationsWithSource() throws PMException {
         policyStore.graph().createPolicyClass("pc1", null);
-        policyStore.graph().createUserAttribute("ua1", "pc1");
-        policyStore.graph().createObjectAttribute("oa1", "pc1");
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
         policyStore.graph().associate("ua1", "oa1", new AccessRightSet());
         List<Association> assocs = policyStore.graph().getAssociationsWithSource("ua1");
         assertThrows(UnsupportedOperationException.class, () -> assocs.clear());
@@ -96,8 +97,8 @@ class MemoryPolicyStoreTest {
     @Test
     void getAssociationsWithTarget() throws PMException {
         policyStore.graph().createPolicyClass("pc1", null);
-        policyStore.graph().createUserAttribute("ua1", "pc1");
-        policyStore.graph().createObjectAttribute("oa1", "pc1");
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
         policyStore.graph().associate("ua1", "oa1", new AccessRightSet());
         List<Association> assocs = policyStore.graph().getAssociationsWithTarget("oa1");
         assertThrows(UnsupportedOperationException.class, () -> assocs.clear());
@@ -106,8 +107,8 @@ class MemoryPolicyStoreTest {
     @Test
     void getProhibitions() throws PMException {
         policyStore.graph().createPolicyClass("pc1", null);
-        policyStore.graph().createUserAttribute("ua1", "pc1");
-        policyStore.graph().createObjectAttribute("oa1", "pc1");
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
         policyStore.prohibitions().create("pro1", ProhibitionSubject.userAttribute("ua1"), new AccessRightSet(), true, new ContainerCondition("oa1", false));
         Map<String, List<Prohibition>> prohibitions = policyStore.prohibitions().getAll();
         prohibitions.clear();
@@ -128,8 +129,8 @@ class MemoryPolicyStoreTest {
     @Test
     void getProhibitionsFor() throws PMException {
         policyStore.graph().createPolicyClass("pc1", null);
-        policyStore.graph().createUserAttribute("ua1", "pc1");
-        policyStore.graph().createObjectAttribute("oa1", "pc1");
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
         policyStore.prohibitions().create("pro1", ProhibitionSubject.userAttribute("ua1"), new AccessRightSet(), true, new ContainerCondition("oa1", false));
         List<Prohibition> prohibitions = policyStore.prohibitions().getWithSubject("ua1");
         assertThrows(UnsupportedOperationException.class, () -> prohibitions.clear());
@@ -150,8 +151,8 @@ class MemoryPolicyStoreTest {
     @Test
     void getProhibition() throws PMException {
         policyStore.graph().createPolicyClass("pc1", null);
-        policyStore.graph().createUserAttribute("ua1", "pc1");
-        policyStore.graph().createObjectAttribute("oa1", "pc1");
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
         policyStore.prohibitions().create("pro1", ProhibitionSubject.userAttribute("ua1"), new AccessRightSet(), true, new ContainerCondition("oa1", false));
         Prohibition p = policyStore.prohibitions().get("pro1");
         Prohibition actual = policyStore.prohibitions().get("pro1");
@@ -168,9 +169,9 @@ class MemoryPolicyStoreTest {
 
     @Test
     void getObligations() throws PMException {
-        policyStore.graph().createPolicyClass("pc1");
-        policyStore.graph().createUserAttribute("ua1", "pc1");
-        policyStore.graph().createUser("u1", "ua1");
+        policyStore.graph().createPolicyClass("pc1", new HashMap<>());
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         policyStore.obligations().create(
                 new UserContext("u1"),
                 "obl1",
@@ -199,9 +200,9 @@ class MemoryPolicyStoreTest {
                 new Response("evtCtx", List.of())
         );
 
-        policyStore.graph().createPolicyClass("pc1");
-        policyStore.graph().createUserAttribute("ua1", "pc1");
-        policyStore.graph().createUser("u1", "ua1");
+        policyStore.graph().createPolicyClass("pc1", new HashMap<>());
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         policyStore.obligations().create(
                 new UserContext("u1"),
                 "obl1",
@@ -220,10 +221,10 @@ class MemoryPolicyStoreTest {
     @Test
     void testTx() throws PMException {
         PolicyStore store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc1");
+        store.graph().createPolicyClass("pc1", new HashMap<>());
         try {
             runTx(store, () -> {
-                store.graph().createObjectAttribute("oa1", "pc1");
+                store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
                 throw new PMException("test");
             });
         } catch (PMException e) { }
@@ -233,9 +234,9 @@ class MemoryPolicyStoreTest {
     @Test
     void testTx2() throws PMException {
         PolicyStore store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc1");
+        store.graph().createPolicyClass("pc1", new HashMap<>());
         store.beginTx();
-        store.graph().createObjectAttribute("oa1", "pc1");
+        store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
         assertTrue(store.graph().nodeExists("oa1"));
         store.rollback();
         assertFalse(store.graph().nodeExists("oa1"));
@@ -248,7 +249,7 @@ class MemoryPolicyStoreTest {
         MemoryPolicyStore policyStore = new MemoryPolicyStore();
 
         MemoryPolicyStore policyStore1 = new MemoryPolicyStore();
-        policyStore1.graph().createPolicyClass("pc1");
+        policyStore1.graph().createPolicyClass("pc1", new HashMap<>());
 
         policyStore.setGraph(policyStore1.graph());
         assertTrue(policyStore.graph().nodeExists("pc1"));

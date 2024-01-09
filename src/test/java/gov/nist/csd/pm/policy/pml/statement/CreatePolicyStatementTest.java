@@ -14,6 +14,7 @@ import gov.nist.csd.pm.util.PolicyEquals;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,9 +30,9 @@ class CreatePolicyStatementTest {
     void testSuccess() throws PMException {
         CreatePolicyStatement stmt = new CreatePolicyStatement(new StringLiteral("pc1"));
         MemoryPolicyStore store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc2");
-        store.graph().createUserAttribute("ua2", "pc2");
-        store.graph().createUser("u2", "ua2");
+        store.graph().createPolicyClass("pc2", new HashMap<>());
+        store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc2"));
+        store.graph().createUser("u2", new HashMap<>(), List.of("ua2"));
         ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.withValuesAndDefinitions(store));
 
         stmt.execute(execCtx, store);
@@ -108,20 +109,20 @@ class CreatePolicyStatementTest {
         MemoryPolicyStore expected = new MemoryPolicyStore();
         expected.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
         expected.graph().createPolicyClass("test", Map.of("a", "b"));
-        expected.graph().createUserAttribute("ua1", Map.of("k", "v"), "test");
-        expected.graph().createUserAttribute("ua1-1", "ua1");
-        expected.graph().createUserAttribute("ua1-2", "ua1");
-        expected.graph().createUserAttribute("ua1-2-1", Map.of("k", "v"), "ua1-2");
-        expected.graph().createUserAttribute("ua1-3", "ua1");
-        expected.graph().createUserAttribute("ua2", Map.of("k", "v"), "test");
+        expected.graph().createUserAttribute("ua1", Map.of("k", "v"), List.of("test"));
+        expected.graph().createUserAttribute("ua1-1", new HashMap<>(), List.of("ua1"));
+        expected.graph().createUserAttribute("ua1-2", new HashMap<>(), List.of("ua1"));
+        expected.graph().createUserAttribute("ua1-2-1", Map.of("k", "v"), List.of("ua1-2"));
+        expected.graph().createUserAttribute("ua1-3", new HashMap<>(), List.of("ua1"));
+        expected.graph().createUserAttribute("ua2", Map.of("k", "v"), List.of("test"));
         expected.graph().assign("ua1-2-1", "ua2");
 
-        expected.graph().createObjectAttribute("oa1", Map.of("k", "v"), "test");
-        expected.graph().createObjectAttribute("oa1-1", "oa1");
-        expected.graph().createObjectAttribute("oa1-2", "oa1");
-        expected.graph().createObjectAttribute("oa1-2-1", Map.of("k", "v"), "oa1-2");
-        expected.graph().createObjectAttribute("oa1-3", "oa1");
-        expected.graph().createObjectAttribute("oa2", Map.of("k", "v"), "test");
+        expected.graph().createObjectAttribute("oa1", Map.of("k", "v"), List.of("test"));
+        expected.graph().createObjectAttribute("oa1-1", new HashMap<>(), List.of("oa1"));
+        expected.graph().createObjectAttribute("oa1-2", new HashMap<>(), List.of("oa1"));
+        expected.graph().createObjectAttribute("oa1-2-1", Map.of("k", "v"), List.of("oa1-2"));
+        expected.graph().createObjectAttribute("oa1-3", new HashMap<>(), List.of("oa1"));
+        expected.graph().createObjectAttribute("oa2", Map.of("k", "v"), List.of("test"));
         expected.graph().assign("oa1-2-1", "oa2");
 
         expected.graph().associate("ua1", "oa1", new AccessRightSet("read", "write"));

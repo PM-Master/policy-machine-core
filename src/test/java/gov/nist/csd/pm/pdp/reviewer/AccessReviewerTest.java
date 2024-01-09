@@ -16,10 +16,7 @@ import gov.nist.csd.pm.policy.model.prohibition.ProhibitionSubject;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.*;
 import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.allAdminAccessRights;
@@ -504,13 +501,13 @@ class AccessReviewerTest {
 
         pap.graph().setResourceAccessRights(RWE);
 
-        String pc1 = pap.graph().createPolicyClass("pc1");
-        String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-        String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-        String u1 = pap.graph().createUser("u1", ua1);
-        String o1 = pap.graph().createObject("o1", oa1);
-        String o2 = pap.graph().createObject("o2", oa1);
-        String o3 = pap.graph().createObject("o3", oa1);
+        String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+        String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+        String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+        String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+        String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+        String o2 = pap.graph().createObject("o2", new HashMap<>(), List.of(oa1));
+        String o3 = pap.graph().createObject("o3", new HashMap<>(), List.of(oa1));
 
         AccessRightSet arset = new AccessRightSet("read", "write");
         pap.graph().associate(ua1, oa1, arset);
@@ -529,13 +526,13 @@ class AccessReviewerTest {
 
         pap.graph().setResourceAccessRights(RWE);
 
-        String pc1 = pap.graph().createPolicyClass("pc1");
-        String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-        String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-        String u1 = pap.graph().createUser("u1", ua1);
-        String o1 = pap.graph().createObject("o1", oa1);
-        String o2 = pap.graph().createObject("o2", oa1);
-        String o3 = pap.graph().createObject("o3", oa1);
+        String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+        String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+        String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+        String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+        String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+        String o2 = pap.graph().createObject("o2", new HashMap<>(), List.of(oa1));
+        String o3 = pap.graph().createObject("o3", new HashMap<>(), List.of(oa1));
 
         AccessRightSet arset = new AccessRightSet("read", "write");
         pap.graph().associate(ua1, oa1, arset);
@@ -563,11 +560,11 @@ class AccessReviewerTest {
 
             pap.graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
 
@@ -582,15 +579,15 @@ class AccessReviewerTest {
 
             pap.graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String pc2 = pap.graph().createPolicyClass("pc2");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1, pc2);
-            String ua2 = pap.graph().createUserAttribute("ua2", pc1);
-            String u1 = pap.graph().createUser("u1", ua1, ua2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1, pc2));
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
 
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc2);
-            String o1 = pap.graph().createObject("o1", oa1, oa2);
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
 
@@ -603,11 +600,11 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
 
@@ -621,12 +618,12 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String ua2 = pap.graph().createUserAttribute("ua2", pc1);
-            String u1 = pap.graph().createUser("u1", ua1, ua2);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
             pap.graph().associate(ua2, oa1, new AccessRightSet("write"));
@@ -642,14 +639,14 @@ class AccessReviewerTest {
 
             pap.graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String pc2 = pap.graph().createPolicyClass("pc2");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String ua2 = pap.graph().createUserAttribute("ua2", pc2);
-            String u1 = pap.graph().createUser("u1", ua1, ua2);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc2);
-            String o1 = pap.graph().createObject("o1", oa1, oa2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc2));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
             pap.graph().associate(ua2, oa2, new AccessRightSet("read", "write"));
@@ -664,14 +661,14 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String pc2 = pap.graph().createPolicyClass("pc2");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String ua2 = pap.graph().createUserAttribute("ua2", pc2);
-            String u1 = pap.graph().createUser("u1", ua1, ua2);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc2);
-            String o1 = pap.graph().createObject("o1", oa1, oa2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc2));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
             pap.graph().associate(ua2, oa2, new AccessRightSet("read"));
@@ -687,13 +684,13 @@ class AccessReviewerTest {
 
             pap.graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String pc2 = pap.graph().createPolicyClass("pc2");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc2);
-            String o1 = pap.graph().createObject("o1", oa1, oa2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
 
@@ -707,11 +704,11 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
 
@@ -727,12 +724,12 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String ua2 = pap.graph().createUserAttribute("ua2", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
             pap.graph().associate(ua2, oa1, new AccessRightSet("read", "write"));
@@ -749,14 +746,14 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String pc2 = pap.graph().createPolicyClass("pc2");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String ua2 = pap.graph().createUserAttribute("ua2", pc2);
-            String u1 = pap.graph().createUser("u1", ua1, ua2);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc2);
-            String o1 = pap.graph().createObject("o1", oa1, oa2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc2));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
             pap.graph().associate(ua2, oa2, new AccessRightSet("read", "write"));
@@ -772,13 +769,13 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String pc2 = pap.graph().createPolicyClass("pc2");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc2);
-            String o1 = pap.graph().createObject("o1", oa1, oa2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
 
@@ -792,12 +789,12 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String ua2 = pap.graph().createUserAttribute("ua2", pc1);
-            String u1 = pap.graph().createUser("u1", ua1, ua2);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
             pap.graph().associate(ua2, oa1, new AccessRightSet("write"));
@@ -813,13 +810,13 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua2 = pap.graph().createUserAttribute("ua2", pc1);
-            String ua1 = pap.graph().createUserAttribute("ua1", ua2);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", oa2);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(ua2));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(oa2));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
             pap.graph().associate(ua2, oa2, new AccessRightSet("read"));
@@ -836,13 +833,13 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String pc2 = pap.graph().createPolicyClass("pc2");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String ua2 = pap.graph().createUserAttribute("ua2", pc1);
-            String u1 = pap.graph().createUser("u1", ua1, ua2);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1, pc2);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1, pc2));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
             pap.graph().associate(ua2, oa1, new AccessRightSet("*"));
@@ -859,13 +856,13 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua2 = pap.graph().createUserAttribute("ua2", pc1);
-            String ua1 = pap.graph().createUserAttribute("ua1", ua2);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", oa2);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(ua2));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(oa2));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
             pap.graph().associate(ua2, oa2, new AccessRightSet("read"));
@@ -882,12 +879,12 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua2 = pap.graph().createUserAttribute("ua2", pc1);
-            String ua1 = pap.graph().createUserAttribute("ua1", ua2);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(ua2));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
             pap.graph().associate(ua2, oa1, new AccessRightSet("write"));
@@ -905,12 +902,12 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc1);
-            String o1 = pap.graph().createObject("o1", oa2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa2));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
 
@@ -924,12 +921,12 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String ua2 = pap.graph().createUserAttribute("ua2", pc1);
-            String u1 = pap.graph().createUser("u1", ua2);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua2));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
 
@@ -943,14 +940,14 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String pc2 = pap.graph().createPolicyClass("pc2");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String ua2 = pap.graph().createUserAttribute("ua2", pc1);
-            String u1 = pap.graph().createUser("u1", ua1, ua2);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc2);
-            String o1 = pap.graph().createObject("o1", oa1, oa2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
             pap.graph().associate(ua2, oa2, new AccessRightSet("read", "write"));
@@ -965,14 +962,14 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String pc2 = pap.graph().createPolicyClass("pc2");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String ua2 = pap.graph().createUserAttribute("ua2", pc1);
-            String u1 = pap.graph().createUser("u1", ua1, ua2);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc2);
-            String o1 = pap.graph().createObject("o1", oa1, oa2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
             pap.graph().associate(ua2, oa2, new AccessRightSet("write"));
@@ -987,12 +984,12 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String pc2 = pap.graph().createPolicyClass("pc2");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
 
@@ -1008,14 +1005,14 @@ class AccessReviewerTest {
 
             pap.graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa3 = pap.graph().createObjectAttribute("oa3", pc1);
-            String oa4 = pap.graph().createObjectAttribute("oa4", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", oa3);
-            String oa1 = pap.graph().createObjectAttribute("oa1", oa4);
-            String o1 = pap.graph().createObject("o1", oa1, oa2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa3 = pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of(pc1));
+            String oa4 = pap.graph().createObjectAttribute("oa4", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(oa3));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(oa4));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
             pap.graph().associate(ua1, oa3, new AccessRightSet("read", "write", "execute"));
             pap.prohibitions().create("deny", ProhibitionSubject.userAttribute("ua1"), new AccessRightSet("read"), true,
@@ -1040,13 +1037,13 @@ class AccessReviewerTest {
 
             pap.graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc1);
-            String o1 = pap.graph().createObject("o1", oa1, oa2);
-            String o2 = pap.graph().createObject("o2", oa2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            String o2 = pap.graph().createObject("o2", new HashMap<>(), List.of(oa2));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
 
@@ -1078,15 +1075,15 @@ class AccessReviewerTest {
 
             pap.graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", oa1);
-            String oa3 = pap.graph().createObjectAttribute("oa3", oa1);
-            String oa4 = pap.graph().createObjectAttribute("oa4", oa3);
-            String oa5 = pap.graph().createObjectAttribute("oa5", oa2);
-            String o1 = pap.graph().createObject("o1", oa4);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(oa1));
+            String oa3 = pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of(oa1));
+            String oa4 = pap.graph().createObjectAttribute("oa4", new HashMap<>(), List.of(oa3));
+            String oa5 = pap.graph().createObjectAttribute("oa5", new HashMap<>(), List.of(oa2));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa4));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
 
@@ -1108,12 +1105,12 @@ class AccessReviewerTest {
 
             pap.graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc1);
-            String o1 = pap.graph().createObject("o1", oa1, oa2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
 
@@ -1134,14 +1131,14 @@ class AccessReviewerTest {
 
             pap.graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua2 = pap.graph().createUserAttribute("ua2", pc1);
-            String ua1 = pap.graph().createUserAttribute("ua1", ua2);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String oa2 = pap.graph().createObjectAttribute("oa2", pc1);
-            String o1 = pap.graph().createObject("o1", oa1, oa2);
-            String o2 = pap.graph().createObject("o2", oa2);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(ua2));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            String o2 = pap.graph().createObject("o2", new HashMap<>(), List.of(oa2));
 
             pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
             pap.graph().associate(ua2, oa1, new AccessRightSet("write"));
@@ -1156,19 +1153,19 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            pap.graph().createPolicyClass("pc1");
-            pap.graph().createObjectAttribute("oa1", "pc1");
-            pap.graph().createObjectAttribute("oa2", "pc1");
-            pap.graph().createObjectAttribute("oa3", "pc1");
-            pap.graph().createObjectAttribute("oa4", "pc1");
-            pap.graph().createObject("o1", "oa1", "oa2", "oa3");
-            pap.graph().createObject("o2", "oa1", "oa4");
+            pap.graph().createPolicyClass("pc1", new HashMap<>());
+            pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+            pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+            pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
+            pap.graph().createObjectAttribute("oa4", new HashMap<>(), List.of("pc1"));
+            pap.graph().createObject("o1", new HashMap<>(), List.of("oa1", "oa2", "oa3"));
+            pap.graph().createObject("o2", new HashMap<>(), List.of("oa1", "oa4"));
 
-            pap.graph().createUserAttribute("ua1", "pc1");
-            pap.graph().createUser("u1", "ua1");
-            pap.graph().createUser("u2", "ua1");
-            pap.graph().createUser("u3", "ua1");
-            pap.graph().createUser("u4", "ua1");
+            pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+            pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+            pap.graph().createUser("u2", new HashMap<>(), List.of("ua1"));
+            pap.graph().createUser("u3", new HashMap<>(), List.of("ua1"));
+            pap.graph().createUser("u4", new HashMap<>(), List.of("ua1"));
 
             pap.graph().associate("ua1", "oa1", new AccessRightSet("read", "write"));
 
@@ -1245,11 +1242,11 @@ class AccessReviewerTest {
 
             pap.graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1");
-            String ua1 = pap.graph().createUserAttribute("ua1", pc1);
-            String u1 = pap.graph().createUser("u1", ua1);
-            String oa1 = pap.graph().createObjectAttribute("oa1", pc1);
-            String o1 = pap.graph().createObject("o1", oa1);
+            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
             pap.graph().associate(ua1, oa1, allAccessRights());
 
@@ -1274,16 +1271,16 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
-            pap.graph().createPolicyClass("pc1");
-            pap.graph().createPolicyClass("pc2");
-            pap.graph().createUserAttribute("ua3", "pc1");
-            pap.graph().createUserAttribute("ua2", "ua3");
-            pap.graph().createUserAttribute("u1", "ua2");
+            pap.graph().createPolicyClass("pc1", new HashMap<>());
+            pap.graph().createPolicyClass("pc2", new HashMap<>());
+            pap.graph().createUserAttribute("ua3", new HashMap<>(), List.of("pc1"));
+            pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of("ua3"));
+            pap.graph().createUserAttribute("u1", new HashMap<>(), List.of("ua2"));
 
-            pap.graph().createObjectAttribute("oa1", "pc1");
-            pap.graph().createObjectAttribute("oa3", "pc2");
+            pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+            pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc2"));
             pap.graph().assign("oa3", "oa1");
-            pap.graph().createObject("o1", "oa3");
+            pap.graph().createObject("o1", new HashMap<>(), List.of("oa3"));
 
             pap.graph().associate("ua3", "oa1", new AccessRightSet("read"));
 
@@ -1296,10 +1293,10 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(new AccessRightSet("read"));
-            pap.graph().createPolicyClass("pc1");
-            pap.graph().createUserAttribute("ua1", "pc1");
-            pap.graph().createObjectAttribute("oa1", "pc1");
-            pap.graph().createUser("u1", "ua1");
+            pap.graph().createPolicyClass("pc1", new HashMap<>());
+            pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+            pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+            pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
             pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
 
             pap.prohibitions().create("deny1", ProhibitionSubject.user("u1"), new AccessRightSet("read"), false,
@@ -1316,10 +1313,10 @@ class AccessReviewerTest {
             AccessReviewer accessReviewer = new AccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(new AccessRightSet("read"));
-            pap.graph().createPolicyClass("pc1");
-            pap.graph().createUserAttribute("ua1", "pc1");
-            pap.graph().createObjectAttribute("oa1", "pc1");
-            pap.graph().createUser("u1", "ua1");
+            pap.graph().createPolicyClass("pc1", new HashMap<>());
+            pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+            pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+            pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
             pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
 
             pap.prohibitions().create("deny1", ProhibitionSubject.user("u1"), new AccessRightSet("read"), false,
