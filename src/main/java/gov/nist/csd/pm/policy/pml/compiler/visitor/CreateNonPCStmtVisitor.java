@@ -2,10 +2,14 @@ package gov.nist.csd.pm.policy.pml.compiler.visitor;
 
 import gov.nist.csd.pm.policy.model.graph.nodes.NodeType;
 import gov.nist.csd.pm.policy.pml.antlr.PMLParser;
+import gov.nist.csd.pm.policy.pml.expression.ErrorExpression;
 import gov.nist.csd.pm.policy.pml.expression.Expression;
 import gov.nist.csd.pm.policy.pml.context.VisitorContext;
 import gov.nist.csd.pm.policy.pml.statement.CreateNonPCStatement;
 import gov.nist.csd.pm.policy.pml.type.Type;
+
+import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.OA;
+
 public class CreateNonPCStmtVisitor extends PMLBaseVisitor<CreateNonPCStatement> {
 
     public CreateNonPCStmtVisitor(VisitorContext visitorCtx) {
@@ -29,7 +33,7 @@ public class CreateNonPCStmtVisitor extends PMLBaseVisitor<CreateNonPCStatement>
 
     private NodeType getNodeType(PMLParser.NonPCNodeTypeContext nodeType) {
         if (nodeType.OBJECT_ATTRIBUTE() != null) {
-            return NodeType.OA;
+            return OA;
         } else if (nodeType.USER_ATTRIBUTE() != null) {
             return NodeType.UA;
         } else if (nodeType.OBJECT() != null) {

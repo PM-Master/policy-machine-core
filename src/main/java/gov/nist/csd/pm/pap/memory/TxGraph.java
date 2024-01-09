@@ -61,52 +61,27 @@ class TxGraph implements Graph, BaseMemoryTx {
     }
 
     @Override
-    public String createPolicyClass(String name) {
-        return createPolicyClass(name, NO_PROPERTIES);
-    }
-
-    @Override
-    public String createUserAttribute(String name, Map<String, String> properties, String parent, String... parents) {
-        txPolicyEventTracker.trackPolicyEvent(new CreateUserAttributeEvent(name, properties, parent, parents));
+    public String createUserAttribute(String name, Map<String, String> properties, List<String> parents) {
+        txPolicyEventTracker.trackPolicyEvent(new CreateUserAttributeEvent(name, properties, parents));
         return name;
     }
 
     @Override
-    public String createUserAttribute(String name, String parent, String... parents) {
-        return createUserAttribute(name, NO_PROPERTIES, parent, parents);
-    }
-
-    @Override
-    public String createObjectAttribute(String name, Map<String, String> properties, String parent, String... parents) {
-        txPolicyEventTracker.trackPolicyEvent(new CreateObjectAttributeEvent(name, properties, parent, parents));
+    public String createObjectAttribute(String name, Map<String, String> properties, List<String> parents) {
+        txPolicyEventTracker.trackPolicyEvent(new CreateObjectAttributeEvent(name, properties, parents));
         return name;
     }
 
     @Override
-    public String createObjectAttribute(String name, String parent, String... parents) {
-        return createObjectAttribute(name, NO_PROPERTIES, parent, parents);
-    }
-
-    @Override
-    public String createObject(String name, Map<String, String> properties, String parent, String... parents) {
-        txPolicyEventTracker.trackPolicyEvent(new CreateObjectEvent(name, properties, parent, parents));
+    public String createObject(String name, Map<String, String> properties, List<String> parents) {
+        txPolicyEventTracker.trackPolicyEvent(new CreateObjectEvent(name, properties, parents));
         return name;
     }
 
     @Override
-    public String createObject(String name, String parent, String... parents) {
-        return createObject(name, NO_PROPERTIES, parent, parents);
-    }
-
-    @Override
-    public String createUser(String name, Map<String, String> properties, String parent, String... parents) {
-        txPolicyEventTracker.trackPolicyEvent(new CreateUserEvent(name, properties, parent, parents));
+    public String createUser(String name, Map<String, String> properties, List<String> parents) {
+        txPolicyEventTracker.trackPolicyEvent(new CreateUserEvent(name, properties, parents));
         return name;
-    }
-
-    @Override
-    public String createUser(String name, String parent, String... parents) {
-        return createUser(name, NO_PROPERTIES, parent, parents);
     }
 
     @Override

@@ -40,90 +40,57 @@ public interface Graph {
     String createPolicyClass(String name, Map<String, String> properties) throws PMException;
 
     /**
-     * Create a policy class with no properties.
-     *
-     * @see Graph#createPolicyClass(String, Map)
-     */
-    String createPolicyClass(String name) throws PMException;
-
-    /**
      * Create a new user attribute and assign it to the provided parent and optional additional parents.
      *
      * @param name    the name of the user attribute
-     * @param parent  is the parent to initially assign the new node to.
-     * @param parents is a list of 0 or more additional parents to assign the new node to.
+     * @param parents A list of parents to assign the new node to.
+     *
      * @return the name of the user attribute.
+     *
      * @throws PMException If there is an error during the execution process at the implementation level.
      */
-    String createUserAttribute(String name, Map<String, String> properties, String parent, String... parents)
-    throws PMException;
+    String createUserAttribute(String name, Map<String, String> properties, List<String> parents)
+            throws PMException;
 
     /**
-     * Create a user attribute with no properties.
-     *
-     * @see Graph#createUserAttribute(String, Map, String, String...)
-     */
-    String createUserAttribute(String name, String parent, String... parents)
-    throws PMException;
-
-    /**
-     * Create a new object attribute and assign it to the provided parent and optional additional parents.
+     * Create a new object attribute and assign it to the provided parents. Object attributes must be assigned to at
+     * least one parent node initially.
      *
      * @param name    The name of the object attribute
-     * @param parent  Is the parent to initially assign the new node to.
-     * @param parents Is a list of 0 or more additional parents to assign the new node to.
+     * @param parents A list of 0 or more parents to assign the new node to.
+     *
      * @return The name of the object attribute.
+     *
      * @throws PMException If there is an error during the execution process at the implementation level.
      */
-    String createObjectAttribute(String name, Map<String, String> properties, String parent, String... parents)
-    throws PMException;
+    String createObjectAttribute(String name, Map<String, String> properties, List<String> parents)
+            throws PMException;
 
     /**
-     * Create an object attribute with no properties.
-     *
-     * @see Graph#createObjectAttribute(String, Map, String, String...)
-     */
-    String createObjectAttribute(String name, String parent, String... parents)
-    throws PMException;
-
-    /**
-     * Create a new object and assign it to the provided parent and optional additional parents.
+     * Create a new object and assign it to the provided parents. Objects must be assigned to at least one parent node
+     * initially.
      *
      * @param name    The name of the object attribute
-     * @param parent  Is the parent to initially assign the new node to.
-     * @param parents Is a list of 0 or more additional parents to assign the new node to.
+     * @param parents A list of 0 or more parents to assign the new node to.
+     *
      * @throws PMException If there is an error during the execution process at the implementation level.
      */
-    String createObject(String name, Map<String, String> properties, String parent, String... parents)
-    throws PMException;
+    String createObject(String name, Map<String, String> properties, List<String> parents)
+            throws PMException;
 
     /**
-     * Create an object with no properties.
-     *
-     * @see Graph#createObject(String, Map, String, String...)
-     */
-    String createObject(String name, String parent, String... parents)
-    throws PMException;
-
-    /**
-     * Create a new user and assign it to the provided parent and optional additional parents.
+     * Create a new user and assign it to the provided parents. Users must be assigned to at least one parent node
+     * initially.
      *
      * @param name    The name of the object attribute
-     * @param parent  Is the parent to initially assign the new node to.
-     * @param parents Is a list of 0 or more additional parents to assign the new node to.
+     * @param parents A list of 0 or more parents to assign the new node to.
+     *
      * @return The name of the object attribute.
+     *
      * @throws PMException If there is an error during the execution process at the implementation level.
      */
-    String createUser(String name, Map<String, String> properties, String parent, String... parents)
-    throws PMException;
-
-    /**
-     * Create a user with no properties.
-     *
-     * @see Graph#createUser(String, Map, String, String...)
-     */
-    String createUser(String name, String parent, String... parents)
-    throws PMException;
+    String createUser(String name, Map<String, String> properties, List<String> parents)
+            throws PMException;
 
     /**
      * Update the properties of the node with the given name. The given properties overwrite any existing properties.

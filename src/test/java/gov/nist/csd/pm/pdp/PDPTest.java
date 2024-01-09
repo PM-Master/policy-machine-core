@@ -20,6 +20,8 @@ import gov.nist.csd.pm.util.SamplePolicy;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 
 import static gov.nist.csd.pm.pap.PAPTest.testAdminPolicy;
 import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.CREATE_OBJECT_ATTRIBUTE;
@@ -33,12 +35,12 @@ class PDPTest {
         PDP pdp = new PDP(pap);
 
         pap.runTx((policy) -> {
-            policy.graph().createPolicyClass("pc1");
-            policy.graph().createUserAttribute("ua1", "pc1");
-            policy.graph().createObjectAttribute("oa1", "pc1");
-            policy.graph().createObjectAttribute("oa2", "pc1");
-            policy.graph().createUser("u1", "ua1");
-            policy.graph().createObject("o1", "oa1");
+            policy.graph().createPolicyClass("pc1", new HashMap<>());
+            policy.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+            policy.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+            policy.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+            policy.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+            policy.graph().createObject("o1", new HashMap<>(), List.of("oa1"));
         });
 
         assertThrows(PMException.class, () -> pdp.runTx(new UserContext("u1"), ((policy) ->
@@ -55,7 +57,7 @@ class PDPTest {
         PDP pdp = new PDP(pap);
 
         pdp.bootstrap(p -> {
-            p.graph().createPolicyClass("pc1");
+            p.graph().createPolicyClass("pc1", new HashMap<>());
         });
 
         testAdminPolicy(pap, 2);
@@ -67,7 +69,7 @@ class PDPTest {
     void testBootstrapWithExistingPolicyThrowsException() throws PMException {
         PAP pap = new PAP(new MemoryPolicyStore());
         PDP pdp = new PDP(pap);
-        pap.graph().createPolicyClass("pc1");
+        pap.graph().createPolicyClass("pc1", new HashMap<>());
         assertThrows(BootstrapExistingPolicyException.class, () -> {
             pdp.bootstrap((policy) -> {});
         });
@@ -75,11 +77,11 @@ class PDPTest {
         pap.reset();
 
         pap.graph().setResourceAccessRights(new AccessRightSet("read"));
-        pap.graph().createPolicyClass("pc1");
-        pap.graph().createUserAttribute("ua1", "pc1");
-        pap.graph().createUser("u1", "ua1");
-        pap.graph().createObjectAttribute("oa1", "pc1");
-        pap.graph().createObject("o1", "oa1");
+        pap.graph().createPolicyClass("pc1", new HashMap<>());
+        pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        pap.graph().createObject("o1", new HashMap<>(), List.of("oa1"));
 
         pap.prohibitions().create("pro1", new ProhibitionSubject("u1", ProhibitionSubject.Type.USER),
                                   new AccessRightSet("read"), true, new ContainerCondition("oa1", false));
@@ -98,18 +100,18 @@ class PDPTest {
     @Test
     void testRollback() throws PMException {
         PAP pap = new PAP(new MemoryPolicyStore());
-        pap.graph().createPolicyClass("pc1");
-        pap.graph().createObjectAttribute("oa1", "pc1");
-        pap.graph().createUserAttribute("ua1", "pc1");
-        pap.graph().createUser("u1", "ua1");
+        pap.graph().createPolicyClass("pc1", new HashMap<>());
+        pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         pap.graph().associate("ua1", AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName(), new AccessRightSet("*"));
 
         PDP pdp = new PDP(pap);
         assertThrows(NodeNameExistsException.class, () -> {
             pdp.runTx(new UserContext("u1"), policy -> {
-                policy.graph().createPolicyClass("pc2");
+                policy.graph().createPolicyClass("pc2", new HashMap<>());
                 // expect error and rollback
-                policy.graph().createObjectAttribute("oa1", "pc2");
+                policy.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc2"));
             });
         });
 
@@ -129,7 +131,7 @@ class PDPTest {
                     .returns(Type.voidType())
                     .args()
                     .executor((ctx, policy) -> {
-                        policy.graph().createPolicyClass("pc3");
+                        policy.graph().createPolicyClass("pc3", new HashMap<>());
                         return new VoidValue();
                     })
                     .build();

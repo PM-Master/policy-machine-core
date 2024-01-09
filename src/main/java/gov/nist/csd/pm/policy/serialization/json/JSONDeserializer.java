@@ -132,16 +132,10 @@ public class JSONDeserializer implements PolicyDeserializer {
                 throw new PMException("node " + userOrObject.getName() + " does not have any parents");
             }
 
-            String parent = parents.get(0);
-            String[] parentsArr = new String[parents.size()-1];
-            for (int i = 0; i < parentsArr.length; i++) {
-                parentsArr[i] = parents.get(i+1);
-            }
-
             if (type == U) {
-                policy.graph().createUser(userOrObject.getName(), userOrObject.getProperties(), parent, parentsArr);
+                policy.graph().createUser(userOrObject.getName(), userOrObject.getProperties(), parents);
             } else {
-                policy.graph().createObject(userOrObject.getName(), userOrObject.getProperties(), parent, parentsArr);
+                policy.graph().createObject(userOrObject.getName(), userOrObject.getProperties(), parents);
             }
         }
     }
@@ -187,12 +181,11 @@ public class JSONDeserializer implements PolicyDeserializer {
             if (policy.graph().nodeExists(name)) {
                 policy.graph().assign(attr.getName(), parent);
             } else {
-
                 Map<String, String> properties = attr.getProperties() == null ? new HashMap<>() : attr.getProperties();
                 if (type == UA) {
-                    policy.graph().createUserAttribute(name, properties, parent);
+                    policy.graph().createUserAttribute(name, properties, List.of(parent));
                 } else {
-                    policy.graph().createObjectAttribute(name, properties, parent);
+                    policy.graph().createObjectAttribute(name, properties, List.of(parent));
                 }
             }
 

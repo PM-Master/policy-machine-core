@@ -53,7 +53,8 @@ class ValueTest {
     @Test
     void testObjectToValue() throws PMException {
         EventContext testEventCtx = new EventContext(new UserContext("testUser"), "target123",
-                                                     new CreateObjectAttributeEvent("testOA", NO_PROPERTIES, "pc1")
+                                                     new CreateObjectAttributeEvent("testOA", NO_PROPERTIES,
+                                                                                    List.of("pc1"))
         );
 
         Value objectToValue = Value.fromObject(testEventCtx);
@@ -93,8 +94,7 @@ class ValueTest {
                 Map.of(new StringValue("name"), new StringValue("testOA"),
                        new StringValue("type"), new StringValue("OA"),
                        new StringValue("properties"), new MapValue(new HashMap<>(), Type.string(), Type.string()),
-                       new StringValue("initialParent"), new StringValue("pc1"),
-                       new StringValue("additionalParents"), new ArrayValue(new ArrayList<>(), Type.string()),
+                       new StringValue("parents"), new ArrayValue(List.of(new StringValue("pc1")), Type.string()),
                        new StringValue("eventName"), new StringValue("create_object_attribute")
                 ),
                 value.getMapValue()

@@ -20,6 +20,7 @@ import gov.nist.csd.pm.policy.pml.value.StringValue;
 import gov.nist.csd.pm.policy.pml.value.Value;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,11 +37,11 @@ class DeleteStatementTest {
 
         MemoryPolicyStore store = new MemoryPolicyStore();
         store.graph().setResourceAccessRights(new AccessRightSet("read"));
-        store.graph().createPolicyClass("pc1");
-        store.graph().createUserAttribute("ua1", "pc1");
-        store.graph().createUser("u1", "ua1");
-        store.graph().createObjectAttribute("oa1", "pc1");
-        store.graph().createObjectAttribute("oa2", "pc1");
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        store.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
         UserContext userContext = new UserContext("u1");
         store.obligations().create(userContext, "o1", new Rule(
                 "rule1",

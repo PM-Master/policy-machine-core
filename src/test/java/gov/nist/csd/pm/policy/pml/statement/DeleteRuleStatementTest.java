@@ -13,6 +13,7 @@ import gov.nist.csd.pm.policy.pml.context.ExecutionContext;
 import gov.nist.csd.pm.policy.pml.scope.GlobalScope;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,9 +26,9 @@ class DeleteRuleStatementTest {
                 new StringLiteral("rule1"), new StringLiteral("obl1"));
 
         MemoryPolicyStore store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc1");
-        store.graph().createUserAttribute("ua1", "pc1");
-        store.graph().createUser("u1", "ua1");
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
         store.obligations().create(userContext, "obl1", new Rule(
                 "rule1",

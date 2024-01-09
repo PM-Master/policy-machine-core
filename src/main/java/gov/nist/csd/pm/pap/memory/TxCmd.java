@@ -79,16 +79,14 @@ abstract class TxCmd<T extends MemoryStore<?>> {
             return new TxCmd.CreateObjectAttributeTxCmd(
                     e.getName(),
                     e.getProperties(),
-                    e.getInitialParent(),
-                    e.getAdditionalParents()
+                    e.getParents()
             );
 
         } else if (event instanceof CreateObjectEvent e) {
             return new TxCmd.CreateObjectTxCmd(
                     e.getName(),
                     e.getProperties(),
-                    e.getInitialParent(),
-                    e.getAdditionalParents()
+                    e.getParents()
             );
 
         } else if (event instanceof CreateObligationEvent e) {
@@ -111,16 +109,14 @@ abstract class TxCmd<T extends MemoryStore<?>> {
             return new TxCmd.CreateUserAttributeTxCmd(
                     e.getName(),
                     e.getProperties(),
-                    e.getInitialParent(),
-                    e.getAdditionalParents()
+                    e.getParents()
             );
 
         } else if (event instanceof CreateUserEvent e) {
             return new TxCmd.CreateUserTxCmd(
                     e.getName(),
                     e.getProperties(),
-                    e.getInitialParent(),
-                    e.getAdditionalParents()
+                    e.getParents()
             );
 
         } else if (event instanceof DeassignEvent e) {
@@ -226,14 +222,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
     static class CreateObjectAttributeTxCmd extends TxCmd<MemoryGraphStore> {
         private final String name;
         private final Map<String, String> properties;
-        private final String parent;
-        private final String[] parents;
+        private final List<String> parents;
 
-        public CreateObjectAttributeTxCmd(String name, Map<String, String> properties, String parent, String... parents) {
+        public CreateObjectAttributeTxCmd(String name, Map<String, String> properties, List<String> parents) {
             super(Type.GRAPH);
             this.name = name;
             this.properties = properties;
-            this.parent = parent;
             this.parents = parents;
         }
 
@@ -246,14 +240,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
     static class CreateUserAttributeTxCmd extends TxCmd<MemoryGraphStore> {
         private final String name;
         private final Map<String, String> properties;
-        private final String parent;
-        private final String[] parents;
+        private final List<String> parents;
 
-        public CreateUserAttributeTxCmd(String name, Map<String, String> properties, String parent, String... parents) {
+        public CreateUserAttributeTxCmd(String name, Map<String, String> properties, List<String> parents) {
             super(Type.GRAPH);
             this.name = name;
             this.properties = properties;
-            this.parent = parent;
             this.parents = parents;
         }
 
@@ -266,14 +258,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
     static class CreateObjectTxCmd extends TxCmd<MemoryGraphStore> {
         private final String name;
         private final Map<String, String> properties;
-        private final String parent;
-        private final String[] parents;
+        private final List<String> parents;
 
-        public CreateObjectTxCmd(String name, Map<String, String> properties, String parent, String... parents) {
+        public CreateObjectTxCmd(String name, Map<String, String> properties, List<String> parents) {
             super(Type.GRAPH);
             this.name = name;
             this.properties = properties;
-            this.parent = parent;
             this.parents = parents;
         }
 
@@ -286,14 +276,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
     static class CreateUserTxCmd extends TxCmd<MemoryGraphStore> {
         private final String name;
         private final Map<String, String> properties;
-        private final String parent;
-        private final String[] parents;
+        private final List<String> parents;
 
-        public CreateUserTxCmd(String name, Map<String, String> properties, String parent, String... parents) {
+        public CreateUserTxCmd(String name, Map<String, String> properties, List<String> parents) {
             super(Type.GRAPH);
             this.name = name;
             this.properties = properties;
-            this.parent = parent;
             this.parents = parents;
         }
 
@@ -337,22 +325,13 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         public void rollback(MemoryGraphStore store) throws PMException {
             NodeType type = nodeToDelete.getType();
             Map<String, String> properties = nodeToDelete.getProperties();
-            String initialParent = "";
-            String[] parentsArr = new String[parents.size()];
-            if (type != PC) {
-                initialParent = parents.get(0);
-
-                List<String> additionalParents = new ArrayList<>(parents);
-                additionalParents.remove(0);
-                parentsArr = additionalParents.toArray(new String[]{});
-            }
 
             switch (type) {
                 case PC -> store.createPolicyClass(name, properties);
-                case OA -> store.createObjectAttribute(name, properties, initialParent, parentsArr);
-                case UA -> store.createUserAttribute(name, properties, initialParent, parentsArr);
-                case O -> store.createObject(name, properties, initialParent, parentsArr);
-                case U -> store.createUser(name, properties, initialParent, parentsArr);
+                case OA -> store.createObjectAttribute(name, properties, parents);
+                case UA -> store.createUserAttribute(name, properties, parents);
+                case O -> store.createObject(name, properties, parents);
+                case U -> store.createUser(name, properties, parents);
             }
         }
     }

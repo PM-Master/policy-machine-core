@@ -3,6 +3,7 @@ package gov.nist.csd.pm.policy.pml.statement;
 import gov.nist.csd.pm.policy.Policy;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.graph.nodes.NodeType;
+import gov.nist.csd.pm.policy.pml.antlr.PMLParser;
 import gov.nist.csd.pm.policy.pml.expression.Expression;
 import gov.nist.csd.pm.policy.pml.context.ExecutionContext;
 import gov.nist.csd.pm.policy.pml.value.Value;
@@ -12,10 +13,10 @@ import java.util.*;
 
 
 public class CreateNonPCStatement extends PMLStatement{
-    private final Expression name;
-    private final NodeType type;
-    private final Expression assignTo;
-    private final Expression withProperties;
+    private Expression name;
+    private NodeType type;
+    private Expression assignTo;
+    private Expression withProperties;
 
     public CreateNonPCStatement(Expression name, NodeType type, Expression assignTo) {
         this.name = name;
@@ -29,6 +30,10 @@ public class CreateNonPCStatement extends PMLStatement{
         this.type = type;
         this.assignTo = assignTo;
         this.withProperties = withProperties;
+    }
+
+    public CreateNonPCStatement(PMLParser.CreateNonPCStatementContext ctx) {
+        super(ctx);
     }
 
     public Expression getName() {
@@ -52,44 +57,33 @@ public class CreateNonPCStatement extends PMLStatement{
         Value nameValue = name.execute(ctx, policy);
         Value assignToValue = assignTo.execute(ctx, policy);
 
-        String initialParent = "";
         List<String> parents = new ArrayList<>();
 
         List<Value> arrayValue = assignToValue.getArrayValue();
         for (Value parentValue : arrayValue) {
-            if (initialParent.isEmpty()) {
-                initialParent = parentValue.getStringValue();
-            } else {
-                parents.add(parentValue.getStringValue());
-            }
+            parents.add(parentValue.getStringValue());
         }
-
-        String[] parentsArr = parents.toArray(new String[]{});
 
         switch (type) {
             case UA -> policy.graph().createUserAttribute(
                     nameValue.getStringValue(),
                     new HashMap<>(),
-                    initialParent,
-                    parentsArr
+                    parents
             );
             case OA -> policy.graph().createObjectAttribute(
                     nameValue.getStringValue(),
                     new HashMap<>(),
-                    initialParent,
-                    parentsArr
+                    parents
             );
             case U -> policy.graph().createUser(
                     nameValue.getStringValue(),
                     new HashMap<>(),
-                    initialParent,
-                    parentsArr
+                    parents
             );
             case O -> policy.graph().createObject(
                     nameValue.getStringValue(),
                     new HashMap<>(),
-                    initialParent,
-                    parentsArr
+                    parents
             );
         }
 

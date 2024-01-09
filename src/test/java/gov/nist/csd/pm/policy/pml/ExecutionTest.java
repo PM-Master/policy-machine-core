@@ -11,6 +11,7 @@ import gov.nist.csd.pm.pap.PAP;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -416,9 +417,9 @@ public class ExecutionTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         
         pap.graph().setResourceAccessRights(new AccessRightSet("read"));
-        pap.graph().createPolicyClass("pc1");
-        pap.graph().createUserAttribute("ua1", "pc1");
-        pap.graph().createObjectAttribute("oa1", "pc1");
+        pap.graph().createPolicyClass("pc1", new HashMap<>());
+        pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
         String input = """
                 create prohibition "p1"

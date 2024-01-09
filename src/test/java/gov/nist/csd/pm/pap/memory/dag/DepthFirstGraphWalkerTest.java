@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,18 +21,18 @@ class DepthFirstGraphWalkerTest {
     @BeforeAll
     static void setup() throws PMException {
         pap = new PAP(new MemoryPolicyStore());
-        pap.graph().createPolicyClass("pc1");
-        pap.graph().createObjectAttribute("oa1", "pc1");
+        pap.graph().createPolicyClass("pc1", new HashMap<>());
+        pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
-        pap.graph().createObjectAttribute("oa1-1", "oa1");
-        pap.graph().createObjectAttribute("oa1-1-1", "oa1-1");
-        pap.graph().createObjectAttribute("oa1-1-2", "oa1-1");
-        pap.graph().createObjectAttribute("oa1-1-3", "oa1-1");
+        pap.graph().createObjectAttribute("oa1-1", new HashMap<>(), List.of("oa1"));
+        pap.graph().createObjectAttribute("oa1-1-1", new HashMap<>(), List.of("oa1-1"));
+        pap.graph().createObjectAttribute("oa1-1-2", new HashMap<>(), List.of("oa1-1"));
+        pap.graph().createObjectAttribute("oa1-1-3", new HashMap<>(), List.of("oa1-1"));
 
-        pap.graph().createObjectAttribute("oa1-2", "oa1");
-        pap.graph().createObjectAttribute("oa1-2-1", "oa1-2");
-        pap.graph().createObjectAttribute("oa1-2-2", "oa1-2");
-        pap.graph().createObjectAttribute("oa1-2-3", "oa1-2");
+        pap.graph().createObjectAttribute("oa1-2", new HashMap<>(), List.of("oa1"));
+        pap.graph().createObjectAttribute("oa1-2-1", new HashMap<>(), List.of("oa1-2"));
+        pap.graph().createObjectAttribute("oa1-2-2", new HashMap<>(), List.of("oa1-2"));
+        pap.graph().createObjectAttribute("oa1-2-3", new HashMap<>(), List.of("oa1-2"));
     }
 
     @Test

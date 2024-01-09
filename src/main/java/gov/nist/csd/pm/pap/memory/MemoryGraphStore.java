@@ -3,8 +3,6 @@ package gov.nist.csd.pm.pap.memory;
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.GraphStore;
 import gov.nist.csd.pm.pap.memory.unmodifiable.UnmodifiableAccessRightSet;
-import gov.nist.csd.pm.pap.memory.unmodifiable.UnmodifiableAssociation;
-import gov.nist.csd.pm.policy.Graph;
 import gov.nist.csd.pm.policy.exceptions.*;
 import gov.nist.csd.pm.policy.model.access.AccessRightSet;
 import gov.nist.csd.pm.policy.model.graph.nodes.Node;
@@ -128,64 +126,31 @@ class MemoryGraphStore extends MemoryStore<TxGraph> implements GraphStore, Trans
     }
 
     @Override
-    public String createPolicyClass(String name) throws NodeNameExistsException, PMBackendException {
-        return createPolicyClass(name, NO_PROPERTIES);
+    public String createUserAttribute(String name, Map<String, String> properties, List<String> parents)
+            throws NodeDoesNotExistException, NodeNameExistsException, PMBackendException, InvalidAssignmentException,
+                   AssignmentCausesLoopException, DisconnectedNodeException {
+        return createNode(name, UA, properties, parents);
     }
 
     @Override
-    public String createUserAttribute(String name, Map<String, String> properties, String parent, String... parents)
-    throws NodeDoesNotExistException, NodeNameExistsException, PMBackendException, InvalidAssignmentException,
-           AssignmentCausesLoopException {
-        return createNode(name, UA, properties, parent, parents);
+    public String createObjectAttribute(String name, Map<String, String> properties, List<String> parents)
+            throws NodeDoesNotExistException, NodeNameExistsException, PMBackendException, InvalidAssignmentException,
+                   AssignmentCausesLoopException, DisconnectedNodeException {
+        return createNode(name, OA, properties, parents);
     }
 
     @Override
-    public String createUserAttribute(String name, String parent, String... parents)
-    throws NodeDoesNotExistException, NodeNameExistsException, PMBackendException, InvalidAssignmentException,
-           AssignmentCausesLoopException {
-        return createUserAttribute(name, NO_PROPERTIES, parent, parents);
+    public String createObject(String name, Map<String, String> properties, List<String> parents)
+            throws NodeDoesNotExistException, NodeNameExistsException, PMBackendException, InvalidAssignmentException,
+                   AssignmentCausesLoopException, DisconnectedNodeException {
+        return createNode(name, O, properties, parents);
     }
 
     @Override
-    public String createObjectAttribute(String name, Map<String, String> properties, String parent, String... parents)
-    throws NodeDoesNotExistException, NodeNameExistsException, PMBackendException, InvalidAssignmentException,
-           AssignmentCausesLoopException {
-        return createNode(name, OA, properties, parent, parents);
-    }
-
-    @Override
-    public String createObjectAttribute(String name, String parent, String... parents)
-    throws NodeDoesNotExistException, NodeNameExistsException, PMBackendException, InvalidAssignmentException,
-           AssignmentCausesLoopException {
-        return createObjectAttribute(name, NO_PROPERTIES, parent, parents);
-    }
-
-    @Override
-    public String createObject(String name, Map<String, String> properties, String parent, String... parents)
-    throws NodeDoesNotExistException, NodeNameExistsException, PMBackendException, InvalidAssignmentException,
-           AssignmentCausesLoopException {
-        return createNode(name, O, properties, parent, parents);
-    }
-
-    @Override
-    public String createObject(String name, String parent, String... parents)
-    throws NodeDoesNotExistException, NodeNameExistsException, PMBackendException, InvalidAssignmentException,
-           AssignmentCausesLoopException {
-        return createObject(name, NO_PROPERTIES, parent, parents);
-    }
-
-    @Override
-    public String createUser(String name, Map<String, String> properties, String parent, String... parents)
-    throws NodeDoesNotExistException, NodeNameExistsException, PMBackendException, InvalidAssignmentException,
-           AssignmentCausesLoopException {
-        return createNode(name, U, properties, parent, parents);
-    }
-
-    @Override
-    public String createUser(String name, String parent, String... parents)
-    throws NodeDoesNotExistException, NodeNameExistsException, PMBackendException, InvalidAssignmentException,
-           AssignmentCausesLoopException {
-        return createUser(name, NO_PROPERTIES, parent, parents);
+    public String createUser(String name, Map<String, String> properties, List<String> parents)
+            throws NodeDoesNotExistException, NodeNameExistsException, PMBackendException, InvalidAssignmentException,
+                   AssignmentCausesLoopException, DisconnectedNodeException {
+        return createNode(name, U, properties, parents);
     }
 
     @Override
@@ -323,25 +288,22 @@ class MemoryGraphStore extends MemoryStore<TxGraph> implements GraphStore, Trans
         return graph.get(target).getIncomingAssociations();
     }
 
-    private String createNode(String name, NodeType type, Map<String, String> properties, String parent,
-                              String... additionalParents)
-    throws NodeNameExistsException, PMBackendException, NodeDoesNotExistException, InvalidAssignmentException,
-           AssignmentCausesLoopException {
-        checkCreateNodeInput(name, type, parent, additionalParents);
+    private String createNode(String name, NodeType type, Map<String, String> properties, List<String> parents)
+            throws NodeNameExistsException, PMBackendException, NodeDoesNotExistException, InvalidAssignmentException,
+                   AssignmentCausesLoopException, DisconnectedNodeException {
+        checkCreateNodeInput(name, type, parents);
 
         switch (type) {
-            case OA -> handleTxIfActive(tx -> tx.createObjectAttribute(name, properties, parent, additionalParents));
-            case UA -> handleTxIfActive(tx -> tx.createUserAttribute(name, properties, parent, additionalParents));
-            case O -> handleTxIfActive(tx -> tx.createObject(name, properties, parent, additionalParents));
-            default -> handleTxIfActive(tx -> tx.createUser(name, properties, parent, additionalParents));
+            case OA -> handleTxIfActive(tx -> tx.createObjectAttribute(name, properties, parents));
+            case UA -> handleTxIfActive(tx -> tx.createUserAttribute(name, properties, parents));
+            case O -> handleTxIfActive(tx -> tx.createObject(name, properties, parents));
+            default -> handleTxIfActive(tx -> tx.createUser(name, properties, parents));
         }
 
         createNodeInternal(name, type, properties);
 
         runInternalTx(() -> {
-            assignInternal(name, parent);
-
-            for (String additionalParent : additionalParents) {
+            for (String additionalParent : parents) {
                 assignInternal(name, additionalParent);
             }
         });
