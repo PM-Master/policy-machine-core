@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.mysql;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.gson.Gson;
 import gov.nist.csd.pm.pap.ObligationsStore;
 import gov.nist.csd.pm.policy.exceptions.*;
 import gov.nist.csd.pm.policy.model.access.UserContext;
@@ -35,11 +35,11 @@ class MysqlObligationsStore implements ObligationsStore {
 
         try (PreparedStatement ps = connection.getConnection().prepareStatement(sql)) {
             ps.setString(1, name);
-            ps.setString(2, MysqlPolicyStore.objectMapper.writeValueAsString(author));
+            ps.setString(2, new Gson().toJson(author));
             ps.setBytes(3, serializeRules(rules));
 
             ps.executeUpdate();
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             throw new MysqlPolicyException(e.getMessage());
         }
     }
@@ -93,7 +93,7 @@ class MysqlObligationsStore implements ObligationsStore {
             ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 String name = rs.getString(1);
-                UserContext author = MysqlPolicyStore.userCtxReader.readValue(rs.getString(2));
+                UserContext author = new Gson().fromJson(rs.getString(2), UserContext.class);
                 Rule[] rules = deserializeRules(rs.getBlob(3).getBinaryStream().readAllBytes());
 
                 obligations.add(new Obligation(author, name, List.of(rules)));
@@ -128,7 +128,8 @@ class MysqlObligationsStore implements ObligationsStore {
                 throw new ObligationDoesNotExistException(name);
             }
 
-            UserContext author = MysqlPolicyStore.userCtxReader.readValue(rs.getString(1));
+            String json = rs.getString(1);
+            UserContext author = new Gson().fromJson(json, UserContext.class);
             Rule[] rules = deserializeRules(rs.getBlob(2).getBinaryStream().readAllBytes());
 
             return new Obligation(author, name, List.of(rules));

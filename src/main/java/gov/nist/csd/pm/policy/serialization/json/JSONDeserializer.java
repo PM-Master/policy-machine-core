@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.policy.serialization.json;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import gov.nist.csd.pm.policy.pml.expression.Expression;
 import gov.nist.csd.pm.policy.pml.context.VisitorContext;
 import gov.nist.csd.pm.policy.pml.scope.GlobalScope;
@@ -39,17 +39,13 @@ public class JSONDeserializer implements PolicyDeserializer {
 
     @Override
     public void deserialize(Policy policy, UserContext author, String input) throws PMException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            JSONPolicy jsonPolicy = objectMapper.readValue(input, JSONPolicy.class);
+        Gson gson = new Gson();
+        JSONPolicy jsonPolicy = gson.fromJson(input, new TypeToken<JSONPolicy>() {}.getType());
 
-            createUserDefinedPML(policy, author, customPMLFunctions, jsonPolicy.getUserDefinedPML());
-            createGraph(policy, jsonPolicy.getGraph());
-            createProhibitions(policy, jsonPolicy.getProhibitions());
-            createObligations(policy, author, customPMLFunctions, jsonPolicy.getObligations());
-        } catch (JsonProcessingException e) {
-            throw new PMException(e);
-        }
+        createUserDefinedPML(policy, author, customPMLFunctions, jsonPolicy.getUserDefinedPML());
+        createGraph(policy, jsonPolicy.getGraph());
+        createProhibitions(policy, jsonPolicy.getProhibitions());
+        createObligations(policy, author, customPMLFunctions, jsonPolicy.getObligations());
     }
 
     private void createUserDefinedPML(Policy policy, UserContext author,

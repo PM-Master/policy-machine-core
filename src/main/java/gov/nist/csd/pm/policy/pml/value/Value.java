@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.policy.pml.value;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import gov.nist.csd.pm.policy.model.obligation.Rule;
 import gov.nist.csd.pm.policy.pml.type.Type;
 
@@ -100,14 +101,13 @@ public abstract class Value implements Serializable {
     }
 
     private static MapValue objToValue(Object o) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map map = objectMapper.convertValue(o, Map.class);
+        Gson gson = new Gson();
+        String json = gson.toJson(o);
+        Map<Object, Object> map = gson.fromJson(json, new TypeToken<Map<Object, Object>>() {}.getType());
 
         Map<Value, Value> valueMap = new HashMap<>();
-        for (Object key : map.keySet()) {
-            Value keyTV = fromObject(key);
-            Object obj = map.get(key);
-            valueMap.put(keyTV, fromObject(obj));
+        for (Map.Entry<Object, Object> e : map.entrySet()) {
+            valueMap.put(fromObject(e.getKey()), fromObject(e.getValue()));
         }
 
         return new MapValue(valueMap, Type.string(), Type.any());
