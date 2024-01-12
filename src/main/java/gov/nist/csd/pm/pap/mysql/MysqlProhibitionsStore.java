@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.mysql;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.gson.Gson;
 import gov.nist.csd.pm.pap.ProhibitionsStore;
 import gov.nist.csd.pm.policy.exceptions.*;
 import gov.nist.csd.pm.policy.model.access.AccessRightSet;
@@ -63,7 +63,7 @@ class MysqlProhibitionsStore implements ProhibitionsStore {
             } else {
                 throw new MysqlPolicyException("could not retrieve generated prohibition id after insert");
             }
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             connection.rollback();
             throw new MysqlPolicyException(e.getMessage());
         }
@@ -281,7 +281,7 @@ class MysqlProhibitionsStore implements ProhibitionsStore {
                 String node = rs.getString(3);
                 String process = rs.getString(4);
                 ProhibitionSubject.Type type = getProhibitionSubjectTypeFromId(rs.getInt(5));
-                AccessRightSet arset = MysqlPolicyStore.arsetReader.readValue(rs.getString(6));
+                AccessRightSet arset = new Gson().fromJson(rs.getString(6), AccessRightSet.class);
                 boolean isIntersection = rs.getBoolean(7);
 
                 List<ContainerCondition> containers = getContainerConditions(id);
@@ -291,7 +291,7 @@ class MysqlProhibitionsStore implements ProhibitionsStore {
             }
 
             return prohibitions;
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             throw new MysqlPolicyException(e.getMessage());
         }
     }

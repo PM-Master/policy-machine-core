@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pap.mysql;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.GraphStore;
 import gov.nist.csd.pm.policy.exceptions.*;
@@ -48,7 +49,7 @@ class MysqlGraphStore implements GraphStore {
                 ps.setString(2, arJson);
                 ps.execute();
             }
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             throw new MysqlPolicyException(e.getMessage());
         }
     }
@@ -63,11 +64,11 @@ class MysqlGraphStore implements GraphStore {
         try(Statement stmt = connection.getConnection().createStatement();
             ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                arset = MysqlPolicyStore.arsetReader.readValue(rs.getString(1));
+                arset = new Gson().fromJson(rs.getString(1), AccessRightSet.class);
             }
 
             return arset;
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             throw new MysqlPolicyException(e.getMessage());
         }
     }
@@ -118,7 +119,7 @@ class MysqlGraphStore implements GraphStore {
             ps.setString(1, MysqlPolicyStore.toJSON(properties));
             ps.setString(2, name);
             ps.execute();
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             throw new MysqlPolicyException(e.getMessage());
         }
     }
@@ -174,9 +175,13 @@ class MysqlGraphStore implements GraphStore {
         try {
             String name = rs.getString(1);
             NodeType type = MysqlPolicyStore.getNodeTypeFromId(rs.getInt(2));
-            Map<String, String> props = MysqlPolicyStore.hashmapReader.readValue(rs.getString(3));
+
+            Gson gson = new Gson();
+            String json = rs.getString(3);
+
+            Map<String, String> props = gson.fromJson(json, new TypeToken<Map<String, String>>() {}.getType());
             return new Node(name, type, props);
-        } catch (JsonProcessingException | SQLException e) {
+        } catch (SQLException e) {
             throw new MysqlPolicyException(e.getMessage());
         }
     }
@@ -400,7 +405,7 @@ class MysqlGraphStore implements GraphStore {
             ps.setString(3, json);
             ps.setString(4, json);
             ps.execute();
-        }catch (SQLException | JsonProcessingException e) {
+        }catch (SQLException e) {
             throw new MysqlPolicyException(e.getMessage());
         }
     }
@@ -443,12 +448,12 @@ class MysqlGraphStore implements GraphStore {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 String target = rs.getString(1);
-                AccessRightSet arset = MysqlPolicyStore.arsetReader.readValue(rs.getString(2));
+                AccessRightSet arset = new Gson().fromJson(rs.getString(2), AccessRightSet.class);
                 associations.add(new Association(ua, target, arset));
             }
 
             rs.close();
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             throw new MysqlPolicyException(e.getMessage());
         }
 
@@ -473,12 +478,12 @@ class MysqlGraphStore implements GraphStore {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 String source = rs.getString(1);
-                AccessRightSet opSet = MysqlPolicyStore.arsetReader.readValue(rs.getString(2));
-                associations.add(new Association(source, target, opSet));
+                AccessRightSet arset = new Gson().fromJson(rs.getString(2), AccessRightSet.class);
+                associations.add(new Association(source, target, arset));
             }
 
             rs.close();
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             throw new MysqlPolicyException(e.getMessage());
         }
 
@@ -548,7 +553,7 @@ class MysqlGraphStore implements GraphStore {
             ps.setString(2, name);
             ps.setString(3, MysqlPolicyStore.toJSON(properties));
             ps.execute();
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             throw new MysqlPolicyException(e.getMessage());
         }
     }

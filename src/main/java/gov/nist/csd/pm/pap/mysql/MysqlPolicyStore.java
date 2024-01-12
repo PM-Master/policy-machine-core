@@ -1,8 +1,7 @@
 package gov.nist.csd.pm.pap.mysql;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PolicyStore;
 import gov.nist.csd.pm.policy.exceptions.PMException;
@@ -24,11 +23,6 @@ import static gov.nist.csd.pm.pap.AdminPolicy.verify;
 import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.*;
 
 public class MysqlPolicyStore extends PolicyStore implements Verifier {
-
-    static final ObjectMapper objectMapper = new ObjectMapper();
-    static final ObjectReader hashmapReader = new ObjectMapper().readerFor(HashMap.class);
-    static final ObjectReader arsetReader = new ObjectMapper().readerFor(AccessRightSet.class);
-    static final ObjectReader userCtxReader = new ObjectMapper().readerFor(UserContext.class);
 
     protected final MysqlConnection connection;
 
@@ -124,12 +118,14 @@ public class MysqlPolicyStore extends PolicyStore implements Verifier {
         };
     }
 
-    public static String toJSON(Map<String, String> map) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(map);
+    public static String toJSON(Map<String, String> map) {
+        Gson gson = new Gson();
+        return gson.toJson(map);
     }
 
-    public static String arsetToJson(AccessRightSet set) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(set);
+    public static String arsetToJson(AccessRightSet set) {
+        Gson gson = new Gson();
+        return gson.toJson(set);
     }
 
     @Override
