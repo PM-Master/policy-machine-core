@@ -976,13 +976,13 @@ public abstract class PAPTest {
                 pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
                 pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
 
-                assertTrue(
+                assertEquals(
+                        new Association("ua1", "oa1", new AccessRightSet("read")),
                         pap.graph().getAssociationsWithSource("ua1").get(0)
-                           .equals(new Association("ua1", "oa1", new AccessRightSet("read")))
                 );
-                assertTrue(
+                assertEquals(
+                        new Association("ua1", "oa1", new AccessRightSet("read")),
                         pap.graph().getAssociationsWithTarget("oa1").get(0)
-                           .equals(new Association("ua1", "oa1", new AccessRightSet("read")))
                 );
             }
 
@@ -1185,10 +1185,11 @@ public abstract class PAPTest {
                 assertEquals(new AccessRightSet("read"), p.getAccessRightSet());
                 assertTrue(p.isIntersection());
                 assertEquals(2, p.getContainers().size());
-                assertEquals(List.of(
+                List<ContainerCondition> expected = List.of(
                         new ContainerCondition("oa1", true),
                         new ContainerCondition("oa2", false)
-                ), p.getContainers());
+                );
+                assertTrue(expected.containsAll(p.getContainers()) && p.getContainers().containsAll(expected));
             }
         }
 
@@ -1271,10 +1272,11 @@ public abstract class PAPTest {
                 assertEquals(new AccessRightSet("read", "write"), p.getAccessRightSet());
                 assertTrue(p.isIntersection());
                 assertEquals(2, p.getContainers().size());
-                assertEquals(List.of(
+                List<ContainerCondition> expected = List.of(
                         new ContainerCondition("oa1", false),
                         new ContainerCondition("oa2", true)
-                ), p.getContainers());
+                );
+                assertTrue(expected.containsAll(p.getContainers()) && p.getContainers().containsAll(expected));
             }
         }
 
@@ -1342,20 +1344,22 @@ public abstract class PAPTest {
                         assertEquals(new AccessRightSet("read"), p.getAccessRightSet());
                         assertTrue(p.isIntersection());
                         assertEquals(2, p.getContainers().size());
-                        assertEquals(List.of(
+                        List<ContainerCondition> expected = List.of(
                                 new ContainerCondition("oa1", true),
                                 new ContainerCondition("oa2", false)
-                        ), p.getContainers());
+                        );
+                        assertTrue(expected.containsAll(p.getContainers()) && p.getContainers().containsAll(expected));
                     } else if (p.getName().equals("label2")) {
                         assertEquals("label2", p.getName());
                         assertEquals("subject", p.getSubject().getName());
                         assertEquals(new AccessRightSet("read"), p.getAccessRightSet());
                         assertTrue(p.isIntersection());
                         assertEquals(2, p.getContainers().size());
-                        assertEquals(List.of(
+                        List<ContainerCondition> expected = List.of(
                                 new ContainerCondition("oa3", true),
                                 new ContainerCondition("oa4", false)
-                        ), p.getContainers());
+                        );
+                        assertTrue(expected.containsAll(p.getContainers()) && p.getContainers().containsAll(expected));
                     } else {
                         fail("unexpected prohibition label " + p.getName());
                     }
@@ -1394,10 +1398,11 @@ public abstract class PAPTest {
                 assertEquals(new AccessRightSet("read"), p.getAccessRightSet());
                 assertTrue(p.isIntersection());
                 assertEquals(2, p.getContainers().size());
-                assertEquals(List.of(
+                List<ContainerCondition> expected = List.of(
                         new ContainerCondition("oa1", true),
                         new ContainerCondition("oa2", false)
-                ), p.getContainers());
+                );
+                assertTrue(expected.containsAll(p.getContainers()) && p.getContainers().containsAll(expected));
             }
 
         }
@@ -1431,10 +1436,11 @@ public abstract class PAPTest {
                 assertEquals(new AccessRightSet("read"), p.getAccessRightSet());
                 assertTrue(p.isIntersection());
                 assertEquals(2, p.getContainers().size());
-                assertEquals(List.of(
+                List<ContainerCondition> expected = List.of(
                         new ContainerCondition("oa1", true),
                         new ContainerCondition("oa2", false)
-                ), p.getContainers());
+                );
+                assertTrue(expected.containsAll(p.getContainers()) && p.getContainers().containsAll(expected));
             }
         }
     }

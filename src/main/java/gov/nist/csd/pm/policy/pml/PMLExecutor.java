@@ -60,7 +60,6 @@ public class PMLExecutor {
         return constantsMap;
     }
 
-
     public static Value executeStatementBlock(ExecutionContext executionCtx, Policy policy, List<PMLStatement> statements) throws PMException {
         for (PMLStatement statement : statements) {
             Value value = statement.execute(executionCtx, policy);
