@@ -293,14 +293,19 @@ class MemoryGraphStore extends MemoryStore<TxGraph> implements GraphStore, Trans
                    AssignmentCausesLoopException, DisconnectedNodeException {
         checkCreateNodeInput(name, type, parents);
 
-        switch (type) {
-            case OA -> handleTxIfActive(tx -> tx.createObjectAttribute(name, properties, parents));
-            case UA -> handleTxIfActive(tx -> tx.createUserAttribute(name, properties, parents));
-            case O -> handleTxIfActive(tx -> tx.createObject(name, properties, parents));
-            default -> handleTxIfActive(tx -> tx.createUser(name, properties, parents));
+        Map<String, String> props = new HashMap<>();
+        if (properties != null) {
+            props.putAll(properties);
         }
 
-        createNodeInternal(name, type, properties);
+        switch (type) {
+            case OA -> handleTxIfActive(tx -> tx.createObjectAttribute(name, props, parents));
+            case UA -> handleTxIfActive(tx -> tx.createUserAttribute(name, props, parents));
+            case O -> handleTxIfActive(tx -> tx.createObject(name, props, parents));
+            default -> handleTxIfActive(tx -> tx.createUser(name, props, parents));
+        }
+
+        createNodeInternal(name, type, props);
 
         runInternalTx(() -> {
             for (String additionalParent : parents) {

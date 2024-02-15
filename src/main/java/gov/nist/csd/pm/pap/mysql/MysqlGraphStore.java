@@ -259,7 +259,7 @@ class MysqlGraphStore implements GraphStore {
         try {
              node = getNode(name);
         } catch (NodeDoesNotExistException e) {
-            // shoudn't get here but the node not existing should not throw an error
+            // shouldn't get here but the node not existing should not throw an exception
             return;
         }
 
@@ -545,6 +545,10 @@ class MysqlGraphStore implements GraphStore {
     }
 
     protected void createNodeInternal(String name, NodeType type, Map<String, String> properties) throws MysqlPolicyException {
+        if (properties == null) {
+            properties = new HashMap<>();
+        }
+
         String sql = """
                     INSERT INTO node (node_type_id, name, properties) VALUES (?,?,?)
                     """;
