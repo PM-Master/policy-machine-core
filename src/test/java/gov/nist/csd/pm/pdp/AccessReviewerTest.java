@@ -1,8 +1,6 @@
 package gov.nist.csd.pm.pdp;
 
-import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
-import gov.nist.csd.pm.pdp.memory.MemoryAccessReviewer;
+import gov.nist.csd.pm.policy.Policy;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.access.AccessRightSet;
 import gov.nist.csd.pm.policy.model.access.UserContext;
@@ -15,31 +13,36 @@ import gov.nist.csd.pm.policy.model.prohibition.Prohibition;
 import gov.nist.csd.pm.policy.model.prohibition.ProhibitionSubject;
 import gov.nist.csd.pm.policy.review.AccessReview;
 import gov.nist.csd.pm.policy.serialization.pml.PMLDeserializer;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
 import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.*;
-import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.allAdminAccessRights;
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class AccessReviewerTest {
 
-    AccessReview accessReview;
+    private static final String pc1 = "pc1";
+    private static final String oa1 = "oa1";
+    private static final String oa2 = "oa2";
+    private static final String oa5 = "oa5";
+    private static final String ua1 = "ua1";
+    private static final String o1 = "o1";
+    private static final String o2 = "o2";
+    private static final String o3 = "o3";
+    private static final String u1 = "u1";
+    private static final AccessRightSet arset = new AccessRightSet("read", "write");
 
-    public abstract AccessReview getAccessReviewer() throws PMException;
+    public abstract TestContext initTest() throws PMException;
 
-    @BeforeEach
-    void setup() throws PMException {
-        accessReview = getAccessReviewer();
-    }
+    public record TestContext(AccessReview accessReviewer, Policy policy) {}
 
     private static final AccessRightSet RWE = new AccessRightSet("read", "write", "execute");
 
     @Test
     void testComputeAccessibleChildren() throws PMException {
+        TestContext testCtx = initTest();
         String pml = """
                 set resource access rights ["read", "write"]
                 create pc "pc1" {
@@ -59,52 +62,50 @@ public abstract class AccessReviewerTest {
                 create o "o1" assign to ["oa1"]
                 create o "o2" assign to ["oa1"]
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
-        List<String> actual = accessReviewer.computeAccessibleChildren(new UserContext("u1"), "oa1");
+        List<String> actual = testCtx.accessReviewer().computeAccessibleChildren(new UserContext("u1"), "oa1");
         assertEquals(
-                List.of("oa2", "o1", "o2"),
-                actual
+                Set.of("oa2", "o1", "o2"),
+                new HashSet<>(actual)
         );
     }
 
     @Test
     void testComputeAccessibleParents() throws PMException {
+        TestContext testCtx = initTest();
         String pml = """
-                set resource access rights ["read", "write"]
-                create pc "pc1" {
-                    uas {
-                        "ua1"
-                    }
-                    oas {
-                        "oa1"
-                        "oa2"
-                        "oa3"                           
-                    }
-                    associations {
-                        "ua1" and "oa1" with ["read", "write"]
-                        "ua1" and "oa2" with ["read", "write"]
-                    }
-                }
-                
-                create u "u1" assign to ["ua1"]
-                create o "o1" assign to ["oa1", "oa2"]
-                """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+               set resource access rights ["read", "write"]
+               create pc "pc1" {
+                   uas {
+                       "ua1"
+                   }
+                   oas {
+                       "oa1"
+                       "oa2"
+                       "oa3"                           
+                   }
+                   associations {
+                       "ua1" and "oa1" with ["read", "write"]
+                       "ua1" and "oa2" with ["read", "write"]
+                   }
+               }
+                               
+               create u "u1" assign to ["ua1"]
+               create o "o1" assign to ["oa1", "oa2"]
+               """;
+        testCtx.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
-        List<String> actual = accessReviewer.computeAccessibleParents(new UserContext("u1"), "o1");
+        List<String> actual = testCtx.accessReviewer().computeAccessibleParents(new UserContext("u1"), "o1");
         assertEquals(
-                List.of("oa1", "oa2"),
-                actual
+                Set.of("oa1", "oa2"),
+                new HashSet<>(actual)
         );
     }
 
     @Test
     void testBuildPOS() throws PMException {
+        TestContext testCtx = initTest();
         String pml = """
                 set resource access rights ["read", "write"]
                 create pc "pc1" {
@@ -142,11 +143,9 @@ public abstract class AccessReviewerTest {
                 access rights ["write"]
                 on union of ["oa1"]
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
-        Set<String> u1 = accessReviewer.buildPOS(new UserContext("u1"));
+        Set<String> u1 = testCtx.accessReviewer().buildPOS(new UserContext("u1"));
         assertEquals(
                 Set.of("oa1", "oa2", "oa4"),
                 u1
@@ -155,6 +154,7 @@ public abstract class AccessReviewerTest {
 
     @Test
     void testExplain() throws PMException {
+        TestContext testCtx = initTest();
         String pml = """
                 set resource access rights ["read", "write"]
                 create pc "pc1" {
@@ -194,11 +194,9 @@ public abstract class AccessReviewerTest {
                 access rights ["write"]
                 on union of [!"oa1"]
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
-        Explain explain = accessReviewer.explain(new UserContext("u1"), "o1");
+        Explain explain = testCtx.accessReviewer().explain(new UserContext("u1"), "o1");
         Explain expected = new Explain(
                 new AccessRightSet("read"),
                 Map.of(
@@ -226,8 +224,8 @@ public abstract class AccessReviewerTest {
     }
 
     @Test
-
     void testExplainOnObjAttrWithAssociation() throws PMException {
+        TestContext testCtx = initTest();
         String pml = """
                 set resource access rights ["read", "write"]
                 create pc "pc1" {
@@ -248,11 +246,8 @@ public abstract class AccessReviewerTest {
                 
                 create user "u1" assign to ["ua1"]
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
-
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
-        Explain actual = accessReviewer.explain(new UserContext("u1"), "oa2");
+        testCtx.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        Explain actual = testCtx.accessReviewer().explain(new UserContext("u1"), "oa2");
         assertEquals(
                 new Explain(
                         new AccessRightSet("read", "write"),
@@ -282,6 +277,7 @@ public abstract class AccessReviewerTest {
 
     @Test
     void testComputeSubgraphPrivileges() throws PMException {
+        TestContext testCtx = initTest();
         String pml = """
                 set resource access rights ["read", "write"]
                 create pc "pc1" {
@@ -300,12 +296,9 @@ public abstract class AccessReviewerTest {
                 create u "u1" assign to ["ua1"]
                 create o "o1" assign to ["oa2"]
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
-
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+        testCtx.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
         Map<String, AccessRightSet> u1 =
-                accessReviewer.computeSubgraphPrivileges(new UserContext("u1"), "oa1");
+                testCtx.accessReviewer().computeSubgraphPrivileges(new UserContext("u1"), "oa1");
         assertEquals(
                 Map.of(
                         "oa2", new AccessRightSet("read", "write"),
@@ -317,6 +310,7 @@ public abstract class AccessReviewerTest {
 
     @Test
     void testFindBorderAttributes() throws PMException {
+        TestContext testCtx = initTest();
         String pml = """
                 set resource access rights ["read", "write"]
                 create pc "pc1" {
@@ -336,11 +330,8 @@ public abstract class AccessReviewerTest {
                 
                 create u "u1" assign to ["ua1", "ua2"]
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
-
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
-        Map<String, AccessRightSet> u1 = accessReviewer.findBorderAttributes("u1");
+        testCtx.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        Map<String, AccessRightSet> u1 = testCtx.accessReviewer().findBorderAttributes("u1");
         assertEquals(
                 Map.of(
                         "oa1", new AccessRightSet("read", "write"),
@@ -352,6 +343,7 @@ public abstract class AccessReviewerTest {
 
     @Test
     void testBuildACL() throws PMException {
+        TestContext testCtx = initTest();
         String pml = """
                 set resource access rights ["read", "write"]
                 create pc "pc1" {
@@ -372,11 +364,8 @@ public abstract class AccessReviewerTest {
                 create u "u2" assign to ["ua2"]
                 create o "o1" assign to ["oa1"]
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
-
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
-        Map<String, AccessRightSet> o1 = accessReviewer.buildACL("o1");
+        testCtx.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        Map<String, AccessRightSet> o1 = testCtx.accessReviewer().buildACL("o1");
         assertEquals(
                 Map.of(
                         "u1", new AccessRightSet("read", "write"),
@@ -388,6 +377,7 @@ public abstract class AccessReviewerTest {
 
     @Test
     void testBuildCapabilityList() throws PMException {
+        TestContext testCtx = initTest();
         String pml = """
                 set resource access rights ["read", "write"]
                 create pc "pc1" {
@@ -413,11 +403,8 @@ public abstract class AccessReviewerTest {
                 access rights ["write"]
                 on union of ["oa1"]
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
-
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
-        Map<String, AccessRightSet> u1 = accessReviewer.buildCapabilityList(new UserContext("u1"));
+        testCtx.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        Map<String, AccessRightSet> u1 = testCtx.accessReviewer().buildCapabilityList(new UserContext("u1"));
         assertEquals(
                 Map.of(
                         "o1", new AccessRightSet("read"),
@@ -431,6 +418,7 @@ public abstract class AccessReviewerTest {
 
     @Test
     void testComputeDeniedPrivileges() throws PMException {
+        TestContext testCtx = initTest();
         String pml = """
                 set resource access rights ["read", "write"]
                 create pc "pc1" {
@@ -453,16 +441,14 @@ public abstract class AccessReviewerTest {
                 access rights ["write"]
                 on union of ["oa1"]
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
-
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
-        AccessRightSet deniedPrivileges = accessReviewer.computeDeniedPrivileges(new UserContext("u1"), "o1");
+        testCtx.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        AccessRightSet deniedPrivileges = testCtx.accessReviewer().computeDeniedPrivileges(new UserContext("u1"), "o1");
         assertEquals(new AccessRightSet("write"), deniedPrivileges);
     }
 
     @Test
     void testComputePolicyClassAccessRights() throws PMException {
+        TestContext testCtx = initTest();
         String pml = """
                 set resource access rights ["read", "write"]
                 create pc "pc1" {
@@ -491,12 +477,9 @@ public abstract class AccessReviewerTest {
                 create u "u1" assign to ["ua1", "ua2"]
                 create o "o1" assign to ["oa1", "oa2"]
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
-
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+        testCtx.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
         Map<String, AccessRightSet> policyClassAccessRights =
-                accessReviewer.computePolicyClassAccessRights(new UserContext("u1"), "o1");
+                testCtx.accessReviewer().computePolicyClassAccessRights(new UserContext("u1"), "o1");
         assertEquals(
                 Map.of(
                         "pc1", new AccessRightSet("read", "write"),
@@ -508,23 +491,21 @@ public abstract class AccessReviewerTest {
 
     @Test
     void testGetChildren() throws PMException {
-        PAP pap = new PAP(new MemoryPolicyStore());
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+        TestContext testCtx = initTest();
 
-        pap.graph().setResourceAccessRights(RWE);
+        testCtx.policy().graph().setResourceAccessRights(RWE);
 
-        String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-        String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-        String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-        String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-        String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
-        String o2 = pap.graph().createObject("o2", new HashMap<>(), List.of(oa1));
-        String o3 = pap.graph().createObject("o3", new HashMap<>(), List.of(oa1));
+        String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+        String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+        String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+        String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+        String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
+        String o2 = testCtx.policy().graph().createObject("o2", new HashMap<>(), List.of(oa1));
+        String o3 = testCtx.policy().graph().createObject("o3", new HashMap<>(), List.of(oa1));
 
         AccessRightSet arset = new AccessRightSet("read", "write");
-        pap.graph().associate(ua1, oa1, arset);
-
-        Map<String, AccessRightSet> subgraph = accessReviewer.computeSubgraphPrivileges(new UserContext(u1), oa1);
+        testCtx.policy().graph().associate(ua1, oa1, arset);
+        Map<String, AccessRightSet> subgraph = testCtx.accessReviewer().computeSubgraphPrivileges(new UserContext(u1), oa1);
         assertEquals(
                 Map.of("o1", arset, "o2", arset, "o3", arset),
                 subgraph
@@ -533,23 +514,20 @@ public abstract class AccessReviewerTest {
 
     @Test
     void testGetAccessibleNodes() throws PMException {
-        PAP pap = new PAP(new MemoryPolicyStore());
-        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+        TestContext testCtx = initTest();
+        testCtx.policy().graph().setResourceAccessRights(RWE);
 
-        pap.graph().setResourceAccessRights(RWE);
-
-        String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-        String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-        String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-        String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-        String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
-        String o2 = pap.graph().createObject("o2", new HashMap<>(), List.of(oa1));
-        String o3 = pap.graph().createObject("o3", new HashMap<>(), List.of(oa1));
+        String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+        String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+        String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+        String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+        String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
+        String o2 = testCtx.policy().graph().createObject("o2", new HashMap<>(), List.of(oa1));
+        String o3 = testCtx.policy().graph().createObject("o3", new HashMap<>(), List.of(oa1));
 
         AccessRightSet arset = new AccessRightSet("read", "write");
-        pap.graph().associate(ua1, oa1, arset);
-
-        Map<String, AccessRightSet> accessibleNodes = accessReviewer.buildCapabilityList(new UserContext(u1));
+        testCtx.policy().graph().associate(ua1, oa1, arset);
+        Map<String, AccessRightSet> accessibleNodes = testCtx.accessReviewer().buildCapabilityList(new UserContext(u1));
 
         assertTrue(accessibleNodes.containsKey(oa1));
         assertTrue(accessibleNodes.containsKey(o1));
@@ -567,622 +545,622 @@ public abstract class AccessReviewerTest {
 
         @Test
         void testGraph1() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
+            testCtx.policy().graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
-
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
             assertTrue(
-                    accessReviewer.computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
+                    testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
         }
 
         @Test
         void testGraph2() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
+            testCtx.policy().graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1, pc2));
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = testCtx.policy().graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1, pc2));
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
 
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read"));
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), o1).isEmpty());
+
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).isEmpty());
         }
 
         @Test
         void testGraph3() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
+
 
             assertTrue(
-                    accessReviewer.computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
+                    testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
         }
 
         @Test
         void testGraph4() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of());
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of());
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
-            pap.graph().associate(ua2, oa1, new AccessRightSet("write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read"));
+            testCtx.policy().graph().associate(ua2, oa1, new AccessRightSet("write"));
 
-            assertTrue(
-                    accessReviewer.computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
+
+            assertEquals(
+                    new AccessRightSet("read", "write"),
+                    testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1)
+            );
         }
 
         @Test
         void testGraph5() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
+            testCtx.policy().graph().setResourceAccessRights(RWE);
 
-            pap.graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = testCtx.policy().graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc2));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc2));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
-
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
-            pap.graph().associate(ua2, oa2, new AccessRightSet("read", "write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read"));
+            testCtx.policy().graph().associate(ua2, oa2, new AccessRightSet("read", "write"));
 
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read")));
+
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read")));
         }
 
         @Test
         void testGraph6() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc2));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = testCtx.policy().graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc2));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
-            pap.graph().associate(ua2, oa2, new AccessRightSet("read"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
+            testCtx.policy().graph().associate(ua2, oa2, new AccessRightSet("read"));
 
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read")));
+
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read")));
         }
 
         @Test
         void testGraph7() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
+            testCtx.policy().graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = testCtx.policy().graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
 
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), o1).isEmpty());
+
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).isEmpty());
         }
 
         @Test
         void testGraph8() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("*"));
 
 
-            Set<String> list = accessReviewer.computePrivileges(new UserContext(u1), o1);
+
+            Set<String> list = testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1);
             assertTrue(list.containsAll(allAdminAccessRights()));
             assertTrue(list.containsAll(RWE));
         }
 
         @Test
         void testGraph9() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
-            pap.graph().associate(ua2, oa1, new AccessRightSet("read", "write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("*"));
+            testCtx.policy().graph().associate(ua2, oa1, new AccessRightSet("read", "write"));
 
 
-            Set<String> list = accessReviewer.computePrivileges(new UserContext(u1), o1);
+
+            Set<String> list = testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1);
             assertTrue(list.containsAll(allAdminAccessRights()));
             assertTrue(list.containsAll(RWE));
         }
 
         @Test
         void testGraph10() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc2));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = testCtx.policy().graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc2));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
-            pap.graph().associate(ua2, oa2, new AccessRightSet("read", "write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("*"));
+            testCtx.policy().graph().associate(ua2, oa2, new AccessRightSet("read", "write"));
+
 
 
             assertTrue(
-                    accessReviewer.computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
+                    testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
         }
 
         @Test
         void testGraph11() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = testCtx.policy().graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("*"));
 
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), o1).isEmpty());
+
+            assertEquals(new AccessRightSet(), testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1));
         }
 
         @Test
         void testGraph12() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
-            pap.graph().associate(ua2, oa1, new AccessRightSet("write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read"));
+            testCtx.policy().graph().associate(ua2, oa1, new AccessRightSet("write"));
+
 
 
             assertTrue(
-                    accessReviewer.computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
+                    testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
         }
 
         @Test
         void testGraph13() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(ua2));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(oa2));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(ua2));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(oa2));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
-            pap.graph().associate(ua2, oa2, new AccessRightSet("read"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("*"));
+            testCtx.policy().graph().associate(ua2, oa2, new AccessRightSet("read"));
 
 
-            Set<String> list = accessReviewer.computePrivileges(new UserContext(u1), o1);
+
+            Set<String> list = testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1);
             assertTrue(list.containsAll(allAdminAccessRights()));
             assertTrue(list.contains("read"));
         }
 
         @Test
         void testGraph14() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1, pc2));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = testCtx.policy().graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1, pc2));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
-            pap.graph().associate(ua2, oa1, new AccessRightSet("*"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("*"));
+            testCtx.policy().graph().associate(ua2, oa1, new AccessRightSet("*"));
 
 
-            Set<String> list = accessReviewer.computePrivileges(new UserContext(u1), o1);
+
+            Set<String> list = testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1);
             assertTrue(list.containsAll(allAdminAccessRights()));
             assertTrue(list.containsAll(RWE));
         }
 
         @Test
         void testGraph15() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(ua2));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(oa2));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(ua2));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(oa2));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("*"));
-            pap.graph().associate(ua2, oa2, new AccessRightSet("read"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("*"));
+            testCtx.policy().graph().associate(ua2, oa2, new AccessRightSet("read"));
 
 
-            Set<String> list = accessReviewer.computePrivileges(new UserContext(u1), o1);
+
+            Set<String> list = testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1);
             assertTrue(list.containsAll(allAdminAccessRights()));
             assertTrue(list.containsAll(RWE));
         }
 
         @Test
         void testGraph16() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(ua2));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(ua2));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
-            pap.graph().associate(ua2, oa1, new AccessRightSet("write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read"));
+            testCtx.policy().graph().associate(ua2, oa1, new AccessRightSet("write"));
+
 
 
             assertTrue(
-                    accessReviewer.computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
+                    testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
         }
 
-        // removed graph7 due to adding the parent IDs to the createNode, need to always connect to the pap.graph().
+        // removed graph7 due to adding the parent IDs to the createNode, need to always connect to the testCtx.policy().graph().
 
         @Test
         void testGraph18() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa2));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa2));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
 
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), o1).isEmpty());
+
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).isEmpty());
         }
 
         @Test
         void testGraph19() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua2));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua2));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read"));
 
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), o1).isEmpty());
+
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).isEmpty());
         }
 
         @Test
         void testGraph20() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = testCtx.policy().graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
-            pap.graph().associate(ua2, oa2, new AccessRightSet("read", "write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read"));
+            testCtx.policy().graph().associate(ua2, oa2, new AccessRightSet("read", "write"));
 
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read")));
+
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read")));
         }
 
         @Test
         void testGraph21() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = testCtx.policy().graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1, ua2));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc2));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
-            pap.graph().associate(ua2, oa2, new AccessRightSet("write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read"));
+            testCtx.policy().graph().associate(ua2, oa2, new AccessRightSet("write"));
 
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), o1).isEmpty());
+
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).isEmpty());
         }
 
         @Test
         void testGraph22() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String pc2 = pap.graph().createPolicyClass("pc2", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String pc2 = testCtx.policy().graph().createPolicyClass("pc2", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
+
 
 
             assertTrue(
-                    accessReviewer.computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
+                    testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
         }
 
         @Test
         void testGraph23WithProhibitions() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
+            testCtx.policy().graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa3 = pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of(pc1));
-            String oa4 = pap.graph().createObjectAttribute("oa4", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(oa3));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(oa4));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa3 = testCtx.policy().graph().createObjectAttribute("oa3", new HashMap<>(), List.of(pc1));
+            String oa4 = testCtx.policy().graph().createObjectAttribute("oa4", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(oa3));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(oa4));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
-            pap.graph().associate(ua1, oa3, new AccessRightSet("read", "write", "execute"));
-            pap.prohibitions().create("deny", ProhibitionSubject.userAttribute("ua1"), new AccessRightSet("read"), true,
-                                      new ContainerCondition(oa1, false),
-                                      new ContainerCondition(oa2, false)
+            testCtx.policy().graph().associate(ua1, oa3, new AccessRightSet("read", "write", "execute"));
+            testCtx.policy().prohibitions().create("deny", ProhibitionSubject.userAttribute("ua1"), new AccessRightSet("read"), true,
+                                         new ContainerCondition(oa1, false),
+                                         new ContainerCondition(oa2, false)
             );
 
-            pap.prohibitions().create("deny2", ProhibitionSubject.user(u1), new AccessRightSet("write"),
-                                      true,
-                                      new ContainerCondition(oa3, false)
+            testCtx.policy().prohibitions().create("deny2", ProhibitionSubject.user(u1), new AccessRightSet("write"),
+                                         true,
+                                         new ContainerCondition(oa3, false)
             );
 
-            Set<String> list = accessReviewer.computePrivileges(new UserContext(u1), o1);
+
+            Set<String> list = testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1);
             assertEquals(1, list.size());
             assertTrue(list.contains("execute"));
         }
 
         @Test
         void testGraph24WithProhibitions() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
+            testCtx.policy().graph().setResourceAccessRights(RWE);
 
-            pap.graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            String o2 = testCtx.policy().graph().createObject("o2", new HashMap<>(), List.of(oa2));
 
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
-            String o2 = pap.graph().createObject("o2", new HashMap<>(), List.of(oa2));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read"));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
-
-            pap.prohibitions().create("deny", ProhibitionSubject.userAttribute(ua1),
-                                      new AccessRightSet("read"),
-                                      true,
-                                      new ContainerCondition(oa1, false),
-                                      new ContainerCondition(oa2, true)
+            testCtx.policy().prohibitions().create("deny", ProhibitionSubject.userAttribute(ua1),
+                                         new AccessRightSet("read"),
+                                         true,
+                                         new ContainerCondition(oa1, false),
+                                         new ContainerCondition(oa2, true)
             );
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), o1).contains("read"));
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), o2).isEmpty());
 
-            pap.graph().associate(ua1, oa2, new AccessRightSet("read"));
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).contains("read"));
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(u1), o2).isEmpty());
 
-            pap.prohibitions().create("deny-process", ProhibitionSubject.process("1234"),
-                                      new AccessRightSet("read"),
-                                      false,
-                                      new ContainerCondition(oa1, false)
+            testCtx.policy().graph().associate(ua1, oa2, new AccessRightSet("read"));
+
+            testCtx.policy().prohibitions().create("deny-process", ProhibitionSubject.process("1234"),
+                                                   new AccessRightSet("read"),
+                                                   false,
+                                                   new ContainerCondition(oa1, false)
             );
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1, "1234"), o1).isEmpty());
+            assertEquals(
+                    new AccessRightSet(),
+                    testCtx.accessReviewer().computePrivileges(new UserContext(u1, "1234"), o1)
+            );
         }
 
         @Test
         void testGraph25WithProhibitions() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
+            testCtx.policy().graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(oa1));
-            String oa3 = pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of(oa1));
-            String oa4 = pap.graph().createObjectAttribute("oa4", new HashMap<>(), List.of(oa3));
-            String oa5 = pap.graph().createObjectAttribute("oa5", new HashMap<>(), List.of(oa2));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa4));
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(oa1));
+            String oa3 = testCtx.policy().graph().createObjectAttribute("oa3", new HashMap<>(), List.of(oa1));
+            String oa4 = testCtx.policy().graph().createObjectAttribute("oa4", new HashMap<>(), List.of(oa3));
+            String oa5 = testCtx.policy().graph().createObjectAttribute("oa5", new HashMap<>(), List.of(oa2));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa4));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
 
-            pap.prohibitions().create("deny", ProhibitionSubject.user(u1), new AccessRightSet("read", "write"),
-                                      true,
-                                      new ContainerCondition(oa4, true),
-                                      new ContainerCondition(oa1, false)
+            testCtx.policy().prohibitions().create("deny", ProhibitionSubject.user(u1), new AccessRightSet("read", "write"),
+                                         true,
+                                         new ContainerCondition(oa4, true),
+                                         new ContainerCondition(oa1, false)
             );
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), oa5).isEmpty());
+
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(u1), oa5).isEmpty());
             assertTrue(
-                    accessReviewer.computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
+                    testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
         }
 
         @Test
         void testGraph25WithProhibitions2() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
+            testCtx.policy().graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read", "write"));
 
 
-            pap.prohibitions().create("deny", ProhibitionSubject.user(u1), new AccessRightSet("read", "write"),
-                                      true,
-                                      new ContainerCondition(oa1, false),
-                                      new ContainerCondition(oa2, false)
+            testCtx.policy().prohibitions().create("deny", ProhibitionSubject.user(u1), new AccessRightSet("read", "write"),
+                                         true,
+                                         new ContainerCondition(oa1, false),
+                                         new ContainerCondition(oa2, false)
             );
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(u1), o1).isEmpty());
+
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(u1), o1).isEmpty());
         }
 
         @Test
         void testDeciderWithUA() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
+            testCtx.policy().graph().setResourceAccessRights(RWE);
 
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua2 = pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(ua2));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String oa2 = pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
-            String o2 = pap.graph().createObject("o2", new HashMap<>(), List.of(oa2));
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua2 = testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of(pc1));
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(ua2));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String oa2 = testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1, oa2));
+            String o2 = testCtx.policy().graph().createObject("o2", new HashMap<>(), List.of(oa2));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet("read"));
-            pap.graph().associate(ua2, oa1, new AccessRightSet("write"));
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet("read"));
+            testCtx.policy().graph().associate(ua2, oa1, new AccessRightSet("write"));
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext(ua1), oa1)
-                                     .containsAll(Arrays.asList("read", "write")));
+
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext(ua1), oa1)
+                              .containsAll(Arrays.asList("read", "write")));
         }
 
         @Test
         void testProhibitionsAllCombinations() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            pap.graph().createPolicyClass("pc1", new HashMap<>());
-            pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-            pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-            pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
-            pap.graph().createObjectAttribute("oa4", new HashMap<>(), List.of("pc1"));
-            pap.graph().createObject("o1", new HashMap<>(), List.of("oa1", "oa2", "oa3"));
-            pap.graph().createObject("o2", new HashMap<>(), List.of("oa1", "oa4"));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+            testCtx.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+            testCtx.policy().graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
+            testCtx.policy().graph().createObjectAttribute("oa4", new HashMap<>(), List.of("pc1"));
+            testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of("oa1", "oa2", "oa3"));
+            testCtx.policy().graph().createObject("o2", new HashMap<>(), List.of("oa1", "oa4"));
 
-            pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-            pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
-            pap.graph().createUser("u2", new HashMap<>(), List.of("ua1"));
-            pap.graph().createUser("u3", new HashMap<>(), List.of("ua1"));
-            pap.graph().createUser("u4", new HashMap<>(), List.of("ua1"));
+            testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+            testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+            testCtx.policy().graph().createUser("u2", new HashMap<>(), List.of("ua1"));
+            testCtx.policy().graph().createUser("u3", new HashMap<>(), List.of("ua1"));
+            testCtx.policy().graph().createUser("u4", new HashMap<>(), List.of("ua1"));
 
-            pap.graph().associate("ua1", "oa1", new AccessRightSet("read", "write"));
+            testCtx.policy().graph().associate("ua1", "oa1", new AccessRightSet("read", "write"));
 
 
-            pap.prohibitions().create(
+            testCtx.policy().prohibitions().create(
                     "p1",
                     ProhibitionSubject.user("u1"),
                     new AccessRightSet("write"),
@@ -1192,7 +1170,7 @@ public abstract class AccessReviewerTest {
                     new ContainerCondition("oa3", false)
             );
 
-            pap.prohibitions().create(
+            testCtx.policy().prohibitions().create(
                     "p2",
                     ProhibitionSubject.user("u2"),
                     new AccessRightSet("write"),
@@ -1202,7 +1180,7 @@ public abstract class AccessReviewerTest {
                     new ContainerCondition("oa3", false)
             );
 
-            pap.prohibitions().create(
+            testCtx.policy().prohibitions().create(
                     "p3",
                     ProhibitionSubject.user("u3"),
                     new AccessRightSet("write"),
@@ -1211,7 +1189,7 @@ public abstract class AccessReviewerTest {
                     new ContainerCondition("oa2", true)
             );
 
-            pap.prohibitions().create(
+            testCtx.policy().prohibitions().create(
                     "p4",
                     ProhibitionSubject.user("u4"),
                     new AccessRightSet("write"),
@@ -1220,7 +1198,7 @@ public abstract class AccessReviewerTest {
                     new ContainerCondition("oa2", true)
             );
 
-            pap.prohibitions().create(
+            testCtx.policy().prohibitions().create(
                     "p5",
                     ProhibitionSubject.user("u4"),
                     new AccessRightSet("write"),
@@ -1228,114 +1206,114 @@ public abstract class AccessReviewerTest {
                     new ContainerCondition("oa2", true)
             );
 
-            Set<String> list = accessReviewer.computePrivileges(new UserContext("u1"), "o1");
+
+            Set<String> list = testCtx.accessReviewer().computePrivileges(new UserContext("u1"), "o1");
             assertTrue(list.contains("read") && !list.contains("write"));
 
-            list = accessReviewer.computePrivileges(new UserContext("u1"), "o2");
+            list = testCtx.accessReviewer().computePrivileges(new UserContext("u1"), "o2");
             assertTrue(list.contains("read") && list.contains("write"));
 
-            list = accessReviewer.computePrivileges(new UserContext("u2"), "o2");
+            list = testCtx.accessReviewer().computePrivileges(new UserContext("u2"), "o2");
             assertTrue(list.contains("read") && !list.contains("write"));
 
-            list = accessReviewer.computePrivileges(new UserContext("u3"), "o2");
+            list = testCtx.accessReviewer().computePrivileges(new UserContext("u3"), "o2");
             assertTrue(list.contains("read") && !list.contains("write"));
 
-            list = accessReviewer.computePrivileges(new UserContext("u4"), "o1");
+            list = testCtx.accessReviewer().computePrivileges(new UserContext("u4"), "o1");
             assertTrue(list.contains("read") && !list.contains("write"));
 
-            list = accessReviewer.computePrivileges(new UserContext("u4"), "o2");
+            list = testCtx.accessReviewer().computePrivileges(new UserContext("u4"), "o2");
             assertTrue(list.contains("read") && !list.contains("write"));
         }
 
         @Test
         void testPermissions() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
+            testCtx.policy().graph().setResourceAccessRights(RWE);
 
-            pap.graph().setResourceAccessRights(RWE);
+            String pc1 = testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            String ua1 = testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
+            String u1 = testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of(ua1));
+            String oa1 = testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
+            String o1 = testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of(oa1));
 
-            String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
-            String ua1 = pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of(pc1));
-            String u1 = pap.graph().createUser("u1", new HashMap<>(), List.of(ua1));
-            String oa1 = pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of(pc1));
-            String o1 = pap.graph().createObject("o1", new HashMap<>(), List.of(oa1));
+            testCtx.policy().graph().associate(ua1, oa1, allAccessRights());
 
-            pap.graph().associate(ua1, oa1, allAccessRights());
 
-            Set<String> list = accessReviewer.computePrivileges(new UserContext("u1"), "o1");
+            Set<String> list = testCtx.accessReviewer().computePrivileges(new UserContext("u1"), "o1");
             assertTrue(list.containsAll(allAdminAccessRights()));
             assertTrue(list.containsAll(RWE));
 
-            pap.graph().associate(ua1, oa1, allAdminAccessRights());
-            list = accessReviewer.computePrivileges(new UserContext("u1"), "o1");
+            testCtx.policy().graph().associate(ua1, oa1, allAdminAccessRights());
+            list = testCtx.accessReviewer().computePrivileges(new UserContext("u1"), "o1");
             assertTrue(list.containsAll(allAdminAccessRights()));
             assertFalse(list.containsAll(RWE));
 
-            pap.graph().associate(ua1, oa1, new AccessRightSet(ALL_RESOURCE_ACCESS_RIGHTS));
-            list = accessReviewer.computePrivileges(new UserContext("u1"), "o1");
+            testCtx.policy().graph().associate(ua1, oa1, new AccessRightSet(ALL_RESOURCE_ACCESS_RIGHTS));
+            list = testCtx.accessReviewer().computePrivileges(new UserContext("u1"), "o1");
             assertFalse(list.containsAll(allAdminAccessRights()));
             assertTrue(list.containsAll(RWE));
         }
 
         @Test
         void testPermissionsInOnlyOnePC() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(RWE);
-            pap.graph().createPolicyClass("pc1", new HashMap<>());
-            pap.graph().createPolicyClass("pc2", new HashMap<>());
-            pap.graph().createUserAttribute("ua3", new HashMap<>(), List.of("pc1"));
-            pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of("ua3"));
-            pap.graph().createUserAttribute("u1", new HashMap<>(), List.of("ua2"));
+            testCtx.policy().graph().setResourceAccessRights(RWE);
+            testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            testCtx.policy().graph().createPolicyClass("pc2", new HashMap<>());
+            testCtx.policy().graph().createUserAttribute("ua3", new HashMap<>(), List.of("pc1"));
+            testCtx.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of("ua3"));
+            testCtx.policy().graph().createUserAttribute("u1", new HashMap<>(), List.of("ua2"));
 
-            pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-            pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc2"));
-            pap.graph().assign("oa3", "oa1");
-            pap.graph().createObject("o1", new HashMap<>(), List.of("oa3"));
+            testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+            testCtx.policy().graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc2"));
+            testCtx.policy().graph().assign("oa3", "oa1");
+            testCtx.policy().graph().createObject("o1", new HashMap<>(), List.of("oa3"));
 
-            pap.graph().associate("ua3", "oa1", new AccessRightSet("read"));
+            testCtx.policy().graph().associate("ua3", "oa1", new AccessRightSet("read"));
 
-            assertTrue(accessReviewer.computePrivileges(new UserContext("u1"), "o1").isEmpty());
+
+            assertTrue(testCtx.accessReviewer().computePrivileges(new UserContext("u1"), "o1").isEmpty());
         }
 
         @Test
         void testProhibitionsWithContainerAsTarget() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(new AccessRightSet("read"));
-            pap.graph().createPolicyClass("pc1", new HashMap<>());
-            pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-            pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-            pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
-            pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
+            testCtx.policy().graph().setResourceAccessRights(new AccessRightSet("read"));
+            testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+            testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+            testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+            testCtx.policy().graph().associate("ua1", "oa1", new AccessRightSet("read"));
 
-            pap.prohibitions().create("deny1", ProhibitionSubject.user("u1"), new AccessRightSet("read"), false,
-                                      new ContainerCondition("oa1", false)
+            testCtx.policy().prohibitions().create("deny1", ProhibitionSubject.user("u1"), new AccessRightSet("read"), false,
+                                         new ContainerCondition("oa1", false)
             );
 
-            AccessRightSet deniedAccessRights = accessReviewer.computeDeniedPrivileges(new UserContext("u1"), "oa1");
+
+            AccessRightSet deniedAccessRights = testCtx.accessReviewer().computeDeniedPrivileges(new UserContext("u1"), "oa1");
             assertTrue(deniedAccessRights.contains("read"));
         }
 
         @Test
         void testProhibitionWithContainerAsTargetComplement() throws PMException {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
+            TestContext testCtx = initTest();
 
-            pap.graph().setResourceAccessRights(new AccessRightSet("read"));
-            pap.graph().createPolicyClass("pc1", new HashMap<>());
-            pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-            pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-            pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
-            pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
+            testCtx.policy().graph().setResourceAccessRights(new AccessRightSet("read"));
+            testCtx.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            testCtx.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+            testCtx.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+            testCtx.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+            testCtx.policy().graph().associate("ua1", "oa1", new AccessRightSet("read"));
 
-            pap.prohibitions().create("deny1", ProhibitionSubject.user("u1"), new AccessRightSet("read"), false,
-                                      new ContainerCondition("oa1", true)
+            testCtx.policy().prohibitions().create("deny1", ProhibitionSubject.user("u1"), new AccessRightSet("read"), false,
+                                         new ContainerCondition("oa1", true)
             );
 
-            AccessRightSet deniedAccessRights = accessReviewer.computeDeniedPrivileges(new UserContext("u1"), "oa1");
+
+            AccessRightSet deniedAccessRights = testCtx.accessReviewer().computeDeniedPrivileges(new UserContext("u1"), "oa1");
             assertFalse(deniedAccessRights.contains("read"));
         }
     }

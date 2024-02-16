@@ -4,9 +4,9 @@ import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.pap.neo4j.Neo4jPolicyStore;
 import gov.nist.csd.pm.pdp.AccessReviewerTest;
-import gov.nist.csd.pm.pdp.memory.MemoryAccessReviewer;
+import gov.nist.csd.pm.pdp.GraphReviewerTest;
+import gov.nist.csd.pm.pdp.memory.MemoryGraphReviewer;
 import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.review.AccessReview;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,7 +15,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
 
-public class Neo4jAccessReviewerTest extends AccessReviewerTest {
+public class Neo4jGraphReviewerTest extends GraphReviewerTest {
+
     private static Neo4j embeddedDatabaseServer;
 
     @BeforeAll
@@ -41,8 +42,7 @@ public class Neo4jAccessReviewerTest extends AccessReviewerTest {
 
     @Override
     public TestContext initTest() throws PMException {
-        GraphDatabaseService graph = embeddedDatabaseServer.defaultDatabaseService();
-        PAP pap = new PAP(new Neo4jPolicyStore(graph));
-        return new TestContext(new Neo4jAccessReviewer(graph), pap);
+        PAP pap = new PAP(new Neo4jPolicyStore(embeddedDatabaseServer.defaultDatabaseService()));
+        return new TestContext(new Neo4jGraphReviewer(embeddedDatabaseServer.defaultDatabaseService()), pap);
     }
 }

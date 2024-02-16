@@ -37,12 +37,6 @@ public class PDP implements EventEmitter {
         this.eventProcessors = new ArrayList<>();
     }
 
-    /*public PDP(PAP pap) {
-        this.pap = pap;
-        this.eventProcessors = new ArrayList<>();
-        this.policyReviewer = new PolicyReviewer(pap);
-    }*/
-
     public PolicyReview policyReviewer() {
         return policyReviewer;
     }

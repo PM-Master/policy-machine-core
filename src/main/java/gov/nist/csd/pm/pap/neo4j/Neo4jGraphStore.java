@@ -472,6 +472,21 @@ public class Neo4jGraphStore implements GraphStore {
                 org.neo4j.graphdb.Node uaNode = tx.findNode(NODE_LABEL, NAME_PROPERTY, ua);
                 org.neo4j.graphdb.Node targetNode = tx.findNode(NODE_LABEL, NAME_PROPERTY, target);
 
+                ResourceIterator<Relationship> assocs = uaNode.getRelationships(
+                        Direction.OUTGOING,
+                        ASSOCIATION_RELATIONSHIP_TYPE
+                ).iterator();
+
+                // delete the assoc if it already exists
+                while (assocs.hasNext()) {
+                    Relationship next = assocs.next();
+                    org.neo4j.graphdb.Node t = next.getEndNode();
+                    if (t.equals(targetNode)) {
+                        next.delete();
+                        break;
+                    }
+                }
+
                 Relationship association = uaNode.createRelationshipTo(targetNode, ASSOCIATION_RELATIONSHIP_TYPE);
                 association.setProperty(ARSET_PROPERTY, accessRights.toArray(new String[]{}));
             });

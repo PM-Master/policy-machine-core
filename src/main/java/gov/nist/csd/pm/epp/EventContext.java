@@ -7,6 +7,7 @@ import gov.nist.csd.pm.policy.model.access.UserContext;
 import gov.nist.csd.pm.policy.model.obligation.event.EventPattern;
 import gov.nist.csd.pm.policy.model.obligation.event.subject.Subject;
 import gov.nist.csd.pm.policy.model.obligation.event.target.Target;
+import gov.nist.csd.pm.policy.review.GraphReview;
 
 public class EventContext {
 
@@ -45,7 +46,7 @@ public class EventContext {
         return event;
     }
 
-    public boolean matchesPattern(EventPattern pattern, MemoryGraphReviewer graphReviewer) throws PMException {
+    public boolean matchesPattern(EventPattern pattern, GraphReview graphReviewer) throws PMException {
         if (pattern.getOperations().isEmpty() || pattern.getOperations().get(0).isEmpty()) {
             return true; // an empty event pattern will match all events
         } else if (pattern.getOperations() != null &&
