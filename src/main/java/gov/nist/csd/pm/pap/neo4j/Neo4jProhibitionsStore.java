@@ -114,9 +114,8 @@ public class Neo4jProhibitionsStore implements ProhibitionsStore {
                 }
 
                 // delete all rels
-                ResourceIterator<Relationship> relationships = node.getRelationships().iterator();
-                while (relationships.hasNext()) {
-                    relationships.next().delete();
+                for (Relationship relationship : node.getRelationships()) {
+                    relationship.delete();
                 }
 
                 // delete prohibition node
