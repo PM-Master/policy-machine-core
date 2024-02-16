@@ -1,6 +1,8 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp.memory;
 
 import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.policy.Graph;
+import gov.nist.csd.pm.policy.exceptions.PMBackendException;
 import gov.nist.csd.pm.policy.model.graph.dag.walker.bfs.BreadthFirstGraphWalker;
 import gov.nist.csd.pm.policy.model.graph.dag.walker.dfs.DepthFirstGraphWalker;
 import gov.nist.csd.pm.policy.exceptions.NodeDoesNotExistException;
@@ -25,18 +27,17 @@ import gov.nist.csd.pm.policy.review.AccessReview;
 
 import java.util.*;
 
+import static gov.nist.csd.pm.pdp.memory.AccessRightResolver.*;
 import static gov.nist.csd.pm.policy.model.access.UserContext.NO_PROCESS;
 import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.U;
 import static gov.nist.csd.pm.policy.model.graph.nodes.Properties.NO_PROPERTIES;
 
-public class AccessReviewer implements AccessReview {
+public class MemoryAccessReviewer implements AccessReview {
 
     private final PAP pap;
-    private final AccessRightResolver accessRightResolver;
 
-    public AccessReviewer(PAP pap) {
+    public MemoryAccessReviewer(PAP pap) {
         this.pap = pap;
-        this.accessRightResolver = new AccessRightResolver();
     }
 
     @Override
@@ -53,8 +54,7 @@ public class AccessReviewer implements AccessReview {
         TargetDagResult targetDagResult = processTargetDAG(target, userDagResult);
 
         // resolve the permissions
-        return accessRightResolver
-                .resolvePrivileges(userDagResult, targetDagResult, target, pap.graph().getResourceAccessRights());
+        return resolvePrivileges(userDagResult, targetDagResult, target, pap.graph().getResourceAccessRights());
     }
 
     @Override
@@ -71,7 +71,7 @@ public class AccessReviewer implements AccessReview {
         TargetDagResult targetDagResult = processTargetDAG(target, userDagResult);
 
         // resolve the permissions
-        return accessRightResolver.resolveDeniedAccessRights(userDagResult, targetDagResult, target);
+        return resolveDeniedAccessRights(userDagResult, targetDagResult, target);
     }
 
     @Override
@@ -163,14 +163,14 @@ public class AccessReviewer implements AccessReview {
         List<EdgePath> userPaths = explainDfs(userNode.getName());
         List<EdgePath> targetPaths = explainDfs(targetNode.getName());
 
-        Map<String, PolicyClass> resolvedPaths = resolvePaths(userPaths, targetPaths, target);
+        Map<String, PolicyClass> resolvedPaths = resolvePaths(pap.graph(), userPaths, targetPaths, target);
 
         UserDagResult userDagResult = processUserDAG(userCtx.getUser(), userCtx.getProcess());
         TargetDagResult targetDagResult = processTargetDAG(target, userDagResult);
 
-        AccessRightSet priv = accessRightResolver.resolvePrivileges(userDagResult, targetDagResult, target, pap.graph().getResourceAccessRights());
-        AccessRightSet deniedPriv = accessRightResolver.resolveDeniedAccessRights(userDagResult, targetDagResult, target);
-        List<Prohibition> prohibitions = accessRightResolver.computeSatisfiedProhibitions(userDagResult, targetDagResult, target);
+        AccessRightSet priv = resolvePrivileges(userDagResult, targetDagResult, target, pap.graph().getResourceAccessRights());
+        AccessRightSet deniedPriv = resolveDeniedAccessRights(userDagResult, targetDagResult, target);
+        List<Prohibition> prohibitions = computeSatisfiedProhibitions(userDagResult, targetDagResult, target);
 
         return new Explain(priv, resolvedPaths, deniedPriv, prohibitions);
     }
@@ -243,8 +243,7 @@ public class AccessReviewer implements AccessReview {
 
     private void getAndStorePrivileges(Map<String, AccessRightSet> arsetMap, UserDagResult userDagResult, String target) throws PMException {
         TargetDagResult targetCtx = processTargetDAG(target, userDagResult);
-        AccessRightSet privileges = accessRightResolver
-                .resolvePrivileges(userDagResult, targetCtx, target, pap.graph().getResourceAccessRights());
+        AccessRightSet privileges = resolvePrivileges(userDagResult, targetCtx, target, pap.graph().getResourceAccessRights());
         arsetMap.put(target, privileges);
     }
 
@@ -368,20 +367,20 @@ public class AccessReviewer implements AccessReview {
     }
 
     private Set<String> getDescendants(String vNode) throws PMException {
-        Set<String> ascendants = new HashSet<>();
+        Set<String> descendants = new HashSet<>();
 
         List<String> children = pap.graph().getChildren(vNode);
         if (children.isEmpty()) {
-            return ascendants;
+            return descendants;
         }
 
-        ascendants.addAll(children);
+        descendants.addAll(children);
         for (String child : children) {
-            ascendants.add(child);
-            ascendants.addAll(getDescendants(child));
+            descendants.add(child);
+            descendants.addAll(getDescendants(child));
         }
 
-        return ascendants;
+        return descendants;
     }
 
     private Hashtable<String, Hashtable<String, Set<String>>> findBorderOaPrivRestrictedInternal(UserContext userCtx) throws PMException {
@@ -549,7 +548,7 @@ public class AccessReviewer implements AccessReview {
      * @return the set of paths from a user to a target node (through an association) for each policy class in the system.
      * @throws PMException if there is an exception traversing the graph
      */
-    private Map<String, PolicyClass> resolvePaths(List<EdgePath> userPaths, List<EdgePath> targetPaths, String target) throws PMException {
+    public static Map<String, PolicyClass> resolvePaths(Graph graph, List<EdgePath> userPaths, List<EdgePath> targetPaths, String target) throws PMException {
         Map<String, PolicyClass> results = new HashMap<>();
 
         for (EdgePath targetPath : targetPaths) {
@@ -557,7 +556,7 @@ public class AccessReviewer implements AccessReview {
 
             // if the last element in the target path is a pc, the target belongs to that pc, add the pc to the results
             // skip to the next target path if it is not a policy class
-            if (!isPolicyClass(pcEdge.getTarget())) {
+            if (!isPolicyClass(graph, pcEdge.getTarget())) {
                 continue;
             }
 
@@ -582,11 +581,11 @@ public class AccessReviewer implements AccessReview {
         return results;
     }
 
-    private boolean isPolicyClass(String node) throws PMException {
-        return pap.graph().getPolicyClasses().contains(node);
+    public static boolean isPolicyClass(Graph graph, String node) throws PMException {
+        return graph.getPolicyClasses().contains(node);
     }
 
-    private Set<Path> computeExplainPaths(List<EdgePath> userEdgePaths, EdgePath targetEdgePath, String target) {
+    public static Set<Path> computeExplainPaths(List<EdgePath> userEdgePaths, EdgePath targetEdgePath, String target) {
         Set<Path> computedPaths = new HashSet<>();
 
         for(EdgePath userEdgePath : userEdgePaths) {

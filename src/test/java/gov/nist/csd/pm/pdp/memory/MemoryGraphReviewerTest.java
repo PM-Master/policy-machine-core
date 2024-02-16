@@ -1,4 +1,4 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp.memory;
 
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
@@ -12,9 +12,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class GraphReviewerTest {
+class MemoryGraphReviewerTest {
 
-    private static GraphReviewer graphReviewer;
+    private static MemoryGraphReviewer graphReviewer;
 
     @BeforeAll
     static void setup() throws PMException {
@@ -43,7 +43,7 @@ class GraphReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        graphReviewer = new GraphReviewer(pap);
+        graphReviewer = new MemoryGraphReviewer(pap);
     }
 
     @Test

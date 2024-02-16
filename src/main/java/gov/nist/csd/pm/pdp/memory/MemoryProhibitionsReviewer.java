@@ -1,4 +1,4 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp.memory;
 
 import gov.nist.csd.pm.policy.model.graph.dag.walker.dfs.DepthFirstGraphWalker;
 import gov.nist.csd.pm.policy.Policy;
@@ -12,11 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ProhibitionsReviewer implements ProhibitionsReview {
+public class MemoryProhibitionsReviewer implements ProhibitionsReview {
 
     private final Policy policy;
 
-    public ProhibitionsReviewer(Policy policy) {
+    public MemoryProhibitionsReviewer(Policy policy) {
         this.policy = policy;
     }
 

@@ -1,4 +1,4 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp.memory;
 
 import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.policy.Policy;
@@ -11,22 +11,19 @@ import gov.nist.csd.pm.policy.model.obligation.event.subject.AnyUserSubject;
 import gov.nist.csd.pm.policy.model.obligation.event.subject.Subject;
 import gov.nist.csd.pm.policy.model.obligation.event.target.AnyTarget;
 import gov.nist.csd.pm.policy.model.obligation.event.target.Target;
-import gov.nist.csd.pm.policy.pml.statement.PMLStatement;
 import gov.nist.csd.pm.policy.review.ObligationsReview;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class ObligationsReviewer implements ObligationsReview {
+public class MemoryObligationsReviewer implements ObligationsReview {
 
     private final Policy policy;
-    private final GraphReviewer graphReviewer;
+    private final MemoryGraphReviewer graphReviewer;
 
-    public ObligationsReviewer(Policy policy, GraphReviewer graphReviewer) {
+    public MemoryObligationsReviewer(Policy policy, MemoryGraphReviewer graphReviewer) {
         this.policy = policy;
         this.graphReviewer = graphReviewer;
     }

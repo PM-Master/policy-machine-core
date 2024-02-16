@@ -3,7 +3,7 @@ package gov.nist.csd.pm.pdp.adjudicator;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.serialization.pml.PMLDeserializer;
-import gov.nist.csd.pm.pdp.reviewer.PolicyReviewer;
+import gov.nist.csd.pm.pdp.memory.MemoryPolicyReviewer;
 import gov.nist.csd.pm.policy.exceptions.NodeDoesNotExistException;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.access.UserContext;
@@ -45,7 +45,7 @@ class PrivilegeCheckerTest {
                         """,
                         new PMLDeserializer()
         );
-        privilegeChecker = new PrivilegeChecker(pap, new PolicyReviewer(pap));
+        privilegeChecker = new PrivilegeChecker(pap, new MemoryPolicyReviewer(pap));
     }
 
     @Test

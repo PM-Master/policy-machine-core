@@ -1,4 +1,4 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp.memory;
 
 import gov.nist.csd.pm.policy.model.access.AccessRightSet;
 import gov.nist.csd.pm.policy.model.graph.dag.TargetDagResult;
@@ -13,7 +13,9 @@ import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.ALL_RESOURCE
 
 public class AccessRightResolver {
 
-    public AccessRightSet resolvePrivileges(UserDagResult userContext, TargetDagResult targetCtx, String target, AccessRightSet resourceOps) {
+    private AccessRightResolver() {}
+
+    public static AccessRightSet resolvePrivileges(UserDagResult userCtx, TargetDagResult targetCtx, String target, AccessRightSet resourceOps) {
         Map<String, AccessRightSet> resolvedPcMap = new HashMap<>();
         for (Map.Entry<String, AccessRightSet> pc : targetCtx.pcSet().entrySet()) {
             AccessRightSet pcOps = pc.getValue();
@@ -27,13 +29,13 @@ public class AccessRightResolver {
         AccessRightSet result = resolvePolicyClassAccessRightSets(resolvedPcMap);
 
         // remove any prohibited access rights
-        AccessRightSet denied = resolveDeniedAccessRights(userContext, targetCtx, target);
+        AccessRightSet denied = resolveDeniedAccessRights(userCtx, targetCtx, target);
         result.removeAll(denied);
 
         return result;
     }
 
-    public AccessRightSet resolveDeniedAccessRights(UserDagResult userCtx, TargetDagResult targetCtx, String target) {
+    public static AccessRightSet resolveDeniedAccessRights(UserDagResult userCtx, TargetDagResult targetCtx, String target) {
         AccessRightSet denied = new AccessRightSet();
         Set<Prohibition> prohibitions = userCtx.prohibitions();
         Set<String> reachedTargets = targetCtx.reachedTargets();
@@ -47,7 +49,7 @@ public class AccessRightResolver {
         return denied;
     }
 
-    public List<Prohibition> computeSatisfiedProhibitions(UserDagResult userDagResult, TargetDagResult targetDagResult,
+    public static List<Prohibition> computeSatisfiedProhibitions(UserDagResult userDagResult, TargetDagResult targetDagResult,
                                                           String target) {
         List<Prohibition> satisfied = new ArrayList<>();
 
@@ -63,7 +65,7 @@ public class AccessRightResolver {
         return satisfied;
     }
 
-    private AccessRightSet resolvePolicyClassAccessRightSets(Map<String, AccessRightSet> pcMap) {
+    private static AccessRightSet resolvePolicyClassAccessRightSets(Map<String, AccessRightSet> pcMap) {
         // retain only the ops that the decider knows about
         AccessRightSet allowed = new AccessRightSet();
         boolean first = true;
@@ -85,7 +87,7 @@ public class AccessRightResolver {
         return allowed;
     }
 
-    private void resolveWildcardAccessRights(AccessRightSet accessRightSet, AccessRightSet resourceOps) {
+    private static void resolveWildcardAccessRights(AccessRightSet accessRightSet, AccessRightSet resourceOps) {
         // if the permission set includes *, remove the * and add all resource operations
         if (accessRightSet.contains(ALL_ACCESS_RIGHTS)) {
             accessRightSet.remove(ALL_ACCESS_RIGHTS);
@@ -104,7 +106,7 @@ public class AccessRightResolver {
         }
     }
 
-    private boolean isProhibitionSatisfied(Prohibition prohibition, Set<String> reachedTargets, String target) {
+    private static boolean isProhibitionSatisfied(Prohibition prohibition, Set<String> reachedTargets, String target) {
         boolean inter = prohibition.isIntersection();
         List<ContainerCondition> containers = prohibition.getContainers();
         boolean addOps = false;

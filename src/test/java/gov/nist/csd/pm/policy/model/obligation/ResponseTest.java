@@ -4,7 +4,7 @@ import gov.nist.csd.pm.epp.EPP;
 import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
-import gov.nist.csd.pm.policy.pml.expression.literal.StringLiteral;
+import gov.nist.csd.pm.pdp.memory.MemoryPolicyReviewer;
 import gov.nist.csd.pm.policy.pml.expression.reference.ReferenceByID;
 import gov.nist.csd.pm.policy.pml.statement.CreatePolicyStatement;
 import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
@@ -48,7 +48,7 @@ class ResponseTest {
                 """;
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
-        PDP pdp = new PDP(pap);
+        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
         EPP epp = new EPP(pdp, pap);
         epp.getEventProcessor().processEvent(new EventContext(new UserContext("u1"), "oa1", new AssignToEvent("o1", "oa1")));
         assertTrue(pap.graph().nodeExists("hello world"));
@@ -83,7 +83,7 @@ class ResponseTest {
                                                     .build());
         pap.executePML(new UserContext("u1"), pml);
 
-        PDP pdp = new PDP(pap);
+        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
         EPP epp = new EPP(pdp, pap);
         epp.getEventProcessor().processEvent(new EventContext(new UserContext("u1"), "oa1", new AssignToEvent("o1", "oa1")));
         assertTrue(pap.graph().nodeExists("hello world"));

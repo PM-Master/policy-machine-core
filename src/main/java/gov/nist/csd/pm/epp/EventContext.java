@@ -1,7 +1,6 @@
 package gov.nist.csd.pm.epp;
 
-import gov.nist.csd.pm.pdp.reviewer.GraphReviewer;
-import gov.nist.csd.pm.pdp.reviewer.PolicyReviewer;
+import gov.nist.csd.pm.pdp.memory.MemoryGraphReviewer;
 import gov.nist.csd.pm.policy.events.PolicyEvent;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.access.UserContext;
@@ -46,7 +45,7 @@ public class EventContext {
         return event;
     }
 
-    public boolean matchesPattern(EventPattern pattern, GraphReviewer graphReviewer) throws PMException {
+    public boolean matchesPattern(EventPattern pattern, MemoryGraphReviewer graphReviewer) throws PMException {
         if (pattern.getOperations().isEmpty() || pattern.getOperations().get(0).isEmpty()) {
             return true; // an empty event pattern will match all events
         } else if (pattern.getOperations() != null &&

@@ -4,6 +4,7 @@ import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.pdp.memory.MemoryPolicyReviewer;
 import gov.nist.csd.pm.policy.exceptions.BootstrapExistingPolicyException;
 import gov.nist.csd.pm.policy.exceptions.NodeNameExistsException;
 import gov.nist.csd.pm.policy.exceptions.PMException;
@@ -32,7 +33,7 @@ class PDPTest {
     @Test
     void testRunTx() throws PMException {
         PAP pap = new PAP(new MemoryPolicyStore());
-        PDP pdp = new PDP(pap);
+        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
 
         pap.runTx((policy) -> {
             policy.graph().createPolicyClass("pc1", new HashMap<>());
@@ -54,7 +55,7 @@ class PDPTest {
     @Test
     void testBootstrapWithAdminPolicyOnly() throws PMException {
         PAP pap = new PAP(new MemoryPolicyStore());
-        PDP pdp = new PDP(pap);
+        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
 
         pdp.bootstrap(p -> {
             p.graph().createPolicyClass("pc1", new HashMap<>());
@@ -68,7 +69,7 @@ class PDPTest {
     @Test
     void testBootstrapWithExistingPolicyThrowsException() throws PMException {
         PAP pap = new PAP(new MemoryPolicyStore());
-        PDP pdp = new PDP(pap);
+        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
         pap.graph().createPolicyClass("pc1", new HashMap<>());
         assertThrows(BootstrapExistingPolicyException.class, () -> {
             pdp.bootstrap((policy) -> {});
@@ -106,7 +107,7 @@ class PDPTest {
         pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         pap.graph().associate("ua1", AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName(), new AccessRightSet("*"));
 
-        PDP pdp = new PDP(pap);
+        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
         assertThrows(NodeNameExistsException.class, () -> {
             pdp.runTx(new UserContext("u1"), policy -> {
                 policy.graph().createPolicyClass("pc2", new HashMap<>());
@@ -136,7 +137,7 @@ class PDPTest {
                     })
                     .build();
 
-            PDP pdp = new PDP(pap);
+            PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
             pdp.runTx(new UserContext("u1"), policy -> {
                 policy.userDefinedPML().createFunction(functionDefinitionStatement);
                 policy.executePML(new UserContext("u1"), "create ua \"ua3\" assign to [\"pc2\"]");

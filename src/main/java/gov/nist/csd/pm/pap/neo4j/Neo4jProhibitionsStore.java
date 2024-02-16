@@ -213,7 +213,7 @@ public class Neo4jProhibitionsStore implements ProhibitionsStore {
         }
     }
 
-    private Prohibition getProhibitionFromNode(Node prohibitionNode) throws InvalidProhibitionSubjectException {
+    public static Prohibition getProhibitionFromNode(Node prohibitionNode) throws InvalidProhibitionSubjectException {
         String label = String.valueOf(prohibitionNode.getProperty(NAME_PROPERTY));
 
         // get subject

@@ -3,6 +3,7 @@ package gov.nist.csd.pm.epp;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.pdp.memory.MemoryPolicyReviewer;
 import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.policy.pml.value.VoidValue;
 import gov.nist.csd.pm.policy.serialization.pml.PMLDeserializer;
@@ -38,7 +39,7 @@ class EPPTest {
     void test() throws PMException {
         PAP pap = new PAP(new MemoryPolicyStore());
 
-        PDP pdp = new PDP(pap);
+        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
         EPP epp = new EPP(pdp, pap);
 
         String pml = """
@@ -75,7 +76,7 @@ class EPPTest {
     void testAccessingEventContextInResponse() throws PMException {
         PAP pap = new PAP(new MemoryPolicyStore());
 
-        PDP pdp = new PDP(pap);
+        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
         EPP epp = new EPP(pdp, pap);
 
         String pml = """                
@@ -116,7 +117,7 @@ class EPPTest {
     @Test
     void testErrorInEPPResponse() throws PMException {
         PAP pap = new PAP(new MemoryPolicyStore());
-        PDP pdp = new PDP(pap);
+        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
         EPP epp = new EPP(pdp, pap);
 
         pap.runTx((policy) -> {
@@ -173,7 +174,7 @@ class EPPTest {
                 })
                 .build();
 
-        PDP pdp = new PDP(pap);
+        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
         EPP epp = new EPP(pdp, pap, testFunc);
 
         String pml = """                
@@ -206,7 +207,7 @@ class EPPTest {
     void testReturnInResponse() throws PMException {
         PAP pap = new PAP(new MemoryPolicyStore());
 
-        PDP pdp = new PDP(pap);
+        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
         EPP epp = new EPP(pdp, pap);
 
         String pml = """                

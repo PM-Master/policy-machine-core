@@ -1,4 +1,4 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp.memory;
 
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
@@ -13,9 +13,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ProhibitionsReviewerTest {
+class MemoryProhibitionsReviewerTest {
 
-    private static ProhibitionsReviewer prohibitionsReviewer;
+    private static MemoryProhibitionsReviewer prohibitionsReviewer;
 
     @BeforeAll
     static void setup() throws PMException {
@@ -48,7 +48,7 @@ class ProhibitionsReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        prohibitionsReviewer = new ProhibitionsReviewer(pap);
+        prohibitionsReviewer = new MemoryProhibitionsReviewer(pap);
     }
 
     @Test

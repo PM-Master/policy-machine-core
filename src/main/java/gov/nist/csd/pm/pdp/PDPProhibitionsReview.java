@@ -1,8 +1,7 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp;
 
 import gov.nist.csd.pm.pdp.adjudicator.AdjudicatorProhibitionsReview;
 import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
 import gov.nist.csd.pm.policy.model.prohibition.Prohibition;
 import gov.nist.csd.pm.policy.review.ProhibitionsReview;
 

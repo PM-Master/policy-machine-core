@@ -17,7 +17,6 @@ public interface AccessReview {
     Map<String, AccessRightSet> buildCapabilityList(UserContext userCtx) throws PMException;
     Map<String, AccessRightSet> buildACL(String target) throws PMException;
     Map<String, AccessRightSet> findBorderAttributes(String user) throws PMException;
-    // does not include the root in results
     Map<String, AccessRightSet> computeSubgraphPrivileges(UserContext userCtx, String root) throws PMException;
     Explain explain(UserContext userCtx, String target) throws PMException;
     Set<String> buildPOS(UserContext userCtx) throws PMException;

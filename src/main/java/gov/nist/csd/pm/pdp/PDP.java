@@ -5,8 +5,6 @@ import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.epp.EventProcessor;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pdp.adjudicator.Adjudicator;
-import gov.nist.csd.pm.pdp.reviewer.PDPReviewer;
-import gov.nist.csd.pm.pdp.reviewer.PolicyReviewer;
 import gov.nist.csd.pm.policy.*;
 import gov.nist.csd.pm.policy.exceptions.BootstrapExistingPolicyException;
 import gov.nist.csd.pm.policy.exceptions.PMException;
@@ -39,11 +37,11 @@ public class PDP implements EventEmitter {
         this.eventProcessors = new ArrayList<>();
     }
 
-    public PDP(PAP pap) {
+    /*public PDP(PAP pap) {
         this.pap = pap;
         this.eventProcessors = new ArrayList<>();
         this.policyReviewer = new PolicyReviewer(pap);
-    }
+    }*/
 
     public PolicyReview policyReviewer() {
         return policyReviewer;
