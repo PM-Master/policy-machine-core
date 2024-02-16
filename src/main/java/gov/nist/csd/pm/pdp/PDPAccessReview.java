@@ -1,4 +1,4 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp;
 
 import gov.nist.csd.pm.pdp.adjudicator.AdjudicatorAccessReview;
 import gov.nist.csd.pm.policy.exceptions.PMException;

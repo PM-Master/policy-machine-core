@@ -1,4 +1,4 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp.memory;
 
 import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.pap.PAP;
@@ -21,9 +21,9 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ObligationsReviewerTest {
+class MemoryObligationsReviewerTest {
 
-    private static ObligationsReviewer obligationReviewer;
+    private static MemoryObligationsReviewer obligationReviewer;
 
     @BeforeAll
     static void setup() throws PMException {
@@ -85,7 +85,7 @@ class ObligationsReviewerTest {
               """;
         pap.executePML(new UserContext("u2"), pml);
 
-        obligationReviewer = new ObligationsReviewer(pap, new GraphReviewer(pap));
+        obligationReviewer = new MemoryObligationsReviewer(pap, new MemoryGraphReviewer(pap));
     }
 
     @Test

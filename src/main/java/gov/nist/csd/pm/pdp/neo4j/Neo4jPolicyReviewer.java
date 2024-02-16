@@ -1,8 +1,11 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp.neo4j;
 
 import gov.nist.csd.pm.policy.review.*;
 
-public class ReviewAdjudicator implements PolicyReview {
+public class Neo4jPolicyReviewer implements PolicyReview {
+
+
+
     @Override
     public AccessReview access() {
         return null;

@@ -4,7 +4,7 @@ import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.pdp.adjudicator.PrivilegeChecker;
-import gov.nist.csd.pm.pdp.reviewer.PolicyReviewer;
+import gov.nist.csd.pm.pdp.memory.MemoryPolicyReviewer;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.exceptions.UnauthorizedException;
 import gov.nist.csd.pm.policy.model.access.AccessRightSet;
@@ -41,7 +41,7 @@ class PrivilegeCheckerTest {
 
     @Test
     void testAccessRightChecker() throws PMException {
-        PrivilegeChecker privilegeChecker = new PrivilegeChecker(pap, new PolicyReviewer(pap));
+        PrivilegeChecker privilegeChecker = new PrivilegeChecker(pap, new MemoryPolicyReviewer(pap));
         privilegeChecker.check(new UserContext("u1"), "o1", "read");
         privilegeChecker.check(new UserContext("u1"), "pc1", AdminAccessRights.ASSIGN_TO);
         assertThrows(UnauthorizedException.class, () -> privilegeChecker.check(new UserContext("u1"), "pc1", AdminAccessRights.DELETE_POLICY_CLASS));

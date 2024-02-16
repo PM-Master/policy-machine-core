@@ -1,6 +1,5 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp;
 
-import gov.nist.csd.pm.pdp.adjudicator.AdjudicatorAccessReview;
 import gov.nist.csd.pm.pdp.adjudicator.AdjudicatorGraphReview;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.review.GraphReview;

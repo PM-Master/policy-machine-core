@@ -1,4 +1,4 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp.memory;
 
 import gov.nist.csd.pm.policy.model.graph.dag.walker.dfs.DepthFirstGraphWalker;
 import gov.nist.csd.pm.policy.Policy;
@@ -14,11 +14,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.*;
 
-public class GraphReviewer implements GraphReview {
+public class MemoryGraphReviewer implements GraphReview {
 
     private final Policy policy;
 
-    public GraphReviewer(Policy policy) {
+    public MemoryGraphReviewer(Policy policy) {
         this.policy = policy;
     }
 

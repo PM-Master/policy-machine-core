@@ -1,8 +1,8 @@
-package gov.nist.csd.pm.pdp.reviewer;
+package gov.nist.csd.pm.pdp;
 
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
-import gov.nist.csd.pm.policy.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.pdp.memory.MemoryAccessReviewer;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.access.AccessRightSet;
 import gov.nist.csd.pm.policy.model.access.UserContext;
@@ -13,6 +13,9 @@ import gov.nist.csd.pm.policy.model.graph.relationships.Association;
 import gov.nist.csd.pm.policy.model.prohibition.ContainerCondition;
 import gov.nist.csd.pm.policy.model.prohibition.Prohibition;
 import gov.nist.csd.pm.policy.model.prohibition.ProhibitionSubject;
+import gov.nist.csd.pm.policy.review.AccessReview;
+import gov.nist.csd.pm.policy.serialization.pml.PMLDeserializer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +25,16 @@ import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.*;
 import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.allAdminAccessRights;
 import static org.junit.jupiter.api.Assertions.*;
 
-class AccessReviewerTest {
+public abstract class AccessReviewerTest {
+
+    AccessReview accessReview;
+
+    public abstract AccessReview getAccessReviewer() throws PMException;
+
+    @BeforeEach
+    void setup() throws PMException {
+        accessReview = getAccessReviewer();
+    }
 
     private static final AccessRightSet RWE = new AccessRightSet("read", "write", "execute");
 
@@ -50,7 +62,7 @@ class AccessReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
         List<String> actual = accessReviewer.computeAccessibleChildren(new UserContext("u1"), "oa1");
         assertEquals(
                 List.of("oa2", "o1", "o2"),
@@ -83,7 +95,7 @@ class AccessReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
         List<String> actual = accessReviewer.computeAccessibleParents(new UserContext("u1"), "o1");
         assertEquals(
                 List.of("oa1", "oa2"),
@@ -133,7 +145,7 @@ class AccessReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
         Set<String> u1 = accessReviewer.buildPOS(new UserContext("u1"));
         assertEquals(
                 Set.of("oa1", "oa2", "oa4"),
@@ -185,7 +197,7 @@ class AccessReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
         Explain explain = accessReviewer.explain(new UserContext("u1"), "o1");
         Explain expected = new Explain(
                 new AccessRightSet("read"),
@@ -239,7 +251,7 @@ class AccessReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
         Explain actual = accessReviewer.explain(new UserContext("u1"), "oa2");
         assertEquals(
                 new Explain(
@@ -291,7 +303,7 @@ class AccessReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
         Map<String, AccessRightSet> u1 =
                 accessReviewer.computeSubgraphPrivileges(new UserContext("u1"), "oa1");
         assertEquals(
@@ -327,7 +339,7 @@ class AccessReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
         Map<String, AccessRightSet> u1 = accessReviewer.findBorderAttributes("u1");
         assertEquals(
                 Map.of(
@@ -363,7 +375,7 @@ class AccessReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
         Map<String, AccessRightSet> o1 = accessReviewer.buildACL("o1");
         assertEquals(
                 Map.of(
@@ -404,7 +416,7 @@ class AccessReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
         Map<String, AccessRightSet> u1 = accessReviewer.buildCapabilityList(new UserContext("u1"));
         assertEquals(
                 Map.of(
@@ -444,7 +456,7 @@ class AccessReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
         AccessRightSet deniedPrivileges = accessReviewer.computeDeniedPrivileges(new UserContext("u1"), "o1");
         assertEquals(new AccessRightSet("write"), deniedPrivileges);
     }
@@ -482,7 +494,7 @@ class AccessReviewerTest {
         PAP pap = new PAP(new MemoryPolicyStore());
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
         Map<String, AccessRightSet> policyClassAccessRights =
                 accessReviewer.computePolicyClassAccessRights(new UserContext("u1"), "o1");
         assertEquals(
@@ -497,7 +509,7 @@ class AccessReviewerTest {
     @Test
     void testGetChildren() throws PMException {
         PAP pap = new PAP(new MemoryPolicyStore());
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
         pap.graph().setResourceAccessRights(RWE);
 
@@ -522,7 +534,7 @@ class AccessReviewerTest {
     @Test
     void testGetAccessibleNodes() throws PMException {
         PAP pap = new PAP(new MemoryPolicyStore());
-        AccessReviewer accessReviewer = new AccessReviewer(pap);
+        MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
         pap.graph().setResourceAccessRights(RWE);
 
@@ -556,7 +568,7 @@ class AccessReviewerTest {
         @Test
         void testGraph1() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
 
@@ -575,7 +587,7 @@ class AccessReviewerTest {
         @Test
         void testGraph2() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
 
@@ -597,7 +609,7 @@ class AccessReviewerTest {
         @Test
         void testGraph3() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -615,7 +627,7 @@ class AccessReviewerTest {
         @Test
         void testGraph4() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -635,7 +647,7 @@ class AccessReviewerTest {
         @Test
         void testGraph5() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
 
@@ -658,7 +670,7 @@ class AccessReviewerTest {
         @Test
         void testGraph6() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -680,7 +692,7 @@ class AccessReviewerTest {
         @Test
         void testGraph7() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
 
@@ -701,7 +713,7 @@ class AccessReviewerTest {
         @Test
         void testGraph8() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -721,7 +733,7 @@ class AccessReviewerTest {
         @Test
         void testGraph9() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -743,7 +755,7 @@ class AccessReviewerTest {
         @Test
         void testGraph10() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -766,7 +778,7 @@ class AccessReviewerTest {
         @Test
         void testGraph11() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -786,7 +798,7 @@ class AccessReviewerTest {
         @Test
         void testGraph12() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -807,7 +819,7 @@ class AccessReviewerTest {
         @Test
         void testGraph13() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -830,7 +842,7 @@ class AccessReviewerTest {
         @Test
         void testGraph14() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -853,7 +865,7 @@ class AccessReviewerTest {
         @Test
         void testGraph15() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -876,7 +888,7 @@ class AccessReviewerTest {
         @Test
         void testGraph16() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -899,7 +911,7 @@ class AccessReviewerTest {
         @Test
         void testGraph18() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -918,7 +930,7 @@ class AccessReviewerTest {
         @Test
         void testGraph19() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -937,7 +949,7 @@ class AccessReviewerTest {
         @Test
         void testGraph20() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -959,7 +971,7 @@ class AccessReviewerTest {
         @Test
         void testGraph21() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -981,7 +993,7 @@ class AccessReviewerTest {
         @Test
         void testGraph22() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             String pc1 = pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -1001,7 +1013,7 @@ class AccessReviewerTest {
         @Test
         void testGraph23WithProhibitions() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
 
@@ -1033,7 +1045,7 @@ class AccessReviewerTest {
         @Test
         void testGraph24WithProhibitions() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
 
@@ -1071,7 +1083,7 @@ class AccessReviewerTest {
         @Test
         void testGraph25WithProhibitions() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
 
@@ -1101,7 +1113,7 @@ class AccessReviewerTest {
         @Test
         void testGraph25WithProhibitions2() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
 
@@ -1127,7 +1139,7 @@ class AccessReviewerTest {
         @Test
         void testDeciderWithUA() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
 
@@ -1150,7 +1162,7 @@ class AccessReviewerTest {
         @Test
         void testProhibitionsAllCombinations() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -1238,7 +1250,7 @@ class AccessReviewerTest {
         @Test
         void testPermissions() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
 
@@ -1268,7 +1280,7 @@ class AccessReviewerTest {
         @Test
         void testPermissionsInOnlyOnePC() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(RWE);
             pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -1290,7 +1302,7 @@ class AccessReviewerTest {
         @Test
         void testProhibitionsWithContainerAsTarget() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(new AccessRightSet("read"));
             pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -1310,7 +1322,7 @@ class AccessReviewerTest {
         @Test
         void testProhibitionWithContainerAsTargetComplement() throws PMException {
             PAP pap = new PAP(new MemoryPolicyStore());
-            AccessReviewer accessReviewer = new AccessReviewer(pap);
+            MemoryAccessReviewer accessReviewer = new MemoryAccessReviewer(pap);
 
             pap.graph().setResourceAccessRights(new AccessRightSet("read"));
             pap.graph().createPolicyClass("pc1", new HashMap<>());
@@ -1327,4 +1339,5 @@ class AccessReviewerTest {
             assertFalse(deniedAccessRights.contains("read"));
         }
     }
+
 }
