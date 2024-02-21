@@ -1,9 +1,8 @@
 package gov.nist.csd.pm.pdp.neo4j;
 
-import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.neo4j.Neo4jConnection;
-import gov.nist.csd.pm.pap.neo4j.Neo4jGraphStore;
-import gov.nist.csd.pm.pap.neo4j.Neo4jProhibitionsStore;
+import gov.nist.csd.pm.impl.neo4j.Neo4jConnection;
+import gov.nist.csd.pm.impl.neo4j.Neo4jGraphStore;
+import gov.nist.csd.pm.impl.neo4j.Neo4jProhibitionsStore;
 import gov.nist.csd.pm.pdp.memory.AccessRightResolver;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.access.AccessRightSet;
@@ -27,8 +26,8 @@ import org.neo4j.graphdb.traversal.Uniqueness;
 
 import java.util.*;
 
-import static gov.nist.csd.pm.pap.neo4j.Neo4jGraphStore.*;
-import static gov.nist.csd.pm.pap.neo4j.Neo4jProhibitionsStore.*;
+import static gov.nist.csd.pm.impl.neo4j.Neo4jGraphStore.*;
+import static gov.nist.csd.pm.impl.neo4j.Neo4jProhibitionsStore.*;
 import static gov.nist.csd.pm.pdp.memory.AccessRightResolver.*;
 import static gov.nist.csd.pm.pdp.memory.MemoryAccessReviewer.resolvePaths;
 import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.U;

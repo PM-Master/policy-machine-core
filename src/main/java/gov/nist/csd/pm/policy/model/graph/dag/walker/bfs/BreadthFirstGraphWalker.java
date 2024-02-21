@@ -1,6 +1,5 @@
 package gov.nist.csd.pm.policy.model.graph.dag.walker.bfs;
 
-import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.Graph;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.graph.dag.NoopShortCircuit;
@@ -12,7 +11,6 @@ import gov.nist.csd.pm.policy.model.graph.dag.visitor.Visitor;
 import gov.nist.csd.pm.policy.model.graph.dag.walker.Direction;
 import gov.nist.csd.pm.policy.model.graph.dag.walker.GraphWalker;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class BreadthFirstGraphWalker implements GraphWalker {

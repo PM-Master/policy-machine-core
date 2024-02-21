@@ -1,13 +1,11 @@
 package gov.nist.csd.pm.policy.pml.statement;
 
-import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.access.UserContext;
 import gov.nist.csd.pm.policy.pml.PMLExecutor;
 import gov.nist.csd.pm.policy.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.policy.pml.function.FormalArgument;
-import gov.nist.csd.pm.policy.pml.context.ExecutionContext;
-import gov.nist.csd.pm.policy.pml.scope.UnknownFunctionInScopeException;
 import gov.nist.csd.pm.policy.pml.type.Type;
 import org.junit.jupiter.api.Test;
 

@@ -1,8 +1,7 @@
 package gov.nist.csd.pm.pdp.neo4j;
 
-import gov.nist.csd.pm.pap.neo4j.Neo4jConnection;
-import gov.nist.csd.pm.pap.neo4j.Neo4jGraphStore;
-import gov.nist.csd.pm.policy.exceptions.AssignmentCausesLoopException;
+import gov.nist.csd.pm.impl.neo4j.Neo4jConnection;
+import gov.nist.csd.pm.impl.neo4j.Neo4jGraphStore;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.review.GraphReview;
 import org.neo4j.graphdb.*;
@@ -13,7 +12,7 @@ import org.neo4j.graphdb.traversal.Uniqueness;
 import java.util.ArrayList;
 import java.util.List;
 
-import static gov.nist.csd.pm.pap.neo4j.Neo4jGraphStore.*;
+import static gov.nist.csd.pm.impl.neo4j.Neo4jGraphStore.*;
 
 public class Neo4jGraphReviewer implements GraphReview {
 

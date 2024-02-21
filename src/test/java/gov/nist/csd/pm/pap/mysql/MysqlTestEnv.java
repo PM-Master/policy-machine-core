@@ -1,5 +1,6 @@
 package gov.nist.csd.pm.pap.mysql;
 
+import gov.nist.csd.pm.impl.mysql.PolicyResetSequence;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;

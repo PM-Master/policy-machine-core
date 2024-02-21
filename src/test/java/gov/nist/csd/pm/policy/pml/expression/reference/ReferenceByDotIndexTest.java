@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.policy.pml.expression.reference;
 
-import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.access.UserContext;
 import gov.nist.csd.pm.policy.pml.PMLExecutor;
@@ -8,7 +8,6 @@ import gov.nist.csd.pm.policy.pml.compiler.Variable;
 import gov.nist.csd.pm.policy.pml.context.ExecutionContext;
 import gov.nist.csd.pm.policy.pml.context.VisitorContext;
 import gov.nist.csd.pm.policy.pml.scope.GlobalScope;
-import gov.nist.csd.pm.policy.pml.scope.PMLScopeException;
 import gov.nist.csd.pm.policy.pml.type.Type;
 import gov.nist.csd.pm.policy.pml.value.Value;
 import gov.nist.csd.pm.policy.pml.value.ArrayValue;

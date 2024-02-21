@@ -1,0 +1,28 @@
+package gov.nist.csd.pm.impl.memory;
+
+import gov.nist.csd.pm.policy.events.PolicyEvent;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+class TxPolicyEventTracker {
+
+    private final List<PolicyEvent> events;
+
+    public TxPolicyEventTracker() {
+        events = new ArrayList<>();
+    }
+
+    public List<PolicyEvent> getEvents() {
+        List<PolicyEvent> copy = new ArrayList<>(events);
+
+        Collections.reverse(copy);
+
+        return copy;
+    }
+
+    public void trackPolicyEvent(PolicyEvent event) {
+        this.events.add(event);
+    }
+}

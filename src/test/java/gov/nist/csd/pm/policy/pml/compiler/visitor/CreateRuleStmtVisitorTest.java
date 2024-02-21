@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.policy.pml.compiler.visitor;
 
-import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.pml.CompiledPML;
 import gov.nist.csd.pm.policy.pml.PMLCompiler;
