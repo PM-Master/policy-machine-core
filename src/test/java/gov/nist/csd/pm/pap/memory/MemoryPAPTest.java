@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pap.memory;
 
 import com.google.gson.Gson;
+import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PAPTest;
 import gov.nist.csd.pm.policy.exceptions.PMException;

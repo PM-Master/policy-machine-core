@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.policy.pml.compiler.visitor;
 
-import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.pml.PMLCompiler;
 import gov.nist.csd.pm.policy.pml.PMLContextVisitor;
@@ -10,9 +10,7 @@ import gov.nist.csd.pm.policy.pml.function.FormalArgument;
 import gov.nist.csd.pm.policy.pml.function.FunctionSignature;
 import gov.nist.csd.pm.policy.pml.context.VisitorContext;
 import gov.nist.csd.pm.policy.pml.exception.PMLCompilationException;
-import gov.nist.csd.pm.policy.pml.scope.FunctionAlreadyDefinedInScopeException;
 import gov.nist.csd.pm.policy.pml.scope.GlobalScope;
-import gov.nist.csd.pm.policy.pml.scope.Scope;
 import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.policy.pml.statement.FunctionReturnStatement;
 import gov.nist.csd.pm.policy.pml.statement.PMLStatement;

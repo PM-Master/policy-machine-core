@@ -1,12 +1,11 @@
 package gov.nist.csd.pm.policy.pml.statement;
 
-import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.access.UserContext;
 import gov.nist.csd.pm.policy.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.policy.pml.context.ExecutionContext;
 import gov.nist.csd.pm.policy.pml.scope.GlobalScope;
-import gov.nist.csd.pm.policy.pml.scope.UnknownVariableInScopeException;
 import gov.nist.csd.pm.policy.pml.value.StringValue;
 import org.junit.jupiter.api.Test;
 

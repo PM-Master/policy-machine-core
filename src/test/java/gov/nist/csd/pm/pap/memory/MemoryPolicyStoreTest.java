@@ -1,5 +1,6 @@
 package gov.nist.csd.pm.pap.memory;
 
+import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.pap.PolicyStore;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.access.AccessRightSet;
@@ -15,7 +16,6 @@ import gov.nist.csd.pm.policy.model.obligation.event.subject.AnyUserSubject;
 import gov.nist.csd.pm.policy.model.prohibition.ContainerCondition;
 import gov.nist.csd.pm.policy.model.prohibition.Prohibition;
 import gov.nist.csd.pm.policy.model.prohibition.ProhibitionSubject;
-import gov.nist.csd.pm.policy.pml.context.ExecutionContext;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;

@@ -2,7 +2,7 @@ package gov.nist.csd.pm.policy.serialization;
 
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.pml.PMLExecutor;
 import gov.nist.csd.pm.policy.serialization.json.JSONDeserializer;
 import gov.nist.csd.pm.policy.serialization.json.JSONSerializer;

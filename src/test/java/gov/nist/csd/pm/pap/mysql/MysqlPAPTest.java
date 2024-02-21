@@ -1,12 +1,9 @@
 package gov.nist.csd.pm.pap.mysql;
 
+import gov.nist.csd.pm.impl.mysql.MysqlPolicyStore;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PAPTest;
 import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.exceptions.ProhibitionDoesNotExistException;
-import gov.nist.csd.pm.policy.model.access.AccessRightSet;
-import gov.nist.csd.pm.policy.model.prohibition.ContainerCondition;
-import gov.nist.csd.pm.policy.model.prohibition.ProhibitionSubject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
