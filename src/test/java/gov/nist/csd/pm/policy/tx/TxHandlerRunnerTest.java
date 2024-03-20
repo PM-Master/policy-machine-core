@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.policy.tx;
 
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.exceptions.NodeNameExistsException;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import org.junit.jupiter.api.Test;

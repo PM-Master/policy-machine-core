@@ -1,6 +1,5 @@
 package gov.nist.csd.pm.epp;
 
-import gov.nist.csd.pm.pdp.memory.MemoryGraphReviewer;
 import gov.nist.csd.pm.policy.events.PolicyEvent;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.access.UserContext;

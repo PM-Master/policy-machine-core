@@ -1,7 +1,8 @@
 package gov.nist.csd.pm.pdp.neo4j;
 
+import gov.nist.csd.pm.impl.neo4j.pdp.Neo4jGraphReviewer;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.neo4j.Neo4jPolicyStore;
+import gov.nist.csd.pm.impl.neo4j.pap.Neo4jPolicyStore;
 import gov.nist.csd.pm.pdp.GraphReviewerTest;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import org.junit.jupiter.api.AfterAll;

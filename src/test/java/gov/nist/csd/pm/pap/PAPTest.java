@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap;
 
-import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.serialization.json.JSONDeserializer;
 import gov.nist.csd.pm.policy.serialization.json.JSONSerializer;
 import gov.nist.csd.pm.policy.model.obligation.event.*;

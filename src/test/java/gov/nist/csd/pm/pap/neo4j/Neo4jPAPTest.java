@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.neo4j;
 
-import gov.nist.csd.pm.impl.neo4j.Neo4jPolicyStore;
+import gov.nist.csd.pm.impl.neo4j.pap.Neo4jPolicyStore;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PAPTest;
 import gov.nist.csd.pm.policy.exceptions.PMException;
