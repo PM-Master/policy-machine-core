@@ -2,8 +2,8 @@ package gov.nist.csd.pm.epp;
 
 import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
-import gov.nist.csd.pm.pdp.memory.MemoryPolicyReviewer;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.policy.pml.value.VoidValue;
 import gov.nist.csd.pm.policy.serialization.pml.PMLDeserializer;

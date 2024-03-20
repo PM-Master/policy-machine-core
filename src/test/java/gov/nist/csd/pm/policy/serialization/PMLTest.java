@@ -9,7 +9,7 @@ import gov.nist.csd.pm.policy.pml.value.VoidValue;
 import gov.nist.csd.pm.util.PolicyEquals;
 import gov.nist.csd.pm.util.SamplePolicy;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.model.access.UserContext;
 import org.junit.jupiter.api.Test;

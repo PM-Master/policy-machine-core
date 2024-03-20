@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.policy.pml.expression.literal;
 
-import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.exceptions.PMException;
 import gov.nist.csd.pm.policy.pml.PMLContextVisitor;
 import gov.nist.csd.pm.policy.pml.antlr.PMLParser;

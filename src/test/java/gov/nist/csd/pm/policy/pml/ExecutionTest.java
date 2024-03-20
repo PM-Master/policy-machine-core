@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.policy.pml;
 
-import gov.nist.csd.pm.impl.memory.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.policy.pml.exception.PMLCompilationException;
 import gov.nist.csd.pm.policy.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.policy.exceptions.PMException;
