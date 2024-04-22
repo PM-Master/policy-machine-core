@@ -1,14 +1,14 @@
-package gov.nist.csd.pm.policy.tx;
+package gov.nist.csd.pm.pap.tx;
 
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
-import gov.nist.csd.pm.policy.exceptions.NodeNameExistsException;
-import gov.nist.csd.pm.policy.exceptions.PMException;
+import gov.nist.csd.pm.pap.exception.NodeNameExistsException;
+import gov.nist.csd.pm.common.exception.PMException;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 
-import static gov.nist.csd.pm.policy.tx.TxRunner.runTx;
+import static gov.nist.csd.pm.common.tx.TxRunner.runTx;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TxHandlerRunnerTest {

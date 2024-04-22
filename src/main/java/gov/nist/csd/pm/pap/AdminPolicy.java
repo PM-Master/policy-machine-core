@@ -1,7 +1,8 @@
 package gov.nist.csd.pm.pap;
 
-import gov.nist.csd.pm.policy.exceptions.*;
-import gov.nist.csd.pm.policy.model.graph.relationships.InvalidAssignmentException;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.graph.relationships.InvalidAssignmentException;
+import gov.nist.csd.pm.pap.exception.*;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,26 +61,24 @@ public class AdminPolicy {
      * Verify that all policy classes have a target attribute in the admin policy.
      *
      * @param verifier The verifier used to verify the admin policy nodes exist.
-     * @param graphStore The graph store used to verify nodes.
+     * @param graph The graph store used to verify nodes.
      * @throws PMException If there is an error verifying any element of the admin policy.
      */
-    public static void verify(Verifier verifier, GraphStore graphStore) throws PMException {
+    public static void verify(Verifier verifier, Graph graph) throws PMException {
         verifyAdminPolicy(verifier);
 
-        verifyPolicyClasses(graphStore);
+        verifyPolicyClasses(graph);
     }
 
-    private static void verifyPolicyClasses(GraphStore graphStore)
-            throws PMBackendException, NodeDoesNotExistException, InvalidAssignmentException, NodeNameExistsException,
-                   AssignmentCausesLoopException, DisconnectedNodeException {
-        List<String> policyClasses = graphStore.getPolicyClasses();
+    private static void verifyPolicyClasses(Graph graph) throws PMException {
+        List<String> policyClasses = graph.getPolicyClasses();
         for (String pc : policyClasses) {
             String repOA = policyClassTargetName(pc);
-            if (graphStore.nodeExists(repOA)) {
+            if (graph.nodeExists(repOA)) {
                 continue;
             }
 
-            graphStore.createObjectAttribute(repOA, new HashMap<>(), List.of(POLICY_CLASS_TARGETS.nodeName()));
+            graph.createObjectAttribute(repOA, new HashMap<>(), List.of(POLICY_CLASS_TARGETS.nodeName()));
         }
     }
 

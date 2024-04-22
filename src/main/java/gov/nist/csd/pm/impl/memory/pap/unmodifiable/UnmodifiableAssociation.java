@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.impl.memory.pap.unmodifiable;
 
-import gov.nist.csd.pm.policy.model.access.AccessRightSet;
-import gov.nist.csd.pm.policy.model.graph.relationships.Association;
+import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationships.Association;
 
 public class UnmodifiableAssociation extends Association {
 

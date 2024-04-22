@@ -76,8 +76,8 @@
                 <artifactId>antlr4-maven-plugin</artifactId>
                 <version>${antlr.version}</version>
                 <configuration>
-                    <sourceDirectory>src/main/java/gov/nist/csd/pm/policy/pml/antlr</sourceDirectory>
-                    <outputDirectory>src/main/java/gov/nist/csd/pm/policy/pml/antlr</outputDirectory>
+                    <sourceDirectory>src/main/java/gov/nist/csd/pm/pap/pml/antlr</sourceDirectory>
+                    <outputDirectory>src/main/java/gov/nist/csd/pm/pap/pml/antlr</outputDirectory>
                     <visitor>true</visitor>
                     <arguments>
                         <argument>-package</argument>

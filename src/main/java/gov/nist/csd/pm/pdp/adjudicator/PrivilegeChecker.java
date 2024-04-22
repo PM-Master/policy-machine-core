@@ -2,16 +2,16 @@ package gov.nist.csd.pm.pdp.adjudicator;
 
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.exceptions.UnauthorizedException;
-import gov.nist.csd.pm.policy.model.access.AccessRightSet;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.model.graph.nodes.Node;
-import gov.nist.csd.pm.policy.review.PolicyReview;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.exception.UnauthorizedException;
+import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.common.graph.nodes.Node;
+import gov.nist.csd.pm.pap.PolicyReview;
 
 import java.util.Arrays;
 
-import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.PC;
+import static gov.nist.csd.pm.common.graph.nodes.NodeType.PC;
 
 public class PrivilegeChecker {
 
@@ -36,5 +36,4 @@ public class PrivilegeChecker {
             throw new UnauthorizedException(userCtx, target, toCheck);
         }
     }
-
 }

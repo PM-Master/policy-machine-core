@@ -1,33 +1,32 @@
 package gov.nist.csd.pm.pap;
 
-import gov.nist.csd.pm.policy.Policy;
-import gov.nist.csd.pm.policy.PolicyDeserializer;
-import gov.nist.csd.pm.policy.PolicySerializer;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.tx.Transactional;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.common.tx.Transactional;
+import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
+import gov.nist.csd.pm.common.serialization.PolicySerializer;
 
 /**
  * PolicyStore is an abstract class that outlines the expected behavior of a backend implementation. It is expected that
- * any subclass calls {@link AdminPolicy#verify(AdminPolicy.Verifier, GraphStore)} in the constructor to verify the setup
+ * any subclass calls {@link AdminPolicy#verify(AdminPolicy.Verifier, Graph)} in the constructor to verify the setup
  * of the admin policy.
  */
 public abstract class PolicyStore implements Policy, Transactional {
 
     @Override
-    public abstract GraphStore graph();
+    public abstract Graph graph();
 
     @Override
-    public abstract ProhibitionsStore prohibitions();
+    public abstract Prohibitions prohibitions();
 
     @Override
-    public abstract ObligationsStore obligations();
+    public abstract Obligations obligations();
 
     @Override
-    public abstract UserDefinedPMLStore userDefinedPML();
+    public abstract UserDefinedPML userDefinedPML();
 
     /**
-     * Reset the underlying policy. This method should call {@link AdminPolicy#verify(AdminPolicy.Verifier, GraphStore)}
+     * Reset the underlying policy. This method should call {@link AdminPolicy#verify(AdminPolicy.Verifier, Graph)}
      * to initialize the admin policy elements after reset.
      *
      * @throws PMException If there is an error during the reset or admin initialization process

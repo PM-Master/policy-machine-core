@@ -1,17 +1,17 @@
 package gov.nist.csd.pm.impl.memory.pdp;
 
 import gov.nist.csd.pm.epp.EventContext;
-import gov.nist.csd.pm.policy.Policy;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.model.obligation.Obligation;
-import gov.nist.csd.pm.policy.model.obligation.Response;
-import gov.nist.csd.pm.policy.model.obligation.Rule;
-import gov.nist.csd.pm.policy.model.obligation.event.subject.AnyUserSubject;
-import gov.nist.csd.pm.policy.model.obligation.event.subject.Subject;
-import gov.nist.csd.pm.policy.model.obligation.event.target.AnyTarget;
-import gov.nist.csd.pm.policy.model.obligation.event.target.Target;
-import gov.nist.csd.pm.policy.review.ObligationsReview;
+import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.common.obligation.Obligation;
+import gov.nist.csd.pm.common.obligation.Response;
+import gov.nist.csd.pm.common.obligation.Rule;
+import gov.nist.csd.pm.common.obligation.event.subject.AnyUserSubject;
+import gov.nist.csd.pm.common.obligation.event.subject.Subject;
+import gov.nist.csd.pm.common.obligation.event.target.AnyTarget;
+import gov.nist.csd.pm.common.obligation.event.target.Target;
+import gov.nist.csd.pm.pap.ObligationsReview;
 
 import java.util.ArrayList;
 import java.util.HashMap;

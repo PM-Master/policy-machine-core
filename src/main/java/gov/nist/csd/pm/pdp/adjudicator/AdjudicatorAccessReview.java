@@ -1,12 +1,11 @@
 package gov.nist.csd.pm.pdp.adjudicator;
 
-import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.AccessRightSet;
-import gov.nist.csd.pm.policy.model.access.AdminAccessRights;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.model.audit.Explain;
-import gov.nist.csd.pm.policy.review.AccessReview;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.pdp.AdminAccessRights;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.audit.Explain;
+import gov.nist.csd.pm.pap.AccessReview;
 
 import java.util.List;
 import java.util.Map;

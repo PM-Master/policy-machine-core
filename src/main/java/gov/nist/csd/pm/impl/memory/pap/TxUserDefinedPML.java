@@ -1,13 +1,13 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
-import gov.nist.csd.pm.policy.UserDefinedPML;
-import gov.nist.csd.pm.policy.events.PolicyEvent;
-import gov.nist.csd.pm.policy.events.userdefinedpml.CreateConstantEvent;
-import gov.nist.csd.pm.policy.events.userdefinedpml.CreateFunctionEvent;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.exceptions.PMRuntimeException;
-import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.policy.pml.value.Value;
+import gov.nist.csd.pm.pap.UserDefinedPML;
+import gov.nist.csd.pm.pap.op.PolicyEvent;
+import gov.nist.csd.pm.pap.op.userdefinedpml.CreateConstantEvent;
+import gov.nist.csd.pm.pap.op.userdefinedpml.CreateFunctionEvent;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.exception.PMRuntimeException;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.List;
 import java.util.Map;
@@ -15,9 +15,9 @@ import java.util.Map;
 public class TxUserDefinedPML implements UserDefinedPML, BaseMemoryTx {
 
     private final TxPolicyEventTracker txPolicyEventTracker;
-    private final MemoryUserDefinedPMLStore memoryUserDefinedPMLStore;
+    private final MemoryUserDefinedPML memoryUserDefinedPMLStore;
 
-    public TxUserDefinedPML(TxPolicyEventTracker txPolicyEventTracker, MemoryUserDefinedPMLStore memoryUserDefinedPMLStore) {
+    public TxUserDefinedPML(TxPolicyEventTracker txPolicyEventTracker, MemoryUserDefinedPML memoryUserDefinedPMLStore) {
         this.txPolicyEventTracker = txPolicyEventTracker;
         this.memoryUserDefinedPMLStore = memoryUserDefinedPMLStore;
     }
@@ -27,7 +27,7 @@ public class TxUserDefinedPML implements UserDefinedPML, BaseMemoryTx {
         List<PolicyEvent> events = txPolicyEventTracker.getEvents();
         for (PolicyEvent event : events) {
             try {
-                TxCmd<MemoryUserDefinedPMLStore> txCmd = (TxCmd<MemoryUserDefinedPMLStore>) TxCmd.eventToCmd(event);
+                TxCmd<MemoryUserDefinedPML> txCmd = (TxCmd<MemoryUserDefinedPML>) TxCmd.eventToCmd(event);
                 txCmd.rollback(memoryUserDefinedPMLStore);
             } catch (PMException e) {
                 // throw runtime exception because there is noway back if the rollback fails
@@ -42,7 +42,7 @@ public class TxUserDefinedPML implements UserDefinedPML, BaseMemoryTx {
     }
 
     @Override
-    public void deleteFunction(String functionName) throws PMException {
+    public void deleteFunction(String functionName) {
         txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemoryDeleteFunctionEvent(memoryUserDefinedPMLStore.getFunctions().get(functionName)));
     }
 
@@ -62,7 +62,7 @@ public class TxUserDefinedPML implements UserDefinedPML, BaseMemoryTx {
     }
 
     @Override
-    public void deleteConstant(String constName) throws PMException {
+    public void deleteConstant(String constName) {
         txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemoryDeleteConstantEvent(constName, memoryUserDefinedPMLStore.getConstants().get(constName)));
     }
 

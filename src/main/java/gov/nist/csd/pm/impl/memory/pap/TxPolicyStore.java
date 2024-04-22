@@ -1,10 +1,10 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
-import gov.nist.csd.pm.policy.Policy;
-import gov.nist.csd.pm.policy.PolicyDeserializer;
-import gov.nist.csd.pm.policy.PolicySerializer;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
+import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
+import gov.nist.csd.pm.common.serialization.PolicySerializer;
 
 class TxPolicyStore implements Policy, BaseMemoryTx {
 
@@ -20,10 +20,10 @@ class TxPolicyStore implements Policy, BaseMemoryTx {
     public TxPolicyStore(MemoryPolicyStore txStore) {
         memoryPolicyStore = txStore;
         txPolicyEventTracker = new TxPolicyEventTracker();
-        txGraph = new TxGraph(txPolicyEventTracker, (MemoryGraphStore) txStore.graph());
-        txProhibitions = new TxProhibitions(txPolicyEventTracker, (MemoryProhibitionsStore) txStore.prohibitions());
-        txObligations = new TxObligations(txPolicyEventTracker, (MemoryObligationsStore) txStore.obligations());
-        txUserDefinedPML = new TxUserDefinedPML(txPolicyEventTracker, (MemoryUserDefinedPMLStore) txStore.userDefinedPML());
+        txGraph = new TxGraph(txPolicyEventTracker, (MemoryGraph) txStore.graph());
+        txProhibitions = new TxProhibitions(txPolicyEventTracker, (MemoryProhibitions) txStore.prohibitions());
+        txObligations = new TxObligations(txPolicyEventTracker, (MemoryObligations) txStore.obligations());
+        txUserDefinedPML = new TxUserDefinedPML(txPolicyEventTracker, (MemoryUserDefinedPML) txStore.userDefinedPML());
     }
 
     public void clearEvents() {

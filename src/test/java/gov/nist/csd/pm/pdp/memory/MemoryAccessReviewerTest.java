@@ -4,7 +4,7 @@ import gov.nist.csd.pm.impl.memory.pdp.MemoryAccessReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.pdp.AccessReviewerTest;
-import gov.nist.csd.pm.policy.exceptions.PMException;
+import gov.nist.csd.pm.common.exception.PMException;
 
 class MemoryAccessReviewerTest extends AccessReviewerTest {
 

@@ -1,35 +1,35 @@
 package gov.nist.csd.pm.impl.memory.pdp;
 
+import gov.nist.csd.pm.pap.Graph;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.policy.Graph;
-import gov.nist.csd.pm.policy.model.graph.dag.walker.bfs.BreadthFirstGraphWalker;
-import gov.nist.csd.pm.policy.model.graph.dag.walker.dfs.DepthFirstGraphWalker;
-import gov.nist.csd.pm.policy.exceptions.NodeDoesNotExistException;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.AccessRightSet;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.model.audit.EdgePath;
-import gov.nist.csd.pm.policy.model.audit.Explain;
-import gov.nist.csd.pm.policy.model.audit.Path;
-import gov.nist.csd.pm.policy.model.audit.PolicyClass;
-import gov.nist.csd.pm.policy.model.graph.dag.TargetDagResult;
-import gov.nist.csd.pm.policy.model.graph.dag.UserDagResult;
-import gov.nist.csd.pm.policy.model.graph.dag.propagator.Propagator;
-import gov.nist.csd.pm.policy.model.graph.dag.visitor.Visitor;
-import gov.nist.csd.pm.policy.model.graph.dag.walker.Direction;
-import gov.nist.csd.pm.policy.model.graph.nodes.Node;
-import gov.nist.csd.pm.policy.model.graph.relationships.Association;
-import gov.nist.csd.pm.policy.model.graph.relationships.Relationship;
-import gov.nist.csd.pm.policy.model.prohibition.ContainerCondition;
-import gov.nist.csd.pm.policy.model.prohibition.Prohibition;
-import gov.nist.csd.pm.policy.review.AccessReview;
+import gov.nist.csd.pm.common.graph.dag.BreadthFirstGraphWalker;
+import gov.nist.csd.pm.common.graph.dag.DepthFirstGraphWalker;
+import gov.nist.csd.pm.pap.exception.NodeDoesNotExistException;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.audit.EdgePath;
+import gov.nist.csd.pm.pap.audit.Explain;
+import gov.nist.csd.pm.pap.audit.Path;
+import gov.nist.csd.pm.pap.audit.PolicyClass;
+import gov.nist.csd.pm.common.graph.dag.TargetDagResult;
+import gov.nist.csd.pm.common.graph.dag.UserDagResult;
+import gov.nist.csd.pm.common.graph.dag.Propagator;
+import gov.nist.csd.pm.common.graph.dag.Visitor;
+import gov.nist.csd.pm.common.graph.dag.Direction;
+import gov.nist.csd.pm.common.graph.nodes.Node;
+import gov.nist.csd.pm.common.graph.relationships.Association;
+import gov.nist.csd.pm.common.graph.relationships.Relationship;
+import gov.nist.csd.pm.common.prohibition.ContainerCondition;
+import gov.nist.csd.pm.common.prohibition.Prohibition;
+import gov.nist.csd.pm.pap.AccessReview;
 
 import java.util.*;
 
 import static gov.nist.csd.pm.pdp.AccessRightResolver.*;
-import static gov.nist.csd.pm.policy.model.access.UserContext.NO_PROCESS;
-import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.U;
-import static gov.nist.csd.pm.policy.model.graph.nodes.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.pdp.UserContext.NO_PROCESS;
+import static gov.nist.csd.pm.common.graph.nodes.NodeType.U;
+import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
 
 public class MemoryAccessReviewer implements AccessReview {
 

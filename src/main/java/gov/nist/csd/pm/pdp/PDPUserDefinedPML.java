@@ -5,15 +5,14 @@ import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.epp.EventProcessor;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pdp.adjudicator.AdjudicatorUserDefinedPML;
-import gov.nist.csd.pm.policy.UserDefinedPML;
-import gov.nist.csd.pm.policy.events.userdefinedpml.CreateConstantEvent;
-import gov.nist.csd.pm.policy.events.userdefinedpml.CreateFunctionEvent;
-import gov.nist.csd.pm.policy.events.userdefinedpml.DeleteConstantEvent;
-import gov.nist.csd.pm.policy.events.userdefinedpml.DeleteFunctionEvent;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.policy.pml.value.Value;
+import gov.nist.csd.pm.pap.UserDefinedPML;
+import gov.nist.csd.pm.pap.op.userdefinedpml.CreateConstantEvent;
+import gov.nist.csd.pm.pap.op.userdefinedpml.CreateFunctionEvent;
+import gov.nist.csd.pm.pap.op.userdefinedpml.DeleteConstantEvent;
+import gov.nist.csd.pm.pap.op.userdefinedpml.DeleteFunctionEvent;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.Map;
 

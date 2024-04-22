@@ -1,0 +1,76 @@
+package gov.nist.csd.pm.pap.pml.statement;
+
+import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.pap.pml.expression.Expression;
+import gov.nist.csd.pm.pap.pml.value.Value;
+import gov.nist.csd.pm.pap.pml.value.VoidValue;
+import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
+
+import java.util.Objects;
+
+
+public class AssociateStatement extends PMLStatement {
+
+    private final Expression ua;
+    private final Expression target;
+    private final Expression accessRights;
+
+    public AssociateStatement(Expression ua, Expression target, Expression accessRights) {
+        this.ua = ua;
+        this.target = target;
+        this.accessRights = accessRights;
+    }
+
+    public Expression getUa() {
+        return ua;
+    }
+
+    public Expression getTarget() {
+        return target;
+    }
+
+    public Expression getAccessRights() {
+        return accessRights;
+    }
+
+    @Override
+    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
+        Value uaValue = ua.execute(ctx, policy);
+        Value targetValue = target.execute(ctx, policy);
+        Value permissionsValue = accessRights.execute(ctx, policy);
+
+        AccessRightSet accessRightSet = new AccessRightSet();
+        for (Value v : permissionsValue.getArrayValue()) {
+            accessRightSet.add(v.getStringValue());
+        }
+
+        policy.graph().associate(
+                uaValue.getStringValue(),
+                targetValue.getStringValue(),
+                accessRightSet
+        );
+
+        return new VoidValue();
+    }
+
+    @Override
+    public String toFormattedString(int indentLevel) {
+        return indent(indentLevel) + String.format("associate %s and %s with %s",
+                ua, target, accessRights);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AssociateStatement that = (AssociateStatement) o;
+        return Objects.equals(ua, that.ua) && Objects.equals(target, that.target) && Objects.equals(accessRights, that.accessRights);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ua, target, accessRights);
+    }
+}

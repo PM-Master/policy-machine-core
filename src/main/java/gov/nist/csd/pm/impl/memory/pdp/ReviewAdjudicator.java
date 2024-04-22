@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.impl.memory.pdp;
 
-import gov.nist.csd.pm.policy.review.*;
+import gov.nist.csd.pm.pap.*;
 
 public class ReviewAdjudicator implements PolicyReview {
     @Override

@@ -3,11 +3,11 @@ package gov.nist.csd.pm.impl.mysql;
 import com.google.gson.Gson;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PolicyStore;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.exceptions.PMLConstantAlreadyDefinedException;
-import gov.nist.csd.pm.policy.model.access.AccessRightSet;
-import gov.nist.csd.pm.policy.model.graph.nodes.NodeType;
-import gov.nist.csd.pm.policy.pml.value.StringValue;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.exception.PMLConstantAlreadyDefinedException;
+import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.nodes.NodeType;
+import gov.nist.csd.pm.pap.pml.value.StringValue;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -16,26 +16,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static gov.nist.csd.pm.common.graph.nodes.NodeType.*;
 import static gov.nist.csd.pm.pap.AdminPolicy.Verifier;
 import static gov.nist.csd.pm.pap.AdminPolicy.verify;
-import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.*;
 
 public class MysqlPolicyStore extends PolicyStore implements Verifier {
 
     protected final MysqlConnection connection;
 
-    private final MysqlGraphStore graph;
-    private final MysqlProhibitionsStore prohibitions;
-    private final MysqlObligationsStore obligations;
-    private final MysqlUserDefinedPMLStore userDefinedPML;
+    private final MysqlGraph graph;
+    private final MysqlProhibitions prohibitions;
+    private final MysqlObligations obligations;
+    private final MysqlUserDefinedPML userDefinedPML;
 
     public MysqlPolicyStore(Connection connection) throws PMException {
         this.connection = new MysqlConnection(connection);
 
-        this.graph = new MysqlGraphStore(this.connection);
-        this.prohibitions = new MysqlProhibitionsStore(this.connection);
-        this.obligations = new MysqlObligationsStore(this.connection);
-        this.userDefinedPML = new MysqlUserDefinedPMLStore(this.connection);
+        this.graph = new MysqlGraph(this.connection);
+        this.prohibitions = new MysqlProhibitions(this.connection);
+        this.obligations = new MysqlObligations(this.connection);
+        this.userDefinedPML = new MysqlUserDefinedPML(this.connection);
 
         verify(this, graph);
     }
@@ -75,22 +75,22 @@ public class MysqlPolicyStore extends PolicyStore implements Verifier {
     }
 
     @Override
-    public MysqlGraphStore graph() {
+    public MysqlGraph graph() {
         return graph;
     }
 
     @Override
-    public MysqlProhibitionsStore prohibitions() {
+    public MysqlProhibitions prohibitions() {
         return prohibitions;
     }
 
     @Override
-    public MysqlObligationsStore obligations() {
+    public MysqlObligations obligations() {
         return obligations;
     }
 
     @Override
-    public MysqlUserDefinedPMLStore userDefinedPML() {
+    public MysqlUserDefinedPML userDefinedPML() {
         return userDefinedPML;
     }
 

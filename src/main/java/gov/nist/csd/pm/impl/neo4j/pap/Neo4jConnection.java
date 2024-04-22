@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.impl.neo4j.pap;
 
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.tx.Transactional;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.tx.Transactional;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 

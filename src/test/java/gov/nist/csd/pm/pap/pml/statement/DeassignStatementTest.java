@@ -1,0 +1,62 @@
+package gov.nist.csd.pm.pap.pml.statement;
+
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
+import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
+import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
+import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.List;
+
+import static gov.nist.csd.pm.pap.pml.PMLUtil.buildArrayLiteral;
+import static org.junit.jupiter.api.Assertions.*;
+
+class DeassignStatementTest {
+
+    @Test
+    void testSuccess() throws PMException {
+        DeassignStatement stmt = new DeassignStatement(
+                new StringLiteral("ua3"),
+                buildArrayLiteral("ua1", "ua2")
+        );
+
+        MemoryPolicyStore store = new MemoryPolicyStore();
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+        store.graph().createUserAttribute("ua3", new HashMap<>(), List.of("ua1", "ua2", "pc1"));
+        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.withValuesAndDefinitions(store));
+        stmt.execute(execCtx, store);
+
+        assertEquals(
+                List.of("pc1"),
+                store.graph().getParents("ua3")
+        );
+    }
+
+    @Test
+    void testToFormattedString() {
+        DeassignStatement stmt = new DeassignStatement(
+                new StringLiteral("ua3"),
+                buildArrayLiteral("ua1", "ua2")
+        );
+
+        assertEquals(
+                """
+                        deassign "ua3" from ["ua1", "ua2"]""",
+                stmt.toFormattedString(0)
+        );
+        assertEquals(
+                """
+                            deassign "ua3" from ["ua1", "ua2"]
+                        """,
+                stmt.toFormattedString(1) + "\n"
+        );
+    }
+
+}

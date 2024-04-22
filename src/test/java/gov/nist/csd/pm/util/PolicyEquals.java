@@ -1,19 +1,19 @@
 package gov.nist.csd.pm.util;
 
-import gov.nist.csd.pm.policy.Policy;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.graph.nodes.Node;
-import gov.nist.csd.pm.policy.model.graph.nodes.NodeType;
-import gov.nist.csd.pm.policy.model.graph.relationships.Association;
-import gov.nist.csd.pm.policy.model.obligation.Obligation;
-import gov.nist.csd.pm.policy.model.prohibition.Prohibition;
-import gov.nist.csd.pm.policy.pml.value.Value;
-import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.graph.nodes.Node;
+import gov.nist.csd.pm.common.graph.nodes.NodeType;
+import gov.nist.csd.pm.common.graph.relationships.Association;
+import gov.nist.csd.pm.common.obligation.Obligation;
+import gov.nist.csd.pm.common.prohibition.Prohibition;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.List;
 import java.util.Map;
 
-import static gov.nist.csd.pm.policy.model.graph.nodes.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

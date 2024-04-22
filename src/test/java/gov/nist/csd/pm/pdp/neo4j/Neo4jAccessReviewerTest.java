@@ -4,7 +4,7 @@ import gov.nist.csd.pm.impl.neo4j.pdp.Neo4jAccessReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.neo4j.pap.Neo4jPolicyStore;
 import gov.nist.csd.pm.pdp.AccessReviewerTest;
-import gov.nist.csd.pm.policy.exceptions.PMException;
+import gov.nist.csd.pm.common.exception.PMException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;

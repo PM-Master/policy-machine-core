@@ -1,10 +1,9 @@
 package gov.nist.csd.pm.pdp;
 
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.policy.serialization.pml.PMLDeserializer;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 
 public class PMLBootstrapper implements PolicyBootstrapper{
 

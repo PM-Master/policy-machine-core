@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.epp;
 
-import gov.nist.csd.pm.policy.exceptions.PMException;
+import gov.nist.csd.pm.common.exception.PMException;
 
 public interface EventEmitter {
 

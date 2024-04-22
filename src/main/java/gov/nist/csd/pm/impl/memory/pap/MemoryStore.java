@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
-import gov.nist.csd.pm.policy.exceptions.PMBackendException;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.tx.Transactional;
+import gov.nist.csd.pm.pap.exception.PMBackendException;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.tx.Transactional;
 
 public abstract class MemoryStore<T extends BaseMemoryTx> implements Transactional, BaseMemoryTx {
 

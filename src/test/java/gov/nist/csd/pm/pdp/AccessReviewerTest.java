@@ -1,24 +1,22 @@
 package gov.nist.csd.pm.pdp;
 
-import gov.nist.csd.pm.policy.Policy;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.AccessRightSet;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.model.audit.Explain;
-import gov.nist.csd.pm.policy.model.audit.Path;
-import gov.nist.csd.pm.policy.model.audit.PolicyClass;
-import gov.nist.csd.pm.policy.model.graph.relationships.Association;
-import gov.nist.csd.pm.policy.model.prohibition.ContainerCondition;
-import gov.nist.csd.pm.policy.model.prohibition.Prohibition;
-import gov.nist.csd.pm.policy.model.prohibition.ProhibitionSubject;
-import gov.nist.csd.pm.policy.review.AccessReview;
-import gov.nist.csd.pm.policy.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.audit.Explain;
+import gov.nist.csd.pm.pap.audit.Path;
+import gov.nist.csd.pm.pap.audit.PolicyClass;
+import gov.nist.csd.pm.common.graph.relationships.Association;
+import gov.nist.csd.pm.common.prohibition.ContainerCondition;
+import gov.nist.csd.pm.common.prohibition.Prohibition;
+import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
+import gov.nist.csd.pm.pap.AccessReview;
+import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.*;
+import static gov.nist.csd.pm.pdp.AdminAccessRights.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class AccessReviewerTest {

@@ -1,12 +1,12 @@
 package gov.nist.csd.pm.epp;
 
-import gov.nist.csd.pm.policy.events.PolicyEvent;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.model.obligation.event.EventPattern;
-import gov.nist.csd.pm.policy.model.obligation.event.subject.Subject;
-import gov.nist.csd.pm.policy.model.obligation.event.target.Target;
-import gov.nist.csd.pm.policy.review.GraphReview;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.common.obligation.event.EventPattern;
+import gov.nist.csd.pm.common.obligation.event.subject.Subject;
+import gov.nist.csd.pm.common.obligation.event.target.Target;
+import gov.nist.csd.pm.pap.GraphReview;
+import gov.nist.csd.pm.pap.op.PolicyEvent;
 
 public class EventContext {
 

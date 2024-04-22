@@ -5,17 +5,15 @@ import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
-import gov.nist.csd.pm.policy.exceptions.BootstrapExistingPolicyException;
-import gov.nist.csd.pm.policy.exceptions.NodeNameExistsException;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.exceptions.UnauthorizedException;
-import gov.nist.csd.pm.policy.model.access.AccessRightSet;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.model.prohibition.ContainerCondition;
-import gov.nist.csd.pm.policy.model.prohibition.ProhibitionSubject;
-import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.policy.pml.type.Type;
-import gov.nist.csd.pm.policy.pml.value.VoidValue;
+import gov.nist.csd.pm.pap.exception.BootstrapExistingPolicyException;
+import gov.nist.csd.pm.pap.exception.NodeNameExistsException;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.exception.UnauthorizedException;
+import gov.nist.csd.pm.common.prohibition.ContainerCondition;
+import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.type.Type;
+import gov.nist.csd.pm.pap.pml.value.VoidValue;
 import gov.nist.csd.pm.util.SamplePolicy;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static gov.nist.csd.pm.pap.PAPTest.testAdminPolicy;
-import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.CREATE_OBJECT_ATTRIBUTE;
+import static gov.nist.csd.pm.pdp.AdminAccessRights.CREATE_OBJECT_ATTRIBUTE;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PDPTest {

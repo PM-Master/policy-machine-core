@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.impl.memory.pap.unmodifiable;
 
-import gov.nist.csd.pm.policy.model.graph.nodes.Node;
-import gov.nist.csd.pm.policy.model.graph.nodes.NodeType;
+import gov.nist.csd.pm.common.graph.nodes.Node;
+import gov.nist.csd.pm.common.graph.nodes.NodeType;
 
 import java.util.Map;
 

@@ -5,17 +5,16 @@ import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.epp.EventProcessor;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pdp.adjudicator.AdjudicatorObligations;
-import gov.nist.csd.pm.policy.Obligations;
-import gov.nist.csd.pm.policy.events.PolicyEvent;
-import gov.nist.csd.pm.policy.events.obligations.CreateObligationEvent;
-import gov.nist.csd.pm.policy.events.obligations.DeleteObligationEvent;
-import gov.nist.csd.pm.policy.events.obligations.UpdateObligationEvent;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.model.obligation.Obligation;
-import gov.nist.csd.pm.policy.model.obligation.Rule;
-import gov.nist.csd.pm.policy.model.obligation.event.subject.Subject;
-import gov.nist.csd.pm.policy.model.obligation.event.target.Target;
+import gov.nist.csd.pm.pap.Obligations;
+import gov.nist.csd.pm.pap.op.PolicyEvent;
+import gov.nist.csd.pm.pap.op.obligations.CreateObligationEvent;
+import gov.nist.csd.pm.pap.op.obligations.DeleteObligationEvent;
+import gov.nist.csd.pm.pap.op.obligations.UpdateObligationEvent;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.obligation.Obligation;
+import gov.nist.csd.pm.common.obligation.Rule;
+import gov.nist.csd.pm.common.obligation.event.subject.Subject;
+import gov.nist.csd.pm.common.obligation.event.target.Target;
 
 import java.util.List;
 

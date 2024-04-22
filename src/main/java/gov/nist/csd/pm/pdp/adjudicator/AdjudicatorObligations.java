@@ -2,21 +2,21 @@ package gov.nist.csd.pm.pdp.adjudicator;
 
 import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.policy.Obligations;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.exceptions.UnauthorizedException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.model.obligation.Obligation;
-import gov.nist.csd.pm.policy.model.obligation.Rule;
-import gov.nist.csd.pm.policy.model.obligation.event.subject.AnyUserSubject;
-import gov.nist.csd.pm.policy.model.obligation.event.subject.ProcessesSubject;
-import gov.nist.csd.pm.policy.model.obligation.event.subject.Subject;
-import gov.nist.csd.pm.policy.model.obligation.event.target.AnyTarget;
-import gov.nist.csd.pm.policy.model.obligation.event.target.Target;
+import gov.nist.csd.pm.pap.Obligations;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.exception.UnauthorizedException;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.common.obligation.Obligation;
+import gov.nist.csd.pm.common.obligation.Rule;
+import gov.nist.csd.pm.common.obligation.event.subject.AnyUserSubject;
+import gov.nist.csd.pm.common.obligation.event.subject.ProcessesSubject;
+import gov.nist.csd.pm.common.obligation.event.subject.Subject;
+import gov.nist.csd.pm.common.obligation.event.target.AnyTarget;
+import gov.nist.csd.pm.common.obligation.event.target.Target;
 
 import java.util.List;
 
-import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.*;
+import static gov.nist.csd.pm.pdp.AdminAccessRights.*;
 
 public class AdjudicatorObligations implements Obligations {
     private final UserContext userCtx;

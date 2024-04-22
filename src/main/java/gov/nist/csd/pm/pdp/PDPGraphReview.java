@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pdp;
 
 import gov.nist.csd.pm.pdp.adjudicator.AdjudicatorGraphReview;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.review.GraphReview;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.GraphReview;
 
 import java.util.List;
 

@@ -1,44 +1,46 @@
 package gov.nist.csd.pm.pap;
 
+import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
-import gov.nist.csd.pm.policy.serialization.json.JSONDeserializer;
-import gov.nist.csd.pm.policy.serialization.json.JSONSerializer;
-import gov.nist.csd.pm.policy.model.obligation.event.*;
-import gov.nist.csd.pm.policy.model.obligation.event.subject.AnyUserSubject;
-import gov.nist.csd.pm.policy.model.obligation.event.subject.UserAttributesSubject;
-import gov.nist.csd.pm.policy.model.obligation.event.subject.UsersSubject;
-import gov.nist.csd.pm.policy.model.obligation.event.target.AnyInUnionTarget;
-import gov.nist.csd.pm.policy.model.obligation.event.target.AnyTarget;
-import gov.nist.csd.pm.policy.model.obligation.event.target.OnTargets;
-import gov.nist.csd.pm.policy.pml.expression.*;
-import gov.nist.csd.pm.policy.pml.expression.literal.ArrayLiteral;
-import gov.nist.csd.pm.policy.pml.expression.literal.StringLiteral;
-import gov.nist.csd.pm.policy.pml.statement.CreateNonPCStatement;
-import gov.nist.csd.pm.policy.pml.type.Type;
-import gov.nist.csd.pm.policy.pml.value.Value;
-import gov.nist.csd.pm.policy.pml.value.StringValue;
-import gov.nist.csd.pm.policy.pml.value.VoidValue;
+import gov.nist.csd.pm.common.obligation.event.EventPattern;
+import gov.nist.csd.pm.common.obligation.event.Performs;
+import gov.nist.csd.pm.common.serialization.json.JSONDeserializer;
+import gov.nist.csd.pm.common.serialization.json.JSONSerializer;
+import gov.nist.csd.pm.common.obligation.event.subject.AnyUserSubject;
+import gov.nist.csd.pm.common.obligation.event.subject.UserAttributesSubject;
+import gov.nist.csd.pm.common.obligation.event.subject.UsersSubject;
+import gov.nist.csd.pm.common.obligation.event.target.AnyInUnionTarget;
+import gov.nist.csd.pm.common.obligation.event.target.AnyTarget;
+import gov.nist.csd.pm.common.obligation.event.target.OnTargets;
+import gov.nist.csd.pm.pap.exception.*;
+import gov.nist.csd.pm.pap.pml.expression.*;
+import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
+import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
+import gov.nist.csd.pm.pap.pml.statement.CreateNonPCStatement;
+import gov.nist.csd.pm.pap.pml.type.Type;
+import gov.nist.csd.pm.pap.pml.value.Value;
+import gov.nist.csd.pm.pap.pml.value.StringValue;
+import gov.nist.csd.pm.pap.pml.value.VoidValue;
 import gov.nist.csd.pm.util.PolicyEquals;
 import gov.nist.csd.pm.util.SamplePolicy;
-import gov.nist.csd.pm.policy.serialization.pml.PMLDeserializer;
-import gov.nist.csd.pm.policy.serialization.pml.PMLSerializer;
-import gov.nist.csd.pm.policy.exceptions.*;
-import gov.nist.csd.pm.policy.model.access.AccessRightSet;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.model.graph.nodes.Node;
-import gov.nist.csd.pm.policy.model.graph.nodes.Properties;
-import gov.nist.csd.pm.policy.model.graph.relationships.Association;
-import gov.nist.csd.pm.policy.model.graph.relationships.InvalidAssignmentException;
-import gov.nist.csd.pm.policy.model.graph.relationships.InvalidAssociationException;
-import gov.nist.csd.pm.policy.model.obligation.Obligation;
-import gov.nist.csd.pm.policy.model.obligation.Response;
-import gov.nist.csd.pm.policy.model.obligation.Rule;
-import gov.nist.csd.pm.policy.model.prohibition.ContainerCondition;
-import gov.nist.csd.pm.policy.model.prohibition.Prohibition;
-import gov.nist.csd.pm.policy.model.prohibition.ProhibitionSubject;
-import gov.nist.csd.pm.policy.pml.function.FormalArgument;
-import gov.nist.csd.pm.policy.pml.statement.CreatePolicyStatement;
-import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.common.serialization.pml.PMLSerializer;
+import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.common.graph.nodes.Node;
+import gov.nist.csd.pm.common.graph.nodes.Properties;
+import gov.nist.csd.pm.common.graph.relationships.Association;
+import gov.nist.csd.pm.common.graph.relationships.InvalidAssignmentException;
+import gov.nist.csd.pm.common.graph.relationships.InvalidAssociationException;
+import gov.nist.csd.pm.common.obligation.Obligation;
+import gov.nist.csd.pm.common.obligation.Response;
+import gov.nist.csd.pm.common.obligation.Rule;
+import gov.nist.csd.pm.common.prohibition.ContainerCondition;
+import gov.nist.csd.pm.common.prohibition.Prohibition;
+import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
+import gov.nist.csd.pm.pap.pml.function.FormalArgument;
+import gov.nist.csd.pm.pap.pml.statement.CreatePolicyStatement;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -46,10 +48,10 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.*;
 
-import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.*;
-import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.*;
-import static gov.nist.csd.pm.policy.model.graph.nodes.Properties.NO_PROPERTIES;
-import static gov.nist.csd.pm.policy.model.graph.nodes.Properties.toProperties;
+import static gov.nist.csd.pm.pdp.AdminAccessRights.*;
+import static gov.nist.csd.pm.common.graph.nodes.NodeType.*;
+import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.common.graph.nodes.Properties.toProperties;
 import static gov.nist.csd.pm.util.PolicyEquals.assertPolicyEquals;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -261,7 +263,7 @@ public abstract class PAPTest {
 
 
     @Nested
-    class GraphStoreTests {
+    class GraphTests {
 
         @Nested
         class SetResourceAccessRights {
@@ -374,7 +376,7 @@ public abstract class PAPTest {
             }
 
             @Test
-            void testNoParents() throws PMBackendException, NodeNameExistsException {
+            void testNoParents() throws PMException {
                 pap.graph().createPolicyClass("pc1", new HashMap<>());
                 assertThrows(DisconnectedNodeException.class, () -> pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of()));
             }
@@ -1127,7 +1129,7 @@ public abstract class PAPTest {
     }
 
     @Nested
-    class ProhibitionsStoreTests {
+    class ProhibitionsTests {
         @Nested
         class CreateProhibitionTest {
 
@@ -1446,7 +1448,7 @@ public abstract class PAPTest {
     }
 
     @Nested
-    class ObligationsStoreTests {
+    class ObligationsTests {
 
         Obligation obligation1 = new Obligation(
                 new UserContext("u1"),
@@ -1824,7 +1826,7 @@ public abstract class PAPTest {
     }
 
     @Nested
-    class UserDefinedPMLStoreTests {
+    class UserDefinedPMLTests {
 
         @Nested
         class CreateFunction {
@@ -2073,27 +2075,25 @@ public abstract class PAPTest {
 
             @Test
             void testRollbackGraph() throws PMException {
-                assertThrows(PMException.class, () -> {
-                    pap.runTx((tx) -> {
-                        pap.graph().setResourceAccessRights(new AccessRightSet("read"));
-                        pap.graph().createPolicyClass("pc1", new HashMap<>());
-                        pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                        pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                        pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
-                        pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                assertThrows(PMException.class, () -> pap.runTx((tx) -> {
+                    pap.graph().setResourceAccessRights(new AccessRightSet("read"));
+                    pap.graph().createPolicyClass("pc1", new HashMap<>());
+                    pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                    pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                    pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
+                    pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-                        pap.prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
-                                                  new AccessRightSet("read"), true,
-                                                  new ContainerCondition("oa1", false)
-                        );
+                    pap.prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
+                                              new AccessRightSet("read"), true,
+                                              new ContainerCondition("oa1", false)
+                    );
 
-                        pap.obligations().create(new UserContext("u1"), "obl1");
+                    pap.obligations().create(new UserContext("u1"), "obl1");
 
-                        pap.userDefinedPML().createConstant("const1", new StringValue("value"));
+                    pap.userDefinedPML().createConstant("const1", new StringValue("value"));
 
-                        pap.graph().createPolicyClass("pc1", new HashMap<>());
-                    });
-                });
+                    pap.graph().createPolicyClass("pc1", new HashMap<>());
+                }));
 
                 assertEquals(new AccessRightSet(), pap.graph().getResourceAccessRights());
                 assertFalse(pap.graph().nodeExists("pc1"));

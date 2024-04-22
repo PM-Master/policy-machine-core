@@ -1,18 +1,18 @@
 package gov.nist.csd.pm.impl.memory.pdp;
 
-import gov.nist.csd.pm.policy.model.graph.dag.walker.dfs.DepthFirstGraphWalker;
-import gov.nist.csd.pm.policy.Policy;
-import gov.nist.csd.pm.policy.exceptions.NodeDoesNotExistException;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.graph.dag.walker.Direction;
-import gov.nist.csd.pm.policy.model.graph.nodes.Node;
-import gov.nist.csd.pm.policy.review.GraphReview;
+import gov.nist.csd.pm.common.graph.dag.DepthFirstGraphWalker;
+import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.exception.NodeDoesNotExistException;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.graph.dag.Direction;
+import gov.nist.csd.pm.common.graph.nodes.Node;
+import gov.nist.csd.pm.pap.GraphReview;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.*;
+import static gov.nist.csd.pm.common.graph.nodes.NodeType.*;
 
 public class MemoryGraphReviewer implements GraphReview {
 

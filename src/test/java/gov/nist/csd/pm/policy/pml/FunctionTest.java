@@ -1,9 +1,9 @@
-package gov.nist.csd.pm.policy.pml;
+package gov.nist.csd.pm.pap.pml;
 
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.pml.exception.PMLCompilationException;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

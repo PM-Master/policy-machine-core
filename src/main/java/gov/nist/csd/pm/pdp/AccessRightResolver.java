@@ -1,15 +1,14 @@
 package gov.nist.csd.pm.pdp;
 
-import gov.nist.csd.pm.policy.model.access.AccessRightSet;
-import gov.nist.csd.pm.policy.model.graph.dag.TargetDagResult;
-import gov.nist.csd.pm.policy.model.graph.dag.UserDagResult;
-import gov.nist.csd.pm.policy.model.prohibition.ContainerCondition;
-import gov.nist.csd.pm.policy.model.prohibition.Prohibition;
+import gov.nist.csd.pm.common.graph.dag.TargetDagResult;
+import gov.nist.csd.pm.common.graph.dag.UserDagResult;
+import gov.nist.csd.pm.common.prohibition.ContainerCondition;
+import gov.nist.csd.pm.common.prohibition.Prohibition;
 
 import java.util.*;
 
-import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.*;
-import static gov.nist.csd.pm.policy.model.access.AdminAccessRights.ALL_RESOURCE_ACCESS_RIGHTS;
+import static gov.nist.csd.pm.pdp.AdminAccessRights.*;
+import static gov.nist.csd.pm.pdp.AdminAccessRights.ALL_RESOURCE_ACCESS_RIGHTS;
 
 public class AccessRightResolver {
 

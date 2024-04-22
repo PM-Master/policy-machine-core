@@ -1,22 +1,22 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
-import gov.nist.csd.pm.policy.Obligations;
-import gov.nist.csd.pm.policy.events.PolicyEvent;
-import gov.nist.csd.pm.policy.events.obligations.CreateObligationEvent;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.exceptions.PMRuntimeException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.model.obligation.Obligation;
-import gov.nist.csd.pm.policy.model.obligation.Rule;
+import gov.nist.csd.pm.pap.Obligations;
+import gov.nist.csd.pm.pap.op.PolicyEvent;
+import gov.nist.csd.pm.pap.op.obligations.CreateObligationEvent;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.exception.PMRuntimeException;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.common.obligation.Obligation;
+import gov.nist.csd.pm.common.obligation.Rule;
 
 import java.util.List;
 
 public class TxObligations implements Obligations, BaseMemoryTx {
 
     private final TxPolicyEventTracker txPolicyEventTracker;
-    private final MemoryObligationsStore memoryObligationsStore;
+    private final MemoryObligations memoryObligationsStore;
 
-    public TxObligations(TxPolicyEventTracker txPolicyEventTracker, MemoryObligationsStore memoryObligationsStore) {
+    public TxObligations(TxPolicyEventTracker txPolicyEventTracker, MemoryObligations memoryObligationsStore) {
         this.txPolicyEventTracker = txPolicyEventTracker;
         this.memoryObligationsStore = memoryObligationsStore;
     }
@@ -30,7 +30,7 @@ public class TxObligations implements Obligations, BaseMemoryTx {
         List<PolicyEvent> events = txPolicyEventTracker.getEvents();
         for (PolicyEvent event : events) {
             try {
-                TxCmd<MemoryObligationsStore> txCmd = (TxCmd<MemoryObligationsStore>) TxCmd.eventToCmd(event);
+                TxCmd<MemoryObligations> txCmd = (TxCmd<MemoryObligations>) TxCmd.eventToCmd(event);
                 txCmd.rollback(memoryObligationsStore);
             } catch (PMException e) {
                 // throw runtime exception because there is noway back if the rollback fails
@@ -49,7 +49,7 @@ public class TxObligations implements Obligations, BaseMemoryTx {
 
     @Override
     public void delete(String name) throws PMException {
-        txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemoryDeleteObligationEvent(memoryObligationsStore.get(name)));
+            txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemoryDeleteObligationEvent(memoryObligationsStore.get(name)));
     }
 
     @Override

@@ -1,21 +1,21 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
-import gov.nist.csd.pm.policy.events.graph.DeleteNodeEvent;
-import gov.nist.csd.pm.policy.events.graph.DissociateEvent;
-import gov.nist.csd.pm.policy.events.graph.SetNodePropertiesEvent;
-import gov.nist.csd.pm.policy.events.graph.SetResourceAccessRightsEvent;
-import gov.nist.csd.pm.policy.events.obligations.DeleteObligationEvent;
-import gov.nist.csd.pm.policy.events.obligations.UpdateObligationEvent;
-import gov.nist.csd.pm.policy.events.prohibitions.DeleteProhibitionEvent;
-import gov.nist.csd.pm.policy.events.prohibitions.UpdateProhibitionEvent;
-import gov.nist.csd.pm.policy.events.userdefinedpml.DeleteConstantEvent;
-import gov.nist.csd.pm.policy.events.userdefinedpml.DeleteFunctionEvent;
-import gov.nist.csd.pm.policy.model.access.AccessRightSet;
-import gov.nist.csd.pm.policy.model.graph.nodes.Node;
-import gov.nist.csd.pm.policy.model.obligation.Obligation;
-import gov.nist.csd.pm.policy.model.prohibition.Prohibition;
-import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.policy.pml.value.Value;
+import gov.nist.csd.pm.pap.op.graph.DeleteNodeEvent;
+import gov.nist.csd.pm.pap.op.graph.DissociateEvent;
+import gov.nist.csd.pm.pap.op.graph.SetNodePropertiesEvent;
+import gov.nist.csd.pm.pap.op.graph.SetResourceAccessRightsEvent;
+import gov.nist.csd.pm.pap.op.obligations.DeleteObligationEvent;
+import gov.nist.csd.pm.pap.op.obligations.UpdateObligationEvent;
+import gov.nist.csd.pm.pap.op.prohibitions.DeleteProhibitionEvent;
+import gov.nist.csd.pm.pap.op.prohibitions.UpdateProhibitionEvent;
+import gov.nist.csd.pm.pap.op.userdefinedpml.DeleteConstantEvent;
+import gov.nist.csd.pm.pap.op.userdefinedpml.DeleteFunctionEvent;
+import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.nodes.Node;
+import gov.nist.csd.pm.common.obligation.Obligation;
+import gov.nist.csd.pm.common.prohibition.Prohibition;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.List;
 import java.util.Map;

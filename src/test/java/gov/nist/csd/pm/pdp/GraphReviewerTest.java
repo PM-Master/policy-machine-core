@@ -1,10 +1,9 @@
 package gov.nist.csd.pm.pdp;
 
-import gov.nist.csd.pm.policy.Policy;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.review.GraphReview;
-import gov.nist.csd.pm.policy.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.GraphReview;
+import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

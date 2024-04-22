@@ -1,8 +1,7 @@
 package gov.nist.csd.pm.pdp;
 
+import gov.nist.csd.pm.pap.PolicyReview;
 import gov.nist.csd.pm.pdp.adjudicator.*;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.review.*;
 
 public class PDPReviewer implements PolicyReview {
 

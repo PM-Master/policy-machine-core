@@ -1,0 +1,48 @@
+package gov.nist.csd.pm.pap.pml.statement;
+
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
+import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
+import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
+import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.List;
+
+import static gov.nist.csd.pm.pap.pml.PMLUtil.buildArrayLiteral;
+import static org.junit.jupiter.api.Assertions.*;
+
+class AssignStatementTest {
+
+    @Test
+    void testSuccess() throws PMException {
+        AssignStatement stmt = new AssignStatement(new StringLiteral("u1"), buildArrayLiteral("ua2", "ua3"));
+
+        MemoryPolicyStore store = new MemoryPolicyStore();
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+        store.graph().createUserAttribute("ua3", new HashMap<>(), List.of("pc1"));
+        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));
+        stmt.execute(execCtx, store);
+
+        assertTrue(store.graph().getParents("u1").containsAll(List.of("ua1", "ua2", "ua3")));
+    }
+
+    @Test
+    void testToFormattedString() {
+        AssignStatement stmt = new AssignStatement(new StringLiteral("u1"), buildArrayLiteral("ua2", "ua3"));
+        assertEquals(
+                "assign \"u1\" to [\"ua2\", \"ua3\"]",
+                stmt.toFormattedString(0)
+        );
+        assertEquals(
+                "    assign \"u1\" to [\"ua2\", \"ua3\"]",
+                stmt.toFormattedString(1)
+        );
+    }
+
+}

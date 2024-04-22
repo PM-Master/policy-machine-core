@@ -3,18 +3,18 @@ package gov.nist.csd.pm.pdp;
 import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.epp.EventProcessor;
-import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.*;
 import gov.nist.csd.pm.pdp.adjudicator.Adjudicator;
-import gov.nist.csd.pm.policy.*;
-import gov.nist.csd.pm.policy.exceptions.BootstrapExistingPolicyException;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.pml.PMLExecutable;
-import gov.nist.csd.pm.policy.pml.PMLExecutor;
-import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.policy.pml.value.Value;
-import gov.nist.csd.pm.policy.review.PolicyReview;
-import gov.nist.csd.pm.policy.tx.TxRunner;
+import gov.nist.csd.pm.pap.exception.BootstrapExistingPolicyException;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.pml.PMLExecutable;
+import gov.nist.csd.pm.pap.pml.PMLExecutor;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.value.Value;
+import gov.nist.csd.pm.pap.PolicyReview;
+import gov.nist.csd.pm.common.tx.TxRunner;
+import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
+import gov.nist.csd.pm.common.serialization.PolicySerializer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Set;
 
 import static gov.nist.csd.pm.pap.AdminPolicy.ALL_NODE_NAMES;
-import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.ANY;
-import static gov.nist.csd.pm.policy.model.graph.nodes.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.common.graph.nodes.NodeType.ANY;
+import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
 
 public class PDP implements EventEmitter {
 

@@ -1,13 +1,14 @@
 package gov.nist.csd.pm.pap;
 
-import gov.nist.csd.pm.policy.*;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.model.access.UserContext;
-import gov.nist.csd.pm.policy.pml.PMLExecutable;
-import gov.nist.csd.pm.policy.pml.PMLExecutor;
-import gov.nist.csd.pm.policy.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.policy.pml.value.Value;
-import gov.nist.csd.pm.policy.tx.Transactional;
+import gov.nist.csd.pm.pap.pml.PMLExecutable;
+import gov.nist.csd.pm.pap.pml.PMLExecutor;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.value.Value;
+import gov.nist.csd.pm.common.tx.Transactional;
+import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
+import gov.nist.csd.pm.common.serialization.PolicySerializer;
 
 public class PAP implements Transactional, PMLExecutable, Policy {
 
@@ -35,22 +36,22 @@ public class PAP implements Transactional, PMLExecutable, Policy {
     }
 
     @Override
-    public GraphStore graph() {
+    public Graph graph() {
         return policyStore.graph();
     }
 
     @Override
-    public ProhibitionsStore prohibitions() {
+    public Prohibitions prohibitions() {
         return policyStore.prohibitions();
     }
 
     @Override
-    public ObligationsStore obligations() {
+    public Obligations obligations() {
         return policyStore.obligations();
     }
 
     @Override
-    public UserDefinedPMLStore userDefinedPML() {
+    public UserDefinedPML userDefinedPML() {
         return policyStore.userDefinedPML();
     }
 

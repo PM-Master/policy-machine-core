@@ -5,11 +5,8 @@ import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.pdp.adjudicator.PrivilegeChecker;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.exceptions.UnauthorizedException;
-import gov.nist.csd.pm.policy.model.access.AccessRightSet;
-import gov.nist.csd.pm.policy.model.access.AdminAccessRights;
-import gov.nist.csd.pm.policy.model.access.UserContext;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.exception.UnauthorizedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

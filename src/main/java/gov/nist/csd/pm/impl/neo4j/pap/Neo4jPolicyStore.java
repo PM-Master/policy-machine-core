@@ -1,32 +1,32 @@
 package gov.nist.csd.pm.impl.neo4j.pap;
 
 import gov.nist.csd.pm.pap.*;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.exceptions.PMLConstantAlreadyDefinedException;
-import gov.nist.csd.pm.policy.pml.value.StringValue;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.exception.PMLConstantAlreadyDefinedException;
+import gov.nist.csd.pm.pap.pml.value.StringValue;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 import java.util.HashMap;
 
 import static gov.nist.csd.pm.pap.AdminPolicy.verify;
-import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.OA;
-import static gov.nist.csd.pm.policy.model.graph.nodes.NodeType.PC;
+import static gov.nist.csd.pm.common.graph.nodes.NodeType.OA;
+import static gov.nist.csd.pm.common.graph.nodes.NodeType.PC;
 
 public class Neo4jPolicyStore extends PolicyStore implements AdminPolicy.Verifier {
 
     private Neo4jConnection neo4j;
-    private final Neo4jGraphStore graph;
-    private final Neo4jProhibitionsStore prohibitions;
-    private final Neo4jObligationsStore obligations;
-    private final Neo4jUserDefinedPMLStore userDefinedPML;
+    private final Neo4JGraph graph;
+    private final Neo4JProhibitions prohibitions;
+    private final Neo4JObligations obligations;
+    private final Neo4JUserDefinedPML userDefinedPML;
 
     public Neo4jPolicyStore(GraphDatabaseService service) throws PMException {
         this.neo4j = new Neo4jConnection(service);
 
-        this.graph = new Neo4jGraphStore(this.neo4j);
-        this.prohibitions = new Neo4jProhibitionsStore(this.neo4j);
-        this.obligations = new Neo4jObligationsStore(this.neo4j);
-        this.userDefinedPML = new Neo4jUserDefinedPMLStore(this.neo4j);
+        this.graph = new Neo4JGraph(this.neo4j);
+        this.prohibitions = new Neo4JProhibitions(this.neo4j);
+        this.obligations = new Neo4JObligations(this.neo4j);
+        this.userDefinedPML = new Neo4JUserDefinedPML(this.neo4j);
 
         // create node indexes
         /*this.neo4j.runTx(tx -> {
@@ -39,22 +39,22 @@ public class Neo4jPolicyStore extends PolicyStore implements AdminPolicy.Verifie
     }
 
     @Override
-    public GraphStore graph() {
+    public Graph graph() {
         return graph;
     }
 
     @Override
-    public ProhibitionsStore prohibitions() {
+    public Prohibitions prohibitions() {
         return prohibitions;
     }
 
     @Override
-    public ObligationsStore obligations() {
+    public Obligations obligations() {
         return obligations;
     }
 
     @Override
-    public UserDefinedPMLStore userDefinedPML() {
+    public UserDefinedPML userDefinedPML() {
         return userDefinedPML;
     }
 

@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.impl.memory.pdp;
 
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.policy.review.*;
+import gov.nist.csd.pm.pap.PolicyReview;
 
 public class MemoryPolicyReviewer implements PolicyReview {
 

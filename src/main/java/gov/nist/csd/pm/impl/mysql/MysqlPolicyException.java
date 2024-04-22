@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.impl.mysql;
 
-import gov.nist.csd.pm.policy.exceptions.PMBackendException;
+import gov.nist.csd.pm.pap.exception.PMBackendException;
 
 public class MysqlPolicyException extends PMBackendException {
 

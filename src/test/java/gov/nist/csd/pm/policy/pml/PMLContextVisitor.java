@@ -1,8 +1,8 @@
-package gov.nist.csd.pm.policy.pml;
+package gov.nist.csd.pm.pap.pml;
 
-import gov.nist.csd.pm.policy.pml.antlr.PMLLexer;
-import gov.nist.csd.pm.policy.pml.antlr.PMLParser;
-import gov.nist.csd.pm.policy.pml.antlr.PMLParserBaseVisitor;
+import gov.nist.csd.pm.pap.pml.antlr.PMLLexer;
+import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
+import gov.nist.csd.pm.pap.pml.antlr.PMLParserBaseVisitor;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RuleContext;

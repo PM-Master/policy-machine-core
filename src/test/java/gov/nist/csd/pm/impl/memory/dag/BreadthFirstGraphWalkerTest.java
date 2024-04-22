@@ -1,0 +1,101 @@
+package gov.nist.csd.pm.impl.memory.dag;
+
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.graph.dag.Direction;
+import gov.nist.csd.pm.common.graph.dag.BreadthFirstGraphWalker;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class BreadthFirstGraphWalkerTest {
+
+    static PAP pap;
+
+    @BeforeAll
+    static void setup() throws PMException {
+        pap = new PAP(new MemoryPolicyStore());
+        pap.graph().createPolicyClass("pc1", new HashMap<>());
+        pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+
+        pap.graph().createObjectAttribute("oa1-1", new HashMap<>(), List.of("oa1"));
+        pap.graph().createObjectAttribute("oa1-1-1", new HashMap<>(), List.of("oa1-1"));
+        pap.graph().createObjectAttribute("oa1-1-2", new HashMap<>(), List.of("oa1-1"));
+        pap.graph().createObjectAttribute("oa1-1-3", new HashMap<>(), List.of("oa1-1"));
+
+        pap.graph().createObjectAttribute("oa1-2", new HashMap<>(), List.of("oa1"));
+        pap.graph().createObjectAttribute("oa1-2-1", new HashMap<>(), List.of("oa1-2"));
+        pap.graph().createObjectAttribute("oa1-2-2", new HashMap<>(), List.of("oa1-2"));
+        pap.graph().createObjectAttribute("oa1-2-3", new HashMap<>(), List.of("oa1-2"));
+    }
+
+    @Test
+    void testWalk() throws PMException {
+        List<String> visited = new ArrayList<>();
+        BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.graph())
+                .withDirection(Direction.CHILDREN)
+                .withVisitor(node -> {
+                    visited.add(node);
+                });
+        bfs.walk("pc1");
+        List<String> expected = List.of(
+                "pc1",
+                "oa1",
+                "oa1-1",
+                "oa1-2",
+                "oa1-1-1",
+                "oa1-1-2",
+                "oa1-1-3",
+                "oa1-2-1",
+                "oa1-2-2",
+                "oa1-2-3"
+        );
+
+        assertEquals(expected, visited);
+    }
+
+    @Test
+    void testAllPathsShortCircuit() throws PMException {
+        List<String> visited = new ArrayList<>();
+        BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.graph())
+                .withDirection(Direction.CHILDREN)
+                .withVisitor(node -> {
+                    visited.add(node);
+                })
+                .withAllPathShortCircuit(node -> node.equals("oa1-2"));
+
+        bfs.walk("pc1");
+        List<String> expected = List.of("pc1", "oa1", "oa1-1", "oa1-2");
+        assertEquals(expected, visited);
+
+        visited.clear();
+        bfs = new BreadthFirstGraphWalker(pap.graph())
+                .withDirection(Direction.CHILDREN)
+                .withVisitor(visited::add)
+                .withAllPathShortCircuit(node -> node.equals("oa1-1-1"));
+
+        bfs.walk("pc1");
+        expected = List.of("pc1", "oa1", "oa1-1", "oa1-2", "oa1-1-1");
+        assertEquals(expected, visited);
+    }
+
+    @Test
+    void testSinglePathShortCircuit() throws PMException {
+        List<String> visited = new ArrayList<>();
+        BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.graph())
+                .withDirection(Direction.CHILDREN)
+                .withVisitor(visited::add)
+                .withSinglePathShortCircuit(node -> node.equals("oa1-1-1"));
+
+        bfs.walk("pc1");
+        List<String> expected = List.of("pc1", "oa1", "oa1-1", "oa1-2", "oa1-1-1",
+                "oa1-2-1", "oa1-2-2", "oa1-2-3");
+        assertEquals(expected, visited);
+    }
+}
