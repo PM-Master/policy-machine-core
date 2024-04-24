@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class CreateObligationOp implements ObligationsOp {
-    @Serial
-    private static final long serialVersionUID = 0L;
     private final UserContext author;
     private final String name;
     private final List<Rule> rules;

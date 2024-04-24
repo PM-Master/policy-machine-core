@@ -7,8 +7,6 @@ import java.io.Serial;
 import java.util.Objects;
 
 public class DeserializeFromPMLOp implements Operation {
-    @Serial
-    private static final long serialVersionUID = 0L;
     private final UserContext author;
     private final String pml;
     private final FunctionDefinitionStatement[] customFunctions;

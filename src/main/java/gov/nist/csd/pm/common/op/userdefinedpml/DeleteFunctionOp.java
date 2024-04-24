@@ -4,8 +4,6 @@ import java.io.Serial;
 import java.util.Objects;
 
 public class DeleteFunctionOp implements UserDefinedPMLOp {
-    @Serial
-    private static final long serialVersionUID = 0L;
     private final String functionName;
 
     public DeleteFunctionOp(String functionName) {

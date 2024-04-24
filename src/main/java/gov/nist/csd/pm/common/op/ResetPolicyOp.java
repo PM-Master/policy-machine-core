@@ -3,8 +3,6 @@ package gov.nist.csd.pm.common.op;
 import java.io.Serial;
 
 public class ResetPolicyOp implements Operation {
-    @Serial
-    private static final long serialVersionUID = 0L;
 
     public ResetPolicyOp() {
     }

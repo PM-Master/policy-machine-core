@@ -7,8 +7,6 @@ import java.io.Serial;
 import java.util.Objects;
 
 public class SetResourceAccessRightsOp implements Operation {
-    @Serial
-    private static final long serialVersionUID = 0L;
     private final AccessRightSet accessRightSet;
 
     public SetResourceAccessRightsOp(AccessRightSet accessRightSet) {

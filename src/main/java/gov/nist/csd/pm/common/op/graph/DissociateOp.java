@@ -6,8 +6,6 @@ import java.io.Serial;
 import java.util.Objects;
 
 public class DissociateOp implements Operation {
-    @Serial
-    private static final long serialVersionUID = 0L;
     private final String ua;
     private final String target;
 

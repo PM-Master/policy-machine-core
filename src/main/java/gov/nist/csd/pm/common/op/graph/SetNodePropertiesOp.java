@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 
 public class SetNodePropertiesOp implements Operation {
-    @Serial
-    private static final long serialVersionUID = 0L;
     private final String name;
     private final Map<String, String> properties;
 

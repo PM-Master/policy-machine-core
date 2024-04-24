@@ -6,8 +6,6 @@ import java.io.Serial;
 import java.util.Objects;
 
 public class AssignOp implements Operation {
-    @Serial
-    private static final long serialVersionUID = 0L;
     private final String child;
     private final String parent;
 

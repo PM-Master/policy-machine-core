@@ -6,8 +6,6 @@ import java.io.Serial;
 import java.util.Objects;
 
 public class DeleteNodeOp implements Operation {
-    @Serial
-    private static final long serialVersionUID = 0L;
     private final String name;
 
     public DeleteNodeOp(String name) {

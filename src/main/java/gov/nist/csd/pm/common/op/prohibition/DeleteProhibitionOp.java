@@ -4,8 +4,6 @@ import java.io.Serial;
 import java.util.Objects;
 
 public class DeleteProhibitionOp implements ProhibitionsOp {
-    @Serial
-    private static final long serialVersionUID = 0L;
     private final String name;
 
     public DeleteProhibitionOp(String name) {
