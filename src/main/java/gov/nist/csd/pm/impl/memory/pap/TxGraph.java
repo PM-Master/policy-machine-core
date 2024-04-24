@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
+import gov.nist.csd.pm.common.op.graph.*;
 import gov.nist.csd.pm.pap.Graph;
-import gov.nist.csd.pm.pap.op.PolicyEvent;
-import gov.nist.csd.pm.pap.op.graph.*;
+import gov.nist.csd.pm.common.op.Operation;
 import gov.nist.csd.pm.pap.exception.PMBackendException;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.exception.PMRuntimeException;
@@ -16,18 +16,18 @@ import java.util.Map;
 
 class TxGraph implements Graph, BaseMemoryTx {
 
-    private final TxPolicyEventTracker txPolicyEventTracker;
+    private final TxOpTracker txOpTracker;
     private final MemoryGraph memoryGraphStore;
 
-    public TxGraph(TxPolicyEventTracker txPolicyEventTracker, MemoryGraph memoryGraphStore) {
-        this.txPolicyEventTracker = txPolicyEventTracker;
+    public TxGraph(TxOpTracker txOpTracker, MemoryGraph memoryGraphStore) {
+        this.txOpTracker = txOpTracker;
         this.memoryGraphStore = memoryGraphStore;
     }
 
     @Override
     public void rollback() {
-        List<PolicyEvent> events = txPolicyEventTracker.getEvents();
-        for (PolicyEvent event : events) {
+        List<Operation> events = txOpTracker.getOperations();
+        for (Operation event : events) {
             try {
                 TxCmd<MemoryGraph> txCmd = (TxCmd<MemoryGraph>) TxCmd.eventToCmd(event);
                 txCmd.rollback(memoryGraphStore);
@@ -40,7 +40,7 @@ class TxGraph implements Graph, BaseMemoryTx {
 
     @Override
     public void setResourceAccessRights(AccessRightSet accessRightSet) {
-        txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemorySetResourceAccessRightsEvent(
+        txOpTracker.trackOp(new TxOps.MemorySetResourceAccessRightsOp(
                 memoryGraphStore.getResourceAccessRights(),
                 accessRightSet)
         );
@@ -53,31 +53,31 @@ class TxGraph implements Graph, BaseMemoryTx {
 
     @Override
     public String createPolicyClass(String name, Map<String, String> properties) {
-        txPolicyEventTracker.trackPolicyEvent(new CreatePolicyClassEvent(name, properties));
+        txOpTracker.trackOp(new CreatePolicyClassOp(name, properties));
         return name;
     }
 
     @Override
     public String createUserAttribute(String name, Map<String, String> properties, List<String> parents) {
-        txPolicyEventTracker.trackPolicyEvent(new CreateUserAttributeEvent(name, properties, parents));
+        txOpTracker.trackOp(new CreateUserAttributeOp(name, properties, parents));
         return name;
     }
 
     @Override
     public String createObjectAttribute(String name, Map<String, String> properties, List<String> parents) {
-        txPolicyEventTracker.trackPolicyEvent(new CreateObjectAttributeEvent(name, properties, parents));
+        txOpTracker.trackOp(new CreateObjectAttributeOp(name, properties, parents));
         return name;
     }
 
     @Override
     public String createObject(String name, Map<String, String> properties, List<String> parents) {
-        txPolicyEventTracker.trackPolicyEvent(new CreateObjectEvent(name, properties, parents));
+        txOpTracker.trackOp(new CreateObjectOp(name, properties, parents));
         return name;
     }
 
     @Override
     public String createUser(String name, Map<String, String> properties, List<String> parents) {
-        txPolicyEventTracker.trackPolicyEvent(new CreateUserEvent(name, properties, parents));
+        txOpTracker.trackOp(new CreateUserOp(name, properties, parents));
         return name;
     }
 
@@ -85,8 +85,8 @@ class TxGraph implements Graph, BaseMemoryTx {
     public void setNodeProperties(String name, Map<String, String> properties) throws PMBackendException {
         try {
             Map<String, String> oldProperties = memoryGraphStore.getNode(name).getProperties();
-            txPolicyEventTracker.trackPolicyEvent(
-                    new TxEvents.MemorySetNodePropertiesEvent(name, oldProperties, properties)
+            txOpTracker.trackOp(
+                    new TxOps.MemorySetNodePropertiesOp(name, oldProperties, properties)
             );
         } catch (PMException e) {
             throw new PMBackendException(e);
@@ -115,7 +115,7 @@ class TxGraph implements Graph, BaseMemoryTx {
 
     @Override
     public void deleteNode(String name) throws PMException {
-        txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemoryDeleteNodeEvent(
+        txOpTracker.trackOp(new TxOps.MemoryDeleteNodeOp(
                 name,
                 memoryGraphStore.getNode(name),
                 memoryGraphStore.getParents(name)
@@ -124,12 +124,12 @@ class TxGraph implements Graph, BaseMemoryTx {
 
     @Override
     public void assign(String child, String parent) {
-        txPolicyEventTracker.trackPolicyEvent(new AssignEvent(child, parent));
+        txOpTracker.trackOp(new AssignOp(child, parent));
     }
 
     @Override
     public void deassign(String child, String parent) {
-        txPolicyEventTracker.trackPolicyEvent(new DeassignEvent(child, parent));
+        txOpTracker.trackOp(new DeassignOp(child, parent));
     }
 
     @Override
@@ -144,7 +144,7 @@ class TxGraph implements Graph, BaseMemoryTx {
 
     @Override
     public void associate(String ua, String target, AccessRightSet accessRights) {
-        txPolicyEventTracker.trackPolicyEvent(new AssociateEvent(ua, target, accessRights));
+        txOpTracker.trackOp(new AssociateOp(ua, target, accessRights));
     }
 
     @Override
@@ -156,7 +156,7 @@ class TxGraph implements Graph, BaseMemoryTx {
             }
         }
 
-        txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemoryDissociateEvent(ua, target, accessRightSet));
+        txOpTracker.trackOp(new TxOps.MemoryDissociateOp(ua, target, accessRightSet));
     }
 
     @Override

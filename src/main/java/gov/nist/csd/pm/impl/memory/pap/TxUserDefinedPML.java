@@ -1,9 +1,9 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
 import gov.nist.csd.pm.pap.UserDefinedPML;
-import gov.nist.csd.pm.pap.op.PolicyEvent;
-import gov.nist.csd.pm.pap.op.userdefinedpml.CreateConstantEvent;
-import gov.nist.csd.pm.pap.op.userdefinedpml.CreateFunctionEvent;
+import gov.nist.csd.pm.common.op.Operation;
+import gov.nist.csd.pm.common.op.userdefinedpml.CreateConstantOp;
+import gov.nist.csd.pm.common.op.userdefinedpml.CreateFunctionOp;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.exception.PMRuntimeException;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
@@ -14,18 +14,18 @@ import java.util.Map;
 
 public class TxUserDefinedPML implements UserDefinedPML, BaseMemoryTx {
 
-    private final TxPolicyEventTracker txPolicyEventTracker;
+    private final TxOpTracker txOpTracker;
     private final MemoryUserDefinedPML memoryUserDefinedPMLStore;
 
-    public TxUserDefinedPML(TxPolicyEventTracker txPolicyEventTracker, MemoryUserDefinedPML memoryUserDefinedPMLStore) {
-        this.txPolicyEventTracker = txPolicyEventTracker;
+    public TxUserDefinedPML(TxOpTracker txOpTracker, MemoryUserDefinedPML memoryUserDefinedPMLStore) {
+        this.txOpTracker = txOpTracker;
         this.memoryUserDefinedPMLStore = memoryUserDefinedPMLStore;
     }
 
     @Override
     public void rollback() {
-        List<PolicyEvent> events = txPolicyEventTracker.getEvents();
-        for (PolicyEvent event : events) {
+        List<Operation> events = txOpTracker.getOperations();
+        for (Operation event : events) {
             try {
                 TxCmd<MemoryUserDefinedPML> txCmd = (TxCmd<MemoryUserDefinedPML>) TxCmd.eventToCmd(event);
                 txCmd.rollback(memoryUserDefinedPMLStore);
@@ -38,12 +38,12 @@ public class TxUserDefinedPML implements UserDefinedPML, BaseMemoryTx {
 
     @Override
     public void createFunction(FunctionDefinitionStatement functionDefinitionStatement) {
-        txPolicyEventTracker.trackPolicyEvent(new CreateFunctionEvent(functionDefinitionStatement));
+        txOpTracker.trackOp(new CreateFunctionOp(functionDefinitionStatement));
     }
 
     @Override
     public void deleteFunction(String functionName) {
-        txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemoryDeleteFunctionEvent(memoryUserDefinedPMLStore.getFunctions().get(functionName)));
+        txOpTracker.trackOp(new TxOps.MemoryDeleteFunctionOp(memoryUserDefinedPMLStore.getFunctions().get(functionName)));
     }
 
     @Override
@@ -58,12 +58,12 @@ public class TxUserDefinedPML implements UserDefinedPML, BaseMemoryTx {
 
     @Override
     public void createConstant(String constantName, Value constantValue) {
-        txPolicyEventTracker.trackPolicyEvent(new CreateConstantEvent(constantName, constantValue));
+        txOpTracker.trackOp(new CreateConstantOp(constantName, constantValue));
     }
 
     @Override
     public void deleteConstant(String constName) {
-        txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemoryDeleteConstantEvent(constName, memoryUserDefinedPMLStore.getConstants().get(constName)));
+        txOpTracker.trackOp(new TxOps.MemoryDeleteConstantOp(constName, memoryUserDefinedPMLStore.getConstants().get(constName)));
     }
 
     @Override

@@ -1,13 +1,13 @@
 package gov.nist.csd.pm.pdp;
 
+import gov.nist.csd.pm.common.op.graph.*;
 import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.epp.EventProcessor;
 import gov.nist.csd.pm.pap.Graph;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pdp.adjudicator.AdjudicatorGraph;
-import gov.nist.csd.pm.pap.op.PolicyEvent;
-import gov.nist.csd.pm.pap.op.graph.*;
+import gov.nist.csd.pm.common.op.Operation;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.nodes.Node;
 import gov.nist.csd.pm.common.graph.nodes.NodeType;
@@ -49,7 +49,7 @@ class PDPGraph implements Graph, EventEmitter {
 
         pap.graph().createPolicyClass(name, properties);
 
-        emitEvent(new EventContext(userCtx, name, new CreatePolicyClassEvent(name, new HashMap<>())));
+        emitEvent(new EventContext(userCtx, name, new CreatePolicyClassOp(name, new HashMap<>())));
 
         return name;
     }
@@ -60,10 +60,10 @@ class PDPGraph implements Graph, EventEmitter {
 
         pap.graph().createUserAttribute(name, properties, parents);
 
-        CreateUserAttributeEvent event =
-                new CreateUserAttributeEvent(name, new HashMap<>(), parents);
+        CreateUserAttributeOp op =
+                new CreateUserAttributeOp(name, new HashMap<>(), parents);
 
-        emitCreateNodeEvent(event, name, parents);
+        emitCreateNodeOp(op, name, parents);
 
         return name;
     }
@@ -74,10 +74,10 @@ class PDPGraph implements Graph, EventEmitter {
 
         pap.graph().createObjectAttribute(name, properties, parents);
 
-        CreateObjectAttributeEvent event =
-                new CreateObjectAttributeEvent(name, new HashMap<>(), parents);
+        CreateObjectAttributeOp op =
+                new CreateObjectAttributeOp(name, new HashMap<>(), parents);
 
-        emitCreateNodeEvent(event, name, parents);
+        emitCreateNodeOp(op, name, parents);
 
         return name;
     }
@@ -88,10 +88,10 @@ class PDPGraph implements Graph, EventEmitter {
 
         pap.graph().createObject(name, properties, parents);
 
-        CreateObjectEvent event =
-                new CreateObjectEvent(name, new HashMap<>(), parents);
+        CreateObjectOp op =
+                new CreateObjectOp(name, new HashMap<>(), parents);
 
-        emitCreateNodeEvent(event, name, parents);
+        emitCreateNodeOp(op, name, parents);
 
         return name;
     }
@@ -102,14 +102,14 @@ class PDPGraph implements Graph, EventEmitter {
 
         pap.graph().createUser(name, properties, parents);
 
-        CreateUserEvent event = new CreateUserEvent(name, new HashMap<>(), parents);
+        CreateUserOp op = new CreateUserOp(name, new HashMap<>(), parents);
 
-        emitCreateNodeEvent(event, name, parents);
+        emitCreateNodeOp(op, name, parents);
 
         return name;
     }
 
-    private void emitCreateNodeEvent(PolicyEvent event, String name, List<String> parents) throws PMException {
+    private void emitCreateNodeOp(Operation event, String name, List<String> parents) throws PMException {
         // emit event for the new node
         emitEvent(new EventContext(userCtx, name, event));
 
@@ -126,7 +126,7 @@ class PDPGraph implements Graph, EventEmitter {
         pap.graph().setNodeProperties(name, properties);
 
         emitEvent(new EventContext(userCtx, name,
-                new SetNodePropertiesEvent(name, properties)));
+                new SetNodePropertiesOp(name, properties)));
     }
 
     @Override
@@ -138,10 +138,10 @@ class PDPGraph implements Graph, EventEmitter {
 
         pap.graph().deleteNode(name);
 
-        emitDeleteNodeEvent(new DeleteNodeEvent(name), name, parents);
+        emitDeleteNodeOp(new DeleteNodeOp(name), name, parents);
     }
 
-    private void emitDeleteNodeEvent(PolicyEvent event, String name, List<String> parents) throws PMException {
+    private void emitDeleteNodeOp(Operation event, String name, List<String> parents) throws PMException {
         // emit delete node event on the deleted node
         emitEvent(new EventContext(userCtx, name, event));
 
@@ -178,9 +178,9 @@ class PDPGraph implements Graph, EventEmitter {
         pap.graph().assign(child, parent);
 
         emitEvent(new EventContext(userCtx, child,
-                new AssignEvent(child, parent)));
+                new AssignOp(child, parent)));
         emitEvent(new EventContext(userCtx, parent,
-                new AssignToEvent(child, parent)));
+                new AssignToOp(child, parent)));
     }
 
     @Override
@@ -190,9 +190,9 @@ class PDPGraph implements Graph, EventEmitter {
         pap.graph().deassign(child, parent);
 
         emitEvent(new EventContext(userCtx, child,
-                new DeassignEvent(child, parent)));
+                new DeassignOp(child, parent)));
         emitEvent(new EventContext(userCtx, parent,
-                new DeassignFromEvent(child, parent)));
+                new DeassignFromOp(child, parent)));
     }
 
     @Override
@@ -207,9 +207,9 @@ class PDPGraph implements Graph, EventEmitter {
         pap.graph().associate(ua, target, accessRights);
 
         emitEvent(new EventContext(userCtx, ua,
-                new AssociateEvent(ua, target, accessRights)));
+                new AssociateOp(ua, target, accessRights)));
         emitEvent(new EventContext(userCtx, target,
-                new AssociateEvent(ua, target, accessRights)));
+                new AssociateOp(ua, target, accessRights)));
     }
 
     @Override
@@ -219,9 +219,9 @@ class PDPGraph implements Graph, EventEmitter {
         pap.graph().dissociate(ua, target);
 
         emitEvent(new EventContext(userCtx, ua,
-                new DissociateEvent(ua, target)));
+                new DissociateOp(ua, target)));
         emitEvent(new EventContext(userCtx, target,
-                new DissociateEvent(ua, target)));
+                new DissociateOp(ua, target)));
     }
 
     @Override

@@ -4,12 +4,12 @@ import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.epp.EventProcessor;
 import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.common.op.obligation.CreateObligationOp;
+import gov.nist.csd.pm.common.op.obligation.DeleteObligationOp;
+import gov.nist.csd.pm.common.op.obligation.UpdateObligationOp;
 import gov.nist.csd.pm.pdp.adjudicator.AdjudicatorObligations;
 import gov.nist.csd.pm.pap.Obligations;
-import gov.nist.csd.pm.pap.op.PolicyEvent;
-import gov.nist.csd.pm.pap.op.obligations.CreateObligationEvent;
-import gov.nist.csd.pm.pap.op.obligations.DeleteObligationEvent;
-import gov.nist.csd.pm.pap.op.obligations.UpdateObligationEvent;
+import gov.nist.csd.pm.common.op.Operation;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
@@ -37,10 +37,10 @@ class PDPObligations implements Obligations, EventEmitter {
 
         pap.obligations().create(author, name, rules);
 
-        emitObligationEvent(new CreateObligationEvent(author, name, List.of(rules)), rules);
+        emitObligationEvent(new CreateObligationOp(author, name, List.of(rules)), rules);
     }
 
-    private void emitObligationEvent(PolicyEvent event, Rule... rules) throws PMException {
+    private void emitObligationEvent(Operation event, Rule... rules) throws PMException {
         // emit events for each rule
         for (Rule rule : rules) {
             // emit event for the subject
@@ -64,7 +64,7 @@ class PDPObligations implements Obligations, EventEmitter {
         pap.obligations().update(author, name, rules);
 
         emitObligationEvent(
-                new UpdateObligationEvent(author, name, List.of(rules)),
+                new UpdateObligationOp(author, name, List.of(rules)),
                 rules
         );
     }
@@ -87,7 +87,7 @@ class PDPObligations implements Obligations, EventEmitter {
 
     private void emitDeleteObligationEvent(Obligation obligation) throws PMException {
         emitObligationEvent(
-                new DeleteObligationEvent(obligation.getName()),
+                new DeleteObligationOp(obligation.getName()),
                 obligation.getRules().toArray(Rule[]::new)
         );
     }

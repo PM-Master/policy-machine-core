@@ -33,7 +33,7 @@ class MemoryProhibitions extends MemoryStore<TxProhibitions> implements Prohibit
     @Override
     public void beginTx() {
         if (tx == null) {
-            tx = new MemoryTx<>(false, 0, new TxProhibitions(new TxPolicyEventTracker(), this));
+            tx = new MemoryTx<>(false, 0, new TxProhibitions(new TxOpTracker(), this));
         }
 
         tx.beginTx();

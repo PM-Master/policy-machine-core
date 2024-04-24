@@ -10,7 +10,7 @@ class TxPolicyStore implements Policy, BaseMemoryTx {
 
     private final MemoryPolicyStore memoryPolicyStore;
 
-    protected TxPolicyEventTracker txPolicyEventTracker;
+    protected TxOpTracker txOpTracker;
 
     private TxGraph txGraph;
     private TxProhibitions txProhibitions;
@@ -19,15 +19,15 @@ class TxPolicyStore implements Policy, BaseMemoryTx {
 
     public TxPolicyStore(MemoryPolicyStore txStore) {
         memoryPolicyStore = txStore;
-        txPolicyEventTracker = new TxPolicyEventTracker();
-        txGraph = new TxGraph(txPolicyEventTracker, (MemoryGraph) txStore.graph());
-        txProhibitions = new TxProhibitions(txPolicyEventTracker, (MemoryProhibitions) txStore.prohibitions());
-        txObligations = new TxObligations(txPolicyEventTracker, (MemoryObligations) txStore.obligations());
-        txUserDefinedPML = new TxUserDefinedPML(txPolicyEventTracker, (MemoryUserDefinedPML) txStore.userDefinedPML());
+        txOpTracker = new TxOpTracker();
+        txGraph = new TxGraph(txOpTracker, (MemoryGraph) txStore.graph());
+        txProhibitions = new TxProhibitions(txOpTracker, (MemoryProhibitions) txStore.prohibitions());
+        txObligations = new TxObligations(txOpTracker, (MemoryObligations) txStore.obligations());
+        txUserDefinedPML = new TxUserDefinedPML(txOpTracker, (MemoryUserDefinedPML) txStore.userDefinedPML());
     }
 
-    public void clearEvents() {
-        txPolicyEventTracker = new TxPolicyEventTracker();
+    public void clearOps() {
+        txOpTracker = new TxOpTracker();
     }
 
     @Override
@@ -64,12 +64,12 @@ class TxPolicyStore implements Policy, BaseMemoryTx {
     @Override
     public void reset() throws PMException {
         memoryPolicyStore.reset();
-        clearEvents();
+        clearOps();
     }
 
     @Override
     public void rollback() throws PMException {
-        clearEvents();
+        clearOps();
     }
 
 }

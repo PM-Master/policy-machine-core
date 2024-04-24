@@ -7,6 +7,7 @@ import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.common.obligation.event.subject.AnyUserSubject;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.op.graph.CreateObjectAttributeOp;
 import gov.nist.csd.pm.pdp.AccessRightSet;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
@@ -23,7 +24,6 @@ import gov.nist.csd.pm.common.obligation.Response;
 import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.common.obligation.event.EventPattern;
 import org.junit.jupiter.api.Test;
-import gov.nist.csd.pm.pap.op.graph.CreateObjectAttributeEvent;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -65,8 +65,8 @@ class EPPTest {
         assertTrue(pap.graph().nodeExists("oa1"));
 
         pdp.runTx(new UserContext("u1"), (txPDP) -> txPDP.graph().createObjectAttribute("oa2",
-                                                                                        new HashMap<>(),
-                                                                                        List.of("oa1")));
+                new HashMap<>(),
+                List.of("oa1")));
 
         assertTrue(pap.graph().nodeExists("pc2"));
 
@@ -108,7 +108,7 @@ class EPPTest {
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
         pdp.runTx(new UserContext("u1"), (txPDP) -> txPDP.graph().createObjectAttribute("oa2", new HashMap<>(),
-                                                                                        List.of("oa1")));
+                List.of("oa1")));
         assertTrue(pap.graph().getPolicyClasses().containsAll(Arrays.asList(
                 "pc1", "create_object_attribute", "oa2_test", "u1_test"
         )));
@@ -130,7 +130,7 @@ class EPPTest {
             policy.graph().createUser("u1", new HashMap<>(),  List.of("ua1", "ua2"));
             policy.graph().createObject("o1", new HashMap<>(),  List.of("oa1"));
             policy.graph().associate("ua1", AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(),
-                                     new AccessRightSet(CREATE_OBLIGATION));
+                    new AccessRightSet(CREATE_OBLIGATION));
             policy.graph().associate("ua1", "oa1", new AccessRightSet(CREATE_OBJECT));
             policy.graph().associate("ua1", AdminPolicyNode.OBLIGATIONS_TARGET.nodeName(), new AccessRightSet("*"));
         });
@@ -138,21 +138,27 @@ class EPPTest {
         pdp.runTx(new UserContext("u1"), (policy) -> {
             policy.obligations().create(new UserContext("u1"), "test",
                     new Rule("rule1",
-                             new EventPattern(new AnyUserSubject(), events(CREATE_OBJECT_ATTRIBUTE)),
-                             new Response("evtCtx", List.of(
-                                     new CreateNonPCStatement(
-                                             new StringLiteral("o2"),
-                                             NodeType.O,
-                                             new ArrayLiteral(new Expression[]{new StringLiteral("oa1")}, Type.string())
-                                     ),
-                                     new CreatePolicyStatement(new StringLiteral("pc2"))
-                             ))
+                            new EventPattern(new AnyUserSubject(), events(CREATE_OBJECT_ATTRIBUTE)),
+                            new Response("evtCtx", List.of(
+                                    new CreateNonPCStatement(
+                                            new StringLiteral("o2"),
+                                            NodeType.O,
+                                            new ArrayLiteral(new Expression[]{new StringLiteral("oa1")}, Type.string())
+                                    ),
+                                    new CreatePolicyStatement(new StringLiteral("pc2"))
+                            ))
                     )
             );
         });
 
-        EventContext eventCtx = new EventContext(new UserContext("u1"), new CreateObjectAttributeEvent("oa2",
-                                                                                                       new HashMap<>(), List.of("pc1")));
+        EventContext eventCtx = new EventContext(
+                new UserContext("u1"),
+                new CreateObjectAttributeOp(
+                        "oa2",
+                        new HashMap<>(),
+                        List.of("pc1")
+                )
+        );
         assertThrows(PMException.class, () -> {
             epp.getEventProcessor().processEvent(eventCtx);
         });
@@ -199,7 +205,7 @@ class EPPTest {
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer(testFunc));
 
         pdp.runTx(new UserContext("u1"), (txPDP) -> txPDP.graph().createObjectAttribute("oa2", new HashMap<>(),
-                                                                                        List.of("oa1")));
+                List.of("oa1")));
         assertTrue(pap.graph().nodeExists("test"));
     }
 
@@ -236,7 +242,7 @@ class EPPTest {
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
         pdp.runTx(new UserContext("u1"), (txPDP) -> txPDP.graph().createObjectAttribute("oa2", new HashMap<>(),
-                                                                                        List.of("oa1")));
+                List.of("oa1")));
         assertFalse(pap.graph().nodeExists("test"));
     }
 }

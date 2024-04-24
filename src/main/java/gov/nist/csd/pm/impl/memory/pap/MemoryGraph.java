@@ -46,7 +46,7 @@ class MemoryGraph extends MemoryStore<TxGraph> implements Graph, Transactional, 
     @Override
     public void beginTx() {
         if (tx == null) {
-            tx = new MemoryTx<>(false, 0, new TxGraph(new TxPolicyEventTracker(), this));
+            tx = new MemoryTx<>(false, 0, new TxGraph(new TxOpTracker(), this));
         }
         tx.beginTx();
     }

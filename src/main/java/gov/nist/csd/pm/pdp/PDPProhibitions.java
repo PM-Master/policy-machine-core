@@ -4,11 +4,11 @@ import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.epp.EventProcessor;
 import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.common.op.prohibition.CreateProhibitionOp;
+import gov.nist.csd.pm.common.op.prohibition.DeleteProhibitionOp;
+import gov.nist.csd.pm.common.op.prohibition.UpdateProhibitionOp;
 import gov.nist.csd.pm.pdp.adjudicator.AdjudicatorProhibitions;
 import gov.nist.csd.pm.pap.Prohibitions;
-import gov.nist.csd.pm.pap.op.prohibitions.CreateProhibitionEvent;
-import gov.nist.csd.pm.pap.op.prohibitions.DeleteProhibitionEvent;
-import gov.nist.csd.pm.pap.op.prohibitions.UpdateProhibitionEvent;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
@@ -36,7 +36,7 @@ class PDPProhibitions implements Prohibitions, EventEmitter {
 
         pap.prohibitions().create(name, subject, accessRightSet, intersection, containerConditions);
 
-        CreateProhibitionEvent createProhibitionEvent = new CreateProhibitionEvent(
+        CreateProhibitionOp createProhibitionEvent = new CreateProhibitionOp(
                 name, subject, accessRightSet, intersection, List.of(containerConditions)
         );
 
@@ -55,7 +55,7 @@ class PDPProhibitions implements Prohibitions, EventEmitter {
 
         pap.prohibitions().update(name, subject, accessRightSet, intersection, containerConditions);
 
-        UpdateProhibitionEvent updateProhibitionEvent = new UpdateProhibitionEvent(
+        UpdateProhibitionOp updateProhibitionEvent = new UpdateProhibitionOp(
                 name, subject, accessRightSet, intersection, List.of(containerConditions)
         );
 
@@ -87,7 +87,7 @@ class PDPProhibitions implements Prohibitions, EventEmitter {
         ProhibitionSubject subject = prohibition.getSubject();
         List<ContainerCondition> containerConditions = prohibition.getContainers();
 
-        DeleteProhibitionEvent deleteProhibitionEvent = new DeleteProhibitionEvent(prohibition.getName());
+        DeleteProhibitionOp deleteProhibitionEvent = new DeleteProhibitionOp(prohibition.getName());
 
         // emit event for subject
         emitEvent(new EventContext(userCtx, subject.getName(), deleteProhibitionEvent));

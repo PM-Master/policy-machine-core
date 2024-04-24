@@ -38,7 +38,7 @@ class MemoryUserDefinedPML extends MemoryStore<TxUserDefinedPML> implements User
     @Override
     public void beginTx() {
         if (tx == null) {
-            tx = new MemoryTx<>(false, 0, new TxUserDefinedPML(new TxPolicyEventTracker(), this));
+            tx = new MemoryTx<>(false, 0, new TxUserDefinedPML(new TxOpTracker(), this));
         }
         tx.beginTx();
     }

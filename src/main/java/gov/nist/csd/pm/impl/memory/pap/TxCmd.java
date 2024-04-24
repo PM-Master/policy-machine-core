@@ -1,12 +1,12 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
-import gov.nist.csd.pm.pap.op.PolicyEvent;
-import gov.nist.csd.pm.pap.op.graph.*;
-import gov.nist.csd.pm.pap.op.obligations.CreateObligationEvent;
-import gov.nist.csd.pm.pap.op.prohibitions.CreateProhibitionEvent;
-import gov.nist.csd.pm.pap.op.userdefinedpml.CreateConstantEvent;
-import gov.nist.csd.pm.pap.op.userdefinedpml.CreateFunctionEvent;
+import gov.nist.csd.pm.common.op.Operation;
+import gov.nist.csd.pm.common.op.graph.*;
+import gov.nist.csd.pm.common.op.obligation.CreateObligationOp;
+import gov.nist.csd.pm.common.op.prohibition.CreateProhibitionOp;
+import gov.nist.csd.pm.common.op.userdefinedpml.CreateConstantOp;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.op.userdefinedpml.CreateFunctionOp;
 import gov.nist.csd.pm.pdp.AccessRightSet;
 import gov.nist.csd.pm.common.graph.nodes.Node;
 import gov.nist.csd.pm.common.graph.nodes.NodeType;
@@ -43,142 +43,141 @@ abstract class TxCmd<T extends MemoryStore<?>> {
     }
 
 
-    static TxCmd<?> eventToCmd(PolicyEvent event) throws UnsupportedPolicyEvent {
-        if (event instanceof CreateConstantEvent e) {
+    static TxCmd<?> eventToCmd(Operation op) throws UnsupportedPolicyEvent {
+        if (op instanceof CreateConstantOp o) {
             return new TxCmd.AddConstantTxCmd(
-                    e.getName(),
-                    e.getValue()
+                    o.name(),
+                    o.value()
             );
 
-        } else if (event instanceof CreateFunctionEvent e) {
+        } else if (op instanceof CreateFunctionOp o) {
             return new TxCmd.AddFunctionTxCmd(
-                    e.getFunctionDefinitionStatement()
+                    o.functionDefinitionStatement()
             );
 
-        } else if (event instanceof AssignEvent e) {
+        } else if (op instanceof AssignOp o) {
             return new TxCmd.AssignTxCmd(
-                    e.getChild(),
-                    e.getParent()
+                    o.child(),
+                    o.parent()
             );
 
-        } else if (event instanceof AssignToEvent e) {
+        } else if (op instanceof AssignToOp o) {
             return new TxCmd.AssignTxCmd(
-                    e.getChild(),
-                    e.getParent()
+                    o.child(),
+                    o.parent()
             );
 
-        } else if (event instanceof AssociateEvent e) {
+        } else if (op instanceof AssociateOp o) {
             return new TxCmd.AssociateTxCmd(
-                    new Association(e.getUa(), e.getTarget(), e.getAccessRightSet())
+                    new Association(o.ua(), o.target(), o.accessRightSet())
             );
 
-        } else if (event instanceof CreateObjectAttributeEvent e) {
+        } else if (op instanceof CreateObjectAttributeOp o) {
             return new TxCmd.CreateObjectAttributeTxCmd(
-                    e.getName(),
-                    e.getProperties(),
-                    e.getParents()
+                    o.getName(),
+                    o.getProperties(),
+                    o.getParents()
             );
 
-        } else if (event instanceof CreateObjectEvent e) {
+        } else if (op instanceof CreateObjectOp o) {
             return new TxCmd.CreateObjectTxCmd(
-                    e.getName(),
-                    e.getProperties(),
-                    e.getParents()
+                    o.getName(),
+                    o.getProperties(),
+                    o.getParents()
             );
 
-        } else if (event instanceof CreateObligationEvent e) {
+        } else if (op instanceof CreateObligationOp o) {
             return new TxCmd.CreateObligationTxCmd(
-                    new Obligation(e.getAuthor(), e.getName(), e.getRules())
+                    new Obligation(o.author(), o.name(), o.rules())
             );
 
-        } else if (event instanceof CreatePolicyClassEvent e) {
+        } else if (op instanceof CreatePolicyClassOp o) {
             return new TxCmd.CreatePolicyClassTxCmd(
-                    e.getName(),
-                    e.getProperties()
+                    o.getName(),
+                    o.getProperties()
             );
 
-        } else if (event instanceof CreateProhibitionEvent e) {
+        } else if (op instanceof CreateProhibitionOp o) {
             return new TxCmd.CreateProhibitionTxCmd(
-                    new Prohibition(e.getName(), e.getSubject(), e.getAccessRightSet(), e.isIntersection(), e.getContainers())
+                    new Prohibition(o.name(), o.subject(), o.accessRightSet(), o.intersection(), o.containers())
             );
 
-        } else if (event instanceof CreateUserAttributeEvent e) {
+        } else if (op instanceof CreateUserAttributeOp o) {
             return new TxCmd.CreateUserAttributeTxCmd(
-                    e.getName(),
-                    e.getProperties(),
-                    e.getParents()
+                    o.getName(),
+                    o.getProperties(),
+                    o.getParents()
             );
 
-        } else if (event instanceof CreateUserEvent e) {
+        } else if (op instanceof CreateUserOp o) {
             return new TxCmd.CreateUserTxCmd(
-                    e.getName(),
-                    e.getProperties(),
-                    e.getParents()
+                    o.getName(),
+                    o.getProperties(),
+                    o.getParents()
             );
 
-        } else if (event instanceof DeassignEvent e) {
+        } else if (op instanceof DeassignOp o) {
             return new TxCmd.DeassignTxCmd(
-                    e.getChild(),
-                    e.getParent()
+                    o.child(),
+                    o.parent()
             );
 
-        } else if (event instanceof TxEvents.MemoryDeleteNodeEvent e) {
+        } else if (op instanceof TxOps.MemoryDeleteNodeOp o) {
             return new TxCmd.DeleteNodeTxCmd(
-                    e.getName(),
-                    e.getNode(),
-                    e.getParents()
+                    o.name(),
+                    o.getNode(),
+                    o.getParents()
             );
 
-        } else if (event instanceof TxEvents.MemoryDeleteObligationEvent e) {
+        } else if (op instanceof TxOps.MemoryDeleteObligationOp o) {
             return new TxCmd.DeleteObligationTxCmd(
-                    e.getObligationToDelete()
+                    o.getObligationToDelete()
             );
 
-        } else if (event instanceof TxEvents.MemoryDeleteProhibitionEvent e) {
+        } else if (op instanceof TxOps.MemoryDeleteProhibitionOp o) {
             return new TxCmd.DeleteProhibitionTxCmd(
-                    e.getProhibitionToDelete()
+                    o.getProhibitionToDelete()
             );
 
-        } else if (event instanceof TxEvents.MemoryDissociateEvent e) {
+        } else if (op instanceof TxOps.MemoryDissociateOp o) {
             return new TxCmd.DissociateTxCmd(
-                    new Association(e.getUa(), e.getTarget(), e.getAccessRightSet())
+                    new Association(o.ua(), o.target(), o.getAccessRightSet())
             );
 
-        } else if (event instanceof TxEvents.MemoryDeleteConstantEvent e) {
+        } else if (op instanceof TxOps.MemoryDeleteConstantOp o) {
             return new TxCmd.RemoveConstantTxCmd(
-                    e.getName(),
-                    e.getValue()
+                    o.name(),
+                    o.getValue()
             );
 
-        } else if (event instanceof TxEvents.MemoryDeleteFunctionEvent e) {
-            return new TxCmd.RemoveFunctionTxCmd(e.getFunctionDefinitionStatement());
+        } else if (op instanceof TxOps.MemoryDeleteFunctionOp o) {
+            return new TxCmd.RemoveFunctionTxCmd(o.getFunctionDefinitionStatement());
 
-        } else if (event instanceof TxEvents.MemorySetNodePropertiesEvent e) {
+        } else if (op instanceof TxOps.MemorySetNodePropertiesOp o) {
             return new TxCmd.SetNodePropertiesTxCmd(
-                    e.getName(),
-                    e.getOldProps(),
-                    e.getProperties()
+                    o.name(),
+                    o.getOldProps(),
+                    o.properties()
             );
 
-        } else if (event instanceof TxEvents.MemoryUpdateObligationEvent e) {
+        } else if (op instanceof TxOps.MemoryUpdateObligationOp o) {
             return new TxCmd.UpdateObligationTxCmd(
-                    new Obligation(e.getAuthor(), e.getName(), e.getRules()), e.getOldObl()
+                    new Obligation(o.author(), o.name(), o.rules()), o.getOldObl()
             );
 
-        } else if (event instanceof TxEvents.MemoryUpdateProhibitionEvent e) {
+        } else if (op instanceof TxOps.MemoryUpdateProhibitionOp o) {
             return new TxCmd.UpdateProhibitionTxCmd(
-                    new Prohibition(e.getName(), e.getSubject(), e.getAccessRightSet(), e.isIntersection(), e.getContainers()),
-                    e.getOldPro()
+                    new Prohibition(o.name(), o.subject(), o.accessRightSet(), o.intersection(), o.containers()), o.getOldPro()
             );
 
-        } else if (event instanceof TxEvents.MemorySetResourceAccessRightsEvent e) {
+        } else if (op instanceof TxOps.MemorySetResourceAccessRightsOp o) {
             return new TxCmd.SetResourceAccessRightsTxCmd(
-                    e.getOldAccessRights(),
-                    e.getNewAccessRights()
+                    o.getOldAccessRights(),
+                    o.getNewAccessRights()
             );
         }
 
-       throw new UnsupportedPolicyEvent(event);
+       throw new UnsupportedPolicyEvent(op);
     }
 
     static class SetResourceAccessRightsTxCmd extends TxCmd<MemoryGraph> {

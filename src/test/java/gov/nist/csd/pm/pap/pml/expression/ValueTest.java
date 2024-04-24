@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.op.graph.CreateObjectAttributeOp;
 import gov.nist.csd.pm.pdp.UserContext;
-import gov.nist.csd.pm.pap.op.graph.CreateObjectAttributeEvent;
 import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.ArrayValue;
@@ -53,7 +53,7 @@ class ValueTest {
     @Test
     void testObjectToValue() throws PMException {
         EventContext testEventCtx = new EventContext(new UserContext("testUser"), "target123",
-                                                     new CreateObjectAttributeEvent("testOA", NO_PROPERTIES,
+                                                     new CreateObjectAttributeOp("testOA", NO_PROPERTIES,
                                                                                     List.of("pc1"))
         );
 

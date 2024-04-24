@@ -34,7 +34,7 @@ class MemoryObligations extends MemoryStore<TxObligations> implements Obligation
     @Override
     public void beginTx() {
         if (tx == null) {
-            tx = new MemoryTx<>(false, 0, new TxObligations(new TxPolicyEventTracker(), this));
+            tx = new MemoryTx<>(false, 0, new TxObligations(new TxOpTracker(), this));
         }
 
         tx.beginTx();

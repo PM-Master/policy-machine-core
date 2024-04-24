@@ -1,10 +1,10 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
 import gov.nist.csd.pm.pap.Obligations;
-import gov.nist.csd.pm.pap.op.PolicyEvent;
-import gov.nist.csd.pm.pap.op.obligations.CreateObligationEvent;
+import gov.nist.csd.pm.common.op.Operation;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.exception.PMRuntimeException;
+import gov.nist.csd.pm.common.op.obligation.CreateObligationOp;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
@@ -13,22 +13,22 @@ import java.util.List;
 
 public class TxObligations implements Obligations, BaseMemoryTx {
 
-    private final TxPolicyEventTracker txPolicyEventTracker;
+    private final TxOpTracker txOpTracker;
     private final MemoryObligations memoryObligationsStore;
 
-    public TxObligations(TxPolicyEventTracker txPolicyEventTracker, MemoryObligations memoryObligationsStore) {
-        this.txPolicyEventTracker = txPolicyEventTracker;
+    public TxObligations(TxOpTracker txOpTracker, MemoryObligations memoryObligationsStore) {
+        this.txOpTracker = txOpTracker;
         this.memoryObligationsStore = memoryObligationsStore;
     }
     @Override
     public void create(UserContext author, String name, Rule... rules) {
-        txPolicyEventTracker.trackPolicyEvent(new CreateObligationEvent(author, name, List.of(rules)));
+        txOpTracker.trackOp(new CreateObligationOp(author, name, List.of(rules)));
     }
 
     @Override
     public void rollback() {
-        List<PolicyEvent> events = txPolicyEventTracker.getEvents();
-        for (PolicyEvent event : events) {
+        List<Operation> events = txOpTracker.getOperations();
+        for (Operation event : events) {
             try {
                 TxCmd<MemoryObligations> txCmd = (TxCmd<MemoryObligations>) TxCmd.eventToCmd(event);
                 txCmd.rollback(memoryObligationsStore);
@@ -41,7 +41,7 @@ public class TxObligations implements Obligations, BaseMemoryTx {
 
     @Override
     public void update(UserContext author, String name, Rule... rules) throws PMException {
-        txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemoryUpdateObligationEvent(
+        txOpTracker.trackOp(new TxOps.MemoryUpdateObligationOp(
                 new Obligation(author, name, List.of(rules)),
                 memoryObligationsStore.get(name)
         ));
@@ -49,7 +49,7 @@ public class TxObligations implements Obligations, BaseMemoryTx {
 
     @Override
     public void delete(String name) throws PMException {
-            txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemoryDeleteObligationEvent(memoryObligationsStore.get(name)));
+            txOpTracker.trackOp(new TxOps.MemoryDeleteObligationOp(memoryObligationsStore.get(name)));
     }
 
     @Override

@@ -6,8 +6,8 @@ import gov.nist.csd.pm.impl.memory.pdp.MemoryObligationsReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
-import gov.nist.csd.pm.pap.op.graph.AssignToEvent;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.op.graph.AssignToOp;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Response;
@@ -131,7 +131,7 @@ class MemoryObligationsReviewerTest {
     @Test
     void testGetMatchingEventResponses() throws PMException {
         List<Response> matchingEventResponses = obligationReviewer.getMatchingEventResponses(
-                new EventContext(new UserContext("u1"), "oa2", new AssignToEvent("oa1-2", "oa2")));
+                new EventContext(new UserContext("u1"), "oa2", new AssignToOp("oa1-2", "oa2")));
         assertEquals(3, matchingEventResponses.size());
         for (Response response : matchingEventResponses) {
             assertEquals(new CreatePolicyStatement(new StringLiteral("test")), response.getStatements().get(0));

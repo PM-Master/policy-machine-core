@@ -4,12 +4,12 @@ import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.epp.EventProcessor;
 import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.common.op.userdefinedpml.CreateConstantOp;
+import gov.nist.csd.pm.common.op.userdefinedpml.CreateFunctionOp;
+import gov.nist.csd.pm.common.op.userdefinedpml.DeleteConstantOp;
+import gov.nist.csd.pm.common.op.userdefinedpml.DeleteFunctionOp;
 import gov.nist.csd.pm.pdp.adjudicator.AdjudicatorUserDefinedPML;
 import gov.nist.csd.pm.pap.UserDefinedPML;
-import gov.nist.csd.pm.pap.op.userdefinedpml.CreateConstantEvent;
-import gov.nist.csd.pm.pap.op.userdefinedpml.CreateFunctionEvent;
-import gov.nist.csd.pm.pap.op.userdefinedpml.DeleteConstantEvent;
-import gov.nist.csd.pm.pap.op.userdefinedpml.DeleteFunctionEvent;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
@@ -35,7 +35,7 @@ class PDPUserDefinedPML implements UserDefinedPML, EventEmitter {
 
         pap.userDefinedPML().createFunction(functionDefinitionStatement);
 
-        emitEvent(new EventContext(userCtx, new CreateFunctionEvent(functionDefinitionStatement)));
+        emitEvent(new EventContext(userCtx, new CreateFunctionOp(functionDefinitionStatement)));
     }
 
     @Override
@@ -44,7 +44,7 @@ class PDPUserDefinedPML implements UserDefinedPML, EventEmitter {
 
         pap.userDefinedPML().deleteFunction(functionName);
 
-        emitEvent(new EventContext(userCtx, new DeleteFunctionEvent(functionName)));
+        emitEvent(new EventContext(userCtx, new DeleteFunctionOp(functionName)));
 
     }
 
@@ -64,7 +64,7 @@ class PDPUserDefinedPML implements UserDefinedPML, EventEmitter {
 
         pap.userDefinedPML().createConstant(constantName, constantValue);
 
-        emitEvent(new EventContext(userCtx, new CreateConstantEvent(constantName, constantValue)));
+        emitEvent(new EventContext(userCtx, new CreateConstantOp(constantName, constantValue)));
 
     }
 
@@ -74,7 +74,7 @@ class PDPUserDefinedPML implements UserDefinedPML, EventEmitter {
 
         pap.userDefinedPML().deleteConstant(constName);
 
-        emitEvent(new EventContext(userCtx, new DeleteConstantEvent(constName)));
+        emitEvent(new EventContext(userCtx, new DeleteConstantOp(constName)));
     }
 
     @Override

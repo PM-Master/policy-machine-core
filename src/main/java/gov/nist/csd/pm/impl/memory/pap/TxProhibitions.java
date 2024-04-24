@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
 import gov.nist.csd.pm.pap.Prohibitions;
-import gov.nist.csd.pm.pap.op.PolicyEvent;
-import gov.nist.csd.pm.pap.op.prohibitions.CreateProhibitionEvent;
+import gov.nist.csd.pm.common.op.Operation;
+import gov.nist.csd.pm.common.op.prohibition.CreateProhibitionOp;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.exception.PMRuntimeException;
 import gov.nist.csd.pm.pdp.AccessRightSet;
@@ -15,18 +15,18 @@ import java.util.Map;
 
 public class TxProhibitions implements Prohibitions, BaseMemoryTx {
 
-    private final TxPolicyEventTracker txPolicyEventTracker;
+    private final TxOpTracker txOpTracker;
     private final MemoryProhibitions memoryProhibitionsStore;
 
-    public TxProhibitions(TxPolicyEventTracker txPolicyEventTracker, MemoryProhibitions memoryProhibitionsStore) {
-        this.txPolicyEventTracker = txPolicyEventTracker;
+    public TxProhibitions(TxOpTracker txOpTracker, MemoryProhibitions memoryProhibitionsStore) {
+        this.txOpTracker = txOpTracker;
         this.memoryProhibitionsStore = memoryProhibitionsStore;
     }
 
     @Override
     public void rollback() {
-        List<PolicyEvent> events = txPolicyEventTracker.getEvents();
-        for (PolicyEvent event : events) {
+        List<Operation> events = txOpTracker.getOperations();
+        for (Operation event : events) {
             try {
                 TxCmd<MemoryProhibitions> txCmd = (TxCmd<MemoryProhibitions>) TxCmd.eventToCmd(event);
                 txCmd.rollback(memoryProhibitionsStore);
@@ -39,13 +39,13 @@ public class TxProhibitions implements Prohibitions, BaseMemoryTx {
 
     @Override
     public void create(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, ContainerCondition... containerConditions) {
-        txPolicyEventTracker.trackPolicyEvent(new CreateProhibitionEvent(name, subject, accessRightSet, intersection, List.of(containerConditions)));
+        txOpTracker.trackOp(new CreateProhibitionOp(name, subject, accessRightSet, intersection, List.of(containerConditions)));
     }
 
     @Override
     public void update(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, ContainerCondition... containerConditions)
             throws PMException {
-        txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemoryUpdateProhibitionEvent(
+        txOpTracker.trackOp(new TxOps.MemoryUpdateProhibitionOp(
                 new Prohibition(name, subject, accessRightSet, intersection, List.of(containerConditions)),
                 memoryProhibitionsStore.get(name)
         ));
@@ -53,7 +53,7 @@ public class TxProhibitions implements Prohibitions, BaseMemoryTx {
 
     @Override
     public void delete(String name) throws PMException {
-        txPolicyEventTracker.trackPolicyEvent(new TxEvents.MemoryDeleteProhibitionEvent(memoryProhibitionsStore.get(name)));
+        txOpTracker.trackOp(new TxOps.MemoryDeleteProhibitionOp(memoryProhibitionsStore.get(name)));
     }
 
     @Override

@@ -4,7 +4,7 @@ import gov.nist.csd.pm.pap.*;
 import gov.nist.csd.pm.pap.Obligations;
 import gov.nist.csd.pm.pap.Prohibitions;
 import gov.nist.csd.pm.pap.UserDefinedPML;
-import gov.nist.csd.pm.pap.op.PolicyEvent;
+import gov.nist.csd.pm.common.op.Operation;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.exception.PMLConstantAlreadyDefinedException;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
@@ -111,7 +111,7 @@ public class MemoryPolicyStore extends PolicyStore implements BaseMemoryTx, Veri
         }
 
         inTx = false;
-        txPolicyStore.clearEvents();
+        txPolicyStore.clearOps();
 
         graph.tx.set(false, txCounter, txPolicyStore.graph());
         prohibitions.tx.set(false, txCounter, txPolicyStore.prohibitions());
@@ -129,9 +129,9 @@ public class MemoryPolicyStore extends PolicyStore implements BaseMemoryTx, Veri
         obligations.tx.set(false, txCounter, txPolicyStore.obligations());
         userDefinedPML.tx.set(false, txCounter, txPolicyStore.userDefinedPML());
 
-        List<PolicyEvent> events = txPolicyStore.txPolicyEventTracker.getEvents();
-        for (PolicyEvent policyEvent : events) {
-            TxCmd txCmd = TxCmd.eventToCmd(policyEvent);
+        List<Operation> ops = txPolicyStore.txOpTracker.getOperations();
+        for (Operation op : ops) {
+            TxCmd txCmd = TxCmd.eventToCmd(op);
             if (txCmd.getType() == TxCmd.Type.GRAPH) {
                 txCmd.rollback(graph);
             } else if (txCmd.getType() == TxCmd.Type.PROHIBITIONS) {
@@ -143,7 +143,7 @@ public class MemoryPolicyStore extends PolicyStore implements BaseMemoryTx, Veri
             }
         }
 
-        txPolicyStore.clearEvents();
+        txPolicyStore.clearOps();
     }
 
     @Override

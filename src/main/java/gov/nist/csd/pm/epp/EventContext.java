@@ -6,25 +6,25 @@ import gov.nist.csd.pm.common.obligation.event.EventPattern;
 import gov.nist.csd.pm.common.obligation.event.subject.Subject;
 import gov.nist.csd.pm.common.obligation.event.target.Target;
 import gov.nist.csd.pm.pap.GraphReview;
-import gov.nist.csd.pm.pap.op.PolicyEvent;
+import gov.nist.csd.pm.common.op.Operation;
 
 public class EventContext {
 
     private final UserContext userCtx;
     private final String eventName;
     private final String target;
-    private final PolicyEvent event;
+    private final Operation event;
 
-    public EventContext(UserContext userCtx, String target, PolicyEvent event) {
+    public EventContext(UserContext userCtx, String target, Operation event) {
         this.userCtx = userCtx;
-        this.eventName = event.getEventName();
+        this.eventName = event.getOpName();
         this.target = target;
         this.event = event;
     }
 
-    public EventContext(UserContext userCtx, PolicyEvent event) {
+    public EventContext(UserContext userCtx, Operation event) {
         this.userCtx = userCtx;
-        this.eventName = event.getEventName();
+        this.eventName = event.getOpName();
         this.target = "";
         this.event = event;
     }
@@ -41,7 +41,7 @@ public class EventContext {
         return target;
     }
 
-    public PolicyEvent getEvent() {
+    public Operation getEvent() {
         return event;
     }
 
