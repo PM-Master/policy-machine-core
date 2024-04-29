@@ -50,7 +50,7 @@ class ObligationTest {
         pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
         PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
         EPP epp = new EPP(pdp, pap);
-        epp.getEventProcessor().processEvent(new EventContext(new UserContext("u1"), "oa1", new AssignToOp("o1", "oa1")));
+        epp.getEventProcessor().processEvent(new EventContext(new UserContext("u1"), new AssignToOp("o1", "oa1")));
         assertTrue(pap.graph().nodeExists("hello world"));
     }
 
@@ -85,7 +85,7 @@ class ObligationTest {
 
         PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
         EPP epp = new EPP(pdp, pap);
-        epp.getEventProcessor().processEvent(new EventContext(new UserContext("u1"), "oa1", new AssignToOp("o1", "oa1")));
+        epp.getEventProcessor().processEvent(new EventContext(new UserContext("u1"), new AssignToOp("o1", "oa1")));
         assertTrue(pap.graph().nodeExists("hello world"));
     }
 }

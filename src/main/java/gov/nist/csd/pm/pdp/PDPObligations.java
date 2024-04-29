@@ -46,13 +46,13 @@ class PDPObligations implements Obligations, EventEmitter {
             // emit event for the subject
             Subject subject = rule.getEventPattern().getSubject();
             for (String user : subject.getSubjects()) {
-                emitEvent(new EventContext(userCtx, user, event));
+                emitEvent(new EventContext(userCtx, event));
             }
 
             // emit event for each target
             Target target = rule.getEventPattern().getTarget();
             for (String policyElement : target.getTargets()) {
-                emitEvent(new EventContext(userCtx, policyElement, event));
+                emitEvent(new EventContext(userCtx, event));
             }
         }
     }

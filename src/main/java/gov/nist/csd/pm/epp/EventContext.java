@@ -8,65 +8,53 @@ import gov.nist.csd.pm.common.obligation.event.target.Target;
 import gov.nist.csd.pm.pap.GraphReview;
 import gov.nist.csd.pm.common.op.Operation;
 
+import java.util.Objects;
+
 public class EventContext {
 
     private final UserContext userCtx;
-    private final String eventName;
-    private final String target;
-    private final Operation event;
+    private final Operation op;
 
-    public EventContext(UserContext userCtx, String target, Operation event) {
+    public EventContext(UserContext userCtx, Operation op) {
         this.userCtx = userCtx;
-        this.eventName = event.getOpName();
-        this.target = target;
-        this.event = event;
-    }
-
-    public EventContext(UserContext userCtx, Operation event) {
-        this.userCtx = userCtx;
-        this.eventName = event.getOpName();
-        this.target = "";
-        this.event = event;
+        this.op = op;
     }
 
     public UserContext getUserCtx() {
         return userCtx;
     }
 
-    public String getEventName() {
-        return eventName;
-    }
-
-    public String getTarget() {
-        return target;
-    }
-
-    public Operation getEvent() {
-        return event;
+    public Operation getOp() {
+        return op;
     }
 
     public boolean matchesPattern(EventPattern pattern, GraphReview graphReviewer) throws PMException {
-        if (pattern.getOperations().isEmpty() || pattern.getOperations().get(0).isEmpty()) {
-            return true; // an empty event pattern will match all events
-        } else if (pattern.getOperations() != null &&
-                !pattern.getOperations().contains(eventName)) {
+        // check that the user context matches the user pattern and the op matches the op pattern - this will check targets
+        return pattern.getSubject().matches(userCtx, graphReviewer) && op.matches(pattern, graphReviewer);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
+        EventContext that = (EventContext) o;
+        return Objects.equals(userCtx, that.userCtx) && Objects.equals(op, that.op);
+    }
 
-        Subject patternSubject = pattern.getSubject();
-        Target patternTarget = pattern.getTarget();
-
-        return patternSubject.matches(userCtx, graphReviewer) &&
-                patternTarget.matches(target, graphReviewer);
+    @Override
+    public int hashCode() {
+        return Objects.hash(userCtx, op);
     }
 
     @Override
     public String toString() {
         return "EventContext{" +
                 "userCtx=" + userCtx +
-                ", eventName='" + eventName + '\'' +
-                ", target=" + target +
-                ", event=" + event +
+                ", op=" + op +
                 '}';
     }
 }

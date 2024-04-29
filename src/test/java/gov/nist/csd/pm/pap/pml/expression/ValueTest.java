@@ -52,8 +52,8 @@ class ValueTest {
 
     @Test
     void testObjectToValue() throws PMException {
-        EventContext testEventCtx = new EventContext(new UserContext("testUser"), "target123",
-                                                     new CreateObjectAttributeOp("testOA", NO_PROPERTIES,
+        EventContext testEventCtx = new EventContext(new UserContext("testUser"),
+                new CreateObjectAttributeOp("testOA", NO_PROPERTIES,
                                                                                     List.of("pc1"))
         );
 

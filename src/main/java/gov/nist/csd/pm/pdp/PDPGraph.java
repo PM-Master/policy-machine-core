@@ -49,7 +49,7 @@ class PDPGraph implements Graph, EventEmitter {
 
         pap.graph().createPolicyClass(name, properties);
 
-        emitEvent(new EventContext(userCtx, name, new CreatePolicyClassOp(name, new HashMap<>())));
+        emitEvent(new EventContext(userCtx, new CreatePolicyClassOp(name, new HashMap<>())));
 
         return name;
     }
@@ -111,11 +111,11 @@ class PDPGraph implements Graph, EventEmitter {
 
     private void emitCreateNodeOp(Operation event, String name, List<String> parents) throws PMException {
         // emit event for the new node
-        emitEvent(new EventContext(userCtx, name, event));
+        emitEvent(new EventContext(userCtx, event));
 
         // do the same for any additional parents
         for (String p : parents) {
-            emitEvent(new EventContext(userCtx, p, event));
+            emitEvent(new EventContext(userCtx, event));
         }
     }
 
@@ -125,7 +125,7 @@ class PDPGraph implements Graph, EventEmitter {
 
         pap.graph().setNodeProperties(name, properties);
 
-        emitEvent(new EventContext(userCtx, name,
+        emitEvent(new EventContext(userCtx,
                 new SetNodePropertiesOp(name, properties)));
     }
 
@@ -143,11 +143,11 @@ class PDPGraph implements Graph, EventEmitter {
 
     private void emitDeleteNodeOp(Operation event, String name, List<String> parents) throws PMException {
         // emit delete node event on the deleted node
-        emitEvent(new EventContext(userCtx, name, event));
+        emitEvent(new EventContext(userCtx, event));
 
         // emit delete node on each parent
         for (String parent : parents) {
-            emitEvent(new EventContext(userCtx, parent, event));
+            emitEvent(new EventContext(userCtx, event));
         }
     }
 
@@ -177,9 +177,9 @@ class PDPGraph implements Graph, EventEmitter {
 
         pap.graph().assign(child, parent);
 
-        emitEvent(new EventContext(userCtx, child,
+        emitEvent(new EventContext(userCtx,
                 new AssignOp(child, parent)));
-        emitEvent(new EventContext(userCtx, parent,
+        emitEvent(new EventContext(userCtx,
                 new AssignToOp(child, parent)));
     }
 
@@ -189,9 +189,9 @@ class PDPGraph implements Graph, EventEmitter {
 
         pap.graph().deassign(child, parent);
 
-        emitEvent(new EventContext(userCtx, child,
+        emitEvent(new EventContext(userCtx,
                 new DeassignOp(child, parent)));
-        emitEvent(new EventContext(userCtx, parent,
+        emitEvent(new EventContext(userCtx,
                 new DeassignFromOp(child, parent)));
     }
 
@@ -206,9 +206,9 @@ class PDPGraph implements Graph, EventEmitter {
 
         pap.graph().associate(ua, target, accessRights);
 
-        emitEvent(new EventContext(userCtx, ua,
+        emitEvent(new EventContext(userCtx,
                 new AssociateOp(ua, target, accessRights)));
-        emitEvent(new EventContext(userCtx, target,
+        emitEvent(new EventContext(userCtx,
                 new AssociateOp(ua, target, accessRights)));
     }
 
@@ -218,9 +218,9 @@ class PDPGraph implements Graph, EventEmitter {
 
         pap.graph().dissociate(ua, target);
 
-        emitEvent(new EventContext(userCtx, ua,
+        emitEvent(new EventContext(userCtx,
                 new DissociateOp(ua, target)));
-        emitEvent(new EventContext(userCtx, target,
+        emitEvent(new EventContext(userCtx,
                 new DissociateOp(ua, target)));
     }
 

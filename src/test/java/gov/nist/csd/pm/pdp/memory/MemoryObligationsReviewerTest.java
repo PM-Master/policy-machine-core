@@ -131,7 +131,7 @@ class MemoryObligationsReviewerTest {
     @Test
     void testGetMatchingEventResponses() throws PMException {
         List<Response> matchingEventResponses = obligationReviewer.getMatchingEventResponses(
-                new EventContext(new UserContext("u1"), "oa2", new AssignToOp("oa1-2", "oa2")));
+                new EventContext(new UserContext("u1"), new AssignToOp("oa1-2", "oa2")));
         assertEquals(3, matchingEventResponses.size());
         for (Response response : matchingEventResponses) {
             assertEquals(new CreatePolicyStatement(new StringLiteral("test")), response.getStatements().get(0));

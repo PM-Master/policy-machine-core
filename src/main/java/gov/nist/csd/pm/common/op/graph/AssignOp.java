@@ -1,8 +1,11 @@
 package gov.nist.csd.pm.common.op.graph;
 
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.obligation.event.EventPattern;
+import gov.nist.csd.pm.common.obligation.event.target.Target;
 import gov.nist.csd.pm.common.op.Operation;
+import gov.nist.csd.pm.pap.GraphReview;
 
-import java.io.Serial;
 import java.util.Objects;
 
 public class AssignOp implements Operation {
@@ -17,6 +20,24 @@ public class AssignOp implements Operation {
     @Override
     public String getOpName() {
         return "assign";
+    }
+
+    @Override
+    public boolean matches(EventPattern pattern, GraphReview graphReview) throws PMException {
+        /*if (pattern instanceof Pattern) {
+
+        }*/
+
+        boolean opPatternMatches = Operation.super.matches(pattern, graphReview);
+
+        Target target = pattern.getTarget();
+        boolean targetPatternMatches = target.matches(child, graphReview) || target.matches(parent, graphReview);
+
+        return opPatternMatches && targetPatternMatches;
+    }
+
+    public class Pattern implements Operation.Pattern {
+
     }
 
     public String child() {
@@ -51,6 +72,4 @@ public class AssignOp implements Operation {
                 "child=" + child + ", " +
                 "parent=" + parent + ']';
     }
-
-
 }
