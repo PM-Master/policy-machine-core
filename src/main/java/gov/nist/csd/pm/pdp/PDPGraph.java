@@ -63,7 +63,7 @@ class PDPGraph implements Graph, EventEmitter {
         CreateUserAttributeOp op =
                 new CreateUserAttributeOp(name, new HashMap<>(), parents);
 
-        emitCreateNodeOp(op, name, parents);
+        emitEvent(new EventContext(userCtx, op));
 
         return name;
     }
@@ -77,7 +77,7 @@ class PDPGraph implements Graph, EventEmitter {
         CreateObjectAttributeOp op =
                 new CreateObjectAttributeOp(name, new HashMap<>(), parents);
 
-        emitCreateNodeOp(op, name, parents);
+        emitEvent(new EventContext(userCtx, op));
 
         return name;
     }
@@ -91,7 +91,7 @@ class PDPGraph implements Graph, EventEmitter {
         CreateObjectOp op =
                 new CreateObjectOp(name, new HashMap<>(), parents);
 
-        emitCreateNodeOp(op, name, parents);
+        emitEvent(new EventContext(userCtx, op));
 
         return name;
     }
@@ -104,19 +104,9 @@ class PDPGraph implements Graph, EventEmitter {
 
         CreateUserOp op = new CreateUserOp(name, new HashMap<>(), parents);
 
-        emitCreateNodeOp(op, name, parents);
+        emitEvent(new EventContext(userCtx, op));
 
         return name;
-    }
-
-    private void emitCreateNodeOp(Operation event, String name, List<String> parents) throws PMException {
-        // emit event for the new node
-        emitEvent(new EventContext(userCtx, event));
-
-        // do the same for any additional parents
-        for (String p : parents) {
-            emitEvent(new EventContext(userCtx, event));
-        }
     }
 
     @Override

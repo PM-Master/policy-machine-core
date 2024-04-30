@@ -40,7 +40,6 @@ class EPPTest {
         MemoryPolicyStore ps = new MemoryPolicyStore();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
-
         PDP pdp = new PDP(pap);
         EPP epp = new EPP(pdp, pap);
 
@@ -79,7 +78,6 @@ class EPPTest {
         MemoryPolicyStore ps = new MemoryPolicyStore();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
-
         PDP pdp = new PDP(pap);
         EPP epp = new EPP(pdp, pap);
 
@@ -97,15 +95,15 @@ class EPPTest {
                     when any user
                     performs ["create_object_attribute"]
                     on ["oa1"]
-                    do(evtCtx) {
-                        create policy class evtCtx["eventName"]
-                        target := evtCtx["target"]
+                    do(ctx) {
+                        create policy class ctx.opName
+                        target := ctx["target"]
                         
-                        create policy class evtCtx["event"]["name"] + "_test"
-                        set properties of evtCtx["event"]["name"] to {"key": target}
+                        create policy class ctx["opName"] + "_test"
+                        set properties of ctx["opName"] to {"key": target}
                         
-                        userCtx := evtCtx["userCtx"]
-                        create policy class userCtx["user"] + "_test"
+                        userCtx := ctx["userCtx"]
+                        create policy class ctx["user"] + "_test"
                     }
                 }
                 """;

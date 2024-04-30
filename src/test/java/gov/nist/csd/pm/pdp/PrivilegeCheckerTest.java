@@ -23,7 +23,7 @@ class PrivilegeCheckerTest {
     void setup() throws PMException {
         MemoryPolicyStore ps = new MemoryPolicyStore();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
-        PAP pap = new PAP(ps, pr);
+        pap = new PAP(ps, pr);
 
         pap.policy().graph().setResourceAccessRights(new AccessRightSet("read"));
 

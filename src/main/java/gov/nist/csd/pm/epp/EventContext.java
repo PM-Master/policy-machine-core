@@ -13,15 +13,21 @@ import java.util.Objects;
 public class EventContext {
 
     private final UserContext userCtx;
+    private final String opName;
     private final Operation op;
 
     public EventContext(UserContext userCtx, Operation op) {
         this.userCtx = userCtx;
+        this.opName = op.getOpName();
         this.op = op;
     }
 
     public UserContext getUserCtx() {
         return userCtx;
+    }
+
+    public String getOpName() {
+        return opName;
     }
 
     public Operation getOp() {

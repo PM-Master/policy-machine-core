@@ -392,7 +392,7 @@ public class ExecutionTest {
 
         MemoryPolicyStore ps2 = new MemoryPolicyStore();
         MemoryPolicyReviewer pr2 = new MemoryPolicyReviewer(ps);
-        PAP pap2 = new PAP(ps, pr);
+        PAP pap2 = new PAP(ps2, pr2);
         input = """
                 const x = "hello"
                 function testFunc() {

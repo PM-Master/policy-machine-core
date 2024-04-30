@@ -53,9 +53,7 @@ class ValueTest {
     @Test
     void testObjectToValue() throws PMException {
         EventContext testEventCtx = new EventContext(new UserContext("testUser"),
-                new CreateObjectAttributeOp("testOA", NO_PROPERTIES,
-                                                                                    List.of("pc1"))
-        );
+                new CreateObjectAttributeOp("testOA", NO_PROPERTIES, List.of("pc1")));
 
         Value objectToValue = Value.fromObject(testEventCtx);
         assertTrue(objectToValue.getType().isMap());

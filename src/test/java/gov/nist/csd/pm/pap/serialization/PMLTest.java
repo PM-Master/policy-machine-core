@@ -37,7 +37,7 @@ class PMLTest {
         String serialize = pap.policy().serialize(new PMLSerializer());
         MemoryPolicyStore ps2 = new MemoryPolicyStore();
         MemoryPolicyReviewer pr2 = new MemoryPolicyReviewer(ps2);
-        PAP pap2 = new PAP(ps, pr);
+        PAP pap2 = new PAP(ps2, pr2);
         pap2.policy().deserialize(new UserContext("u1"), serialize, pmlDeserializer);
 
         PolicyEquals.assertPolicyEquals(pap.policy(), pap2.policy());
