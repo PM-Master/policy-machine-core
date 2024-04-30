@@ -28,22 +28,16 @@ import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
 public class PDP implements EventEmitter {
 
     protected final PAP pap;
-    protected final PolicyReview policyReviewer;
     protected final List<EventProcessor> eventProcessors;
 
-    public PDP(PAP pap, PolicyReview policyReview) {
+    public PDP(PAP pap) {
         this.pap = pap;
-        this.policyReviewer = policyReview;
         this.eventProcessors = new ArrayList<>();
-    }
-
-    public PolicyReview policyReviewer() {
-        return policyReviewer;
     }
 
     public void runTx(UserContext userCtx, PDPTxRunner txRunner) throws PMException {
         TxRunner.runTx(pap, () -> {
-            PDPTx pdpTx = new PDPTx(userCtx, pap, policyReviewer, eventProcessors);
+            PDPTx pdpTx = new PDPTx(userCtx, pap, eventProcessors);
             txRunner.run(pdpTx);
         });
     }
@@ -57,10 +51,10 @@ public class PDP implements EventEmitter {
     }
 
     private boolean isPolicyEmpty() throws PMException {
-        Set<String> nodes = new HashSet<>(pap.graph().search(ANY, NO_PROPERTIES));
+        Set<String> nodes = new HashSet<>(pap.policy().graph().search(ANY, NO_PROPERTIES));
 
-        boolean prohibitionsEmpty = pap.prohibitions().getAll().isEmpty();
-        boolean obligationsEmpty = pap.obligations().getAll().isEmpty();
+        boolean prohibitionsEmpty = pap.policy().prohibitions().getAll().isEmpty();
+        boolean obligationsEmpty = pap.policy().obligations().getAll().isEmpty();
 
         return (nodes.isEmpty() || (nodes.size() == ALL_NODE_NAMES.size() && nodes.containsAll(ALL_NODE_NAMES))) &&
                 prohibitionsEmpty &&
@@ -101,8 +95,8 @@ public class PDP implements EventEmitter {
 
         private final PDPReviewer pdpReviewer;
 
-        public PDPTx(UserContext userCtx, PAP pap, PolicyReview policyReviewer, List<EventProcessor> epps) {
-            this.adjudicator = new Adjudicator(userCtx, pap, policyReviewer);
+        public PDPTx(UserContext userCtx, PAP pap, List<EventProcessor> epps) {
+            this.adjudicator = new Adjudicator(userCtx, pap);
             this.pap = pap;
             this.epps = epps;
 
@@ -111,11 +105,7 @@ public class PDP implements EventEmitter {
             this.pdpObligations = new PDPObligations(userCtx, adjudicator.obligations(), pap, this);
             this.pdpUserDefinedPML = new PDPUserDefinedPML(userCtx, adjudicator.userDefinedPML(), pap, this);
 
-            this.pdpReviewer = new PDPReviewer(userCtx, adjudicator.getAccessRightChecker(), policyReviewer);
-        }
-
-        public PolicyReview policyReviewer() throws PMException {
-            return pdpReviewer;
+            this.pdpReviewer = new PDPReviewer(userCtx, pap, this.adjudicator.getAccessRightChecker());
         }
 
         @Override
@@ -179,7 +169,7 @@ public class PDP implements EventEmitter {
         public String serialize(PolicySerializer policySerializer) throws PMException {
             adjudicator.serialize(policySerializer);
 
-            return pap.serialize(policySerializer);
+            return pap.policy().serialize(policySerializer);
         }
 
         @Override
@@ -187,14 +177,14 @@ public class PDP implements EventEmitter {
                 throws PMException {
             adjudicator.deserialize(author, input, policyDeserializer);
 
-            pap.deserialize(author, input, policyDeserializer);
+            pap.policy().deserialize(author, input, policyDeserializer);
         }
 
         @Override
         public void reset() throws PMException {
             adjudicator.reset();
 
-            pap.reset();
+            pap.policy().reset();
         }
     }
 }

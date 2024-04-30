@@ -35,19 +35,19 @@ class PDPGraph implements Graph, EventEmitter {
     public void setResourceAccessRights(AccessRightSet accessRightSet) throws PMException {
         adjudicator.setResourceAccessRights(accessRightSet);
 
-        pap.graph().setResourceAccessRights(accessRightSet);
+        pap.policy().graph().setResourceAccessRights(accessRightSet);
     }
 
     @Override
     public AccessRightSet getResourceAccessRights() throws PMException {
-        return pap.graph().getResourceAccessRights();
+        return pap.policy().graph().getResourceAccessRights();
     }
 
     @Override
     public String createPolicyClass(String name, Map<String, String> properties) throws PMException {
         adjudicator.createPolicyClass(name, properties);
 
-        pap.graph().createPolicyClass(name, properties);
+        pap.policy().graph().createPolicyClass(name, properties);
 
         emitEvent(new EventContext(userCtx, new CreatePolicyClassOp(name, new HashMap<>())));
 
@@ -58,7 +58,7 @@ class PDPGraph implements Graph, EventEmitter {
     public String createUserAttribute(String name, Map<String, String> properties, List<String> parents) throws PMException {
         adjudicator.createUserAttribute(name, properties, parents);
 
-        pap.graph().createUserAttribute(name, properties, parents);
+        pap.policy().graph().createUserAttribute(name, properties, parents);
 
         CreateUserAttributeOp op =
                 new CreateUserAttributeOp(name, new HashMap<>(), parents);
@@ -72,7 +72,7 @@ class PDPGraph implements Graph, EventEmitter {
     public String createObjectAttribute(String name, Map<String, String> properties, List<String> parents) throws PMException {
         adjudicator.createObjectAttribute(name, properties, parents);
 
-        pap.graph().createObjectAttribute(name, properties, parents);
+        pap.policy().graph().createObjectAttribute(name, properties, parents);
 
         CreateObjectAttributeOp op =
                 new CreateObjectAttributeOp(name, new HashMap<>(), parents);
@@ -86,7 +86,7 @@ class PDPGraph implements Graph, EventEmitter {
     public String createObject(String name, Map<String, String> properties, List<String> parents) throws PMException {
         adjudicator.createObject(name, properties, parents);
 
-        pap.graph().createObject(name, properties, parents);
+        pap.policy().graph().createObject(name, properties, parents);
 
         CreateObjectOp op =
                 new CreateObjectOp(name, new HashMap<>(), parents);
@@ -100,7 +100,7 @@ class PDPGraph implements Graph, EventEmitter {
     public String createUser(String name, Map<String, String> properties, List<String> parents) throws PMException {
         adjudicator.createUser(name, properties, parents);
 
-        pap.graph().createUser(name, properties, parents);
+        pap.policy().graph().createUser(name, properties, parents);
 
         CreateUserOp op = new CreateUserOp(name, new HashMap<>(), parents);
 
@@ -123,7 +123,7 @@ class PDPGraph implements Graph, EventEmitter {
     public void setNodeProperties(String name, Map<String, String> properties) throws PMException {
         adjudicator.setNodeProperties(name, properties);
 
-        pap.graph().setNodeProperties(name, properties);
+        pap.policy().graph().setNodeProperties(name, properties);
 
         emitEvent(new EventContext(userCtx,
                 new SetNodePropertiesOp(name, properties)));
@@ -136,7 +136,7 @@ class PDPGraph implements Graph, EventEmitter {
         // get parents of the deleted node before deleting to process event in the EPP
         List<String> parents = getParents(name);
 
-        pap.graph().deleteNode(name);
+        pap.policy().graph().deleteNode(name);
 
         emitDeleteNodeOp(new DeleteNodeOp(name), name, parents);
     }
@@ -168,14 +168,14 @@ class PDPGraph implements Graph, EventEmitter {
 
     @Override
     public List<String> getPolicyClasses() throws PMException {
-        return pap.graph().getPolicyClasses();
+        return pap.policy().graph().getPolicyClasses();
     }
 
     @Override
     public void assign(String child, String parent) throws PMException {
         adjudicator.assign(child, parent);
 
-        pap.graph().assign(child, parent);
+        pap.policy().graph().assign(child, parent);
 
         emitEvent(new EventContext(userCtx,
                 new AssignOp(child, parent)));
@@ -187,7 +187,7 @@ class PDPGraph implements Graph, EventEmitter {
     public void deassign(String child, String parent) throws PMException {
         adjudicator.deassign(child, parent);
 
-        pap.graph().deassign(child, parent);
+        pap.policy().graph().deassign(child, parent);
 
         emitEvent(new EventContext(userCtx,
                 new DeassignOp(child, parent)));
@@ -204,7 +204,7 @@ class PDPGraph implements Graph, EventEmitter {
     public void associate(String ua, String target, AccessRightSet accessRights) throws PMException {
         adjudicator.associate(ua, target, accessRights);
 
-        pap.graph().associate(ua, target, accessRights);
+        pap.policy().graph().associate(ua, target, accessRights);
 
         emitEvent(new EventContext(userCtx,
                 new AssociateOp(ua, target, accessRights)));
@@ -216,7 +216,7 @@ class PDPGraph implements Graph, EventEmitter {
     public void dissociate(String ua, String target) throws PMException {
         adjudicator.dissociate(ua, target);
 
-        pap.graph().dissociate(ua, target);
+        pap.policy().graph().dissociate(ua, target);
 
         emitEvent(new EventContext(userCtx,
                 new DissociateOp(ua, target)));

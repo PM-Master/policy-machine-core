@@ -1,11 +1,13 @@
 package gov.nist.csd.pm.pdp.adjudicator;
 
+import gov.nist.csd.pm.impl.memory.pdp.MemoryAccessReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.exception.NodeDoesNotExistException;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.AccessReviewerTest;
 import gov.nist.csd.pm.pdp.UserContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -18,8 +20,10 @@ class PrivilegeCheckerTest {
 
     @BeforeAll
     static void setup() throws PMException {
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
+        pap.policy().deserialize(
                 new UserContext("u1"),
                         """
                         set resource access rights ["read", "write"]
@@ -45,7 +49,7 @@ class PrivilegeCheckerTest {
                         """,
                         new PMLDeserializer()
         );
-        privilegeChecker = new PrivilegeChecker(pap, new MemoryPolicyReviewer(pap));
+        privilegeChecker = new PrivilegeChecker(pap);
     }
 
     @Test

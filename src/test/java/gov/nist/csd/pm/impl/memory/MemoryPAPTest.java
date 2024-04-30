@@ -2,6 +2,7 @@ package gov.nist.csd.pm.impl.memory;
 
 import com.google.gson.Gson;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PAPTest;
 import gov.nist.csd.pm.common.exception.PMException;
@@ -17,14 +18,19 @@ class MemoryPAPTest extends PAPTest{
 
     @Override
     public PAP getPAP() throws PMException {
-        return new PAP(new MemoryPolicyStore());
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        return new PAP(ps, pr);
     }
 
     @Test
     void testJsonAsPropertyValue() throws PMException {
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.graph().createPolicyClass("name", Properties.toProperties("test", "{\"12\": \"34\"}", "a", "[\"1\", \"2\"]"));
-        Node name = pap.graph().getNode("name");
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
+
+        pap.policy().graph().createPolicyClass("name", Properties.toProperties("test", "{\"12\": \"34\"}", "a", "[\"1\", \"2\"]"));
+        Node name = pap.policy().graph().getNode("name");
         Map<String, String> properties = name.getProperties();
         String test = properties.get("test");
         Map m = new Gson().fromJson(test, Map.class);

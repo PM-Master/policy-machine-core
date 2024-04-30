@@ -12,6 +12,7 @@ import gov.nist.csd.pm.common.obligation.event.subject.UsersSubject;
 import gov.nist.csd.pm.common.obligation.event.target.AnyInUnionTarget;
 import gov.nist.csd.pm.common.obligation.event.target.AnyTarget;
 import gov.nist.csd.pm.common.obligation.event.target.OnTargets;
+import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.exception.*;
 import gov.nist.csd.pm.pap.pml.expression.*;
 import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
@@ -69,21 +70,21 @@ public abstract class PAPTest {
     @Test
     void testTx() throws PMException {
         pap.beginTx();
-        pap.graph().createPolicyClass("pc1", new HashMap<>());
-        pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-        pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of());
-        pap.graph().associate("ua1", "oa1", new AccessRightSet());
+        pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of());
+        pap.policy().graph().associate("ua1", "oa1", new AccessRightSet());
         pap.commit();
 
-        assertTrue(pap.graph().nodeExists("pc1"));
-        assertTrue(pap.graph().nodeExists("oa1"));
-        assertTrue(pap.graph().nodeExists("ua1"));
-        assertTrue(pap.graph().getAssociationsWithSource("ua1").get(0).equals(new Association("ua1", "oa1", new AccessRightSet())));
+        assertTrue(pap.policy().graph().nodeExists("pc1"));
+        assertTrue(pap.policy().graph().nodeExists("oa1"));
+        assertTrue(pap.policy().graph().nodeExists("ua1"));
+        assertTrue(pap.policy().graph().getAssociationsWithSource("ua1").get(0).equals(new Association("ua1", "oa1", new AccessRightSet())));
 
         pap.beginTx();
-        pap.graph().deleteNode("ua1");
+        pap.policy().graph().deleteNode("ua1");
         pap.rollback();
-        assertTrue(pap.graph().nodeExists("ua1"));
+        assertTrue(pap.policy().graph().nodeExists("ua1"));
     }
 
     @Nested
@@ -96,9 +97,9 @@ public abstract class PAPTest {
                     create ua "ua1" assign to ["pc2"]
                     """;
 
-            assertThrows(PMException.class, () -> pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer()));
-            assertFalse(pap.graph().nodeExists("pc1"));
-            assertFalse(pap.graph().nodeExists("ua1"));
+            assertThrows(PMException.class, () -> pap.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer()));
+            assertFalse(pap.policy().graph().nodeExists("pc1"));
+            assertFalse(pap.policy().graph().nodeExists("ua1"));
         }
 
         private static final String input = """
@@ -134,54 +135,60 @@ public abstract class PAPTest {
         @Test
         void testSuccess() throws PMException {
             UserContext userContext = new UserContext("u1");
-            pap.deserialize(userContext, input, new PMLDeserializer());
+            pap.policy().deserialize(userContext, input, new PMLDeserializer());
 
-            String pml = pap.serialize(new PMLSerializer());
-            PAP pmlPAP = new PAP(new MemoryPolicyStore());
-            pmlPAP.deserialize(userContext, pml, new PMLDeserializer());
+            String pml = pap.policy().serialize(new PMLSerializer());
+            MemoryPolicyStore policyStore = new MemoryPolicyStore();
+            MemoryPolicyReviewer reviewer = new MemoryPolicyReviewer(policyStore);
+            PAP pmlPAP = new PAP(policyStore, reviewer);
+            pmlPAP.policy().deserialize(userContext, pml, new PMLDeserializer());
 
-            String json = pap.serialize(new JSONSerializer());
-            PAP jsonPAP = new PAP(new MemoryPolicyStore());
-            jsonPAP.deserialize(userContext, json, new JSONDeserializer());
+            String json = pmlPAP.policy().serialize(new JSONSerializer());
+            MemoryPolicyStore jsonPS = new MemoryPolicyStore();
+            MemoryPolicyReviewer jsonRev = new MemoryPolicyReviewer(policyStore);
+            PAP jsonPAP = new PAP(jsonPS, jsonRev);
+            jsonPAP.policy().deserialize(userContext, json, new JSONDeserializer());
 
-            assertPolicyEquals(pap, pmlPAP);
-            assertPolicyEquals(pap, jsonPAP);
+            assertPolicyEquals(pap.policyStore, pmlPAP.policyStore);
+            assertPolicyEquals(pap.policyStore, jsonPAP.policyStore);
 
             assertThrows(PMException.class, () -> {
-                pap.deserialize(new UserContext("unknown user"), input, new PMLDeserializer());
+                pap.policy().deserialize(new UserContext("unknown user"), input, new PMLDeserializer());
             });
         }
         @Test
         void testJSONAndPMLCreateEqualPolicy() throws PMException {
             UserContext userContext = new UserContext("u1");
-            pap.deserialize(userContext, input, new PMLDeserializer());
-            String pml = pap.serialize(new PMLSerializer());
-            String json = pap.serialize(new JSONSerializer());
+            pap.policy().deserialize(userContext, input, new PMLDeserializer());
+            String pml = pap.policy().serialize(new PMLSerializer());
+            String json = pap.policy().serialize(new JSONSerializer());
 
             pap.policyStore.reset();
-            PAP pap1 = new PAP(pap.policyStore);
-            pap1.deserialize(userContext, pml, new PMLDeserializer());
+            PAP pap1 = new PAP(pap.policyStore, pap.policyReview);
+            pap1.policy().deserialize(userContext, pml, new PMLDeserializer());
 
             pap.policyStore.reset();
-            PAP pap2 = new PAP(pap.policyStore);
-            pap2.deserialize(userContext, json, new JSONDeserializer());
+            PAP pap2 = new PAP(pap.policyStore, pap.policyReview);
+            pap2.policy().deserialize(userContext, json, new JSONDeserializer());
 
-            PolicyEquals.assertPolicyEquals(pap1, pap2);
+            PolicyEquals.assertPolicyEquals(pap1.policyStore, pap2.policyStore);
         }
 
         @Test
         void testAssignPolicyClassTargetToAnotherPolicyClass() throws PMException {
             UserContext userContext = new UserContext("u1");
-            pap.deserialize(userContext, input, new PMLDeserializer());
+            pap.policy().deserialize(userContext, input, new PMLDeserializer());
 
-            pap.graph().createObjectAttribute("test-oa", new HashMap<>(), List.of("pc1"));
-            pap.graph().assign(AdminPolicy.policyClassTargetName("pc1"), "test-oa");
-            String pml = pap.serialize(new PMLSerializer());
+            pap.policy().graph().createObjectAttribute("test-oa", new HashMap<>(), List.of("pc1"));
+            pap.policy().graph().assign(AdminPolicy.policyClassTargetName("pc1"), "test-oa");
+            String pml = pap.policy().serialize(new PMLSerializer());
 
-            PAP pap1 = new PAP(new MemoryPolicyStore());
-            pap1.deserialize(userContext, pml, new PMLDeserializer());
+            MemoryPolicyStore ps = new MemoryPolicyStore();
+            MemoryPolicyReviewer rev = new MemoryPolicyReviewer(ps);
+            PAP pap1 = new PAP(ps, rev);
+            pap1.policy().deserialize(userContext, pml, new PMLDeserializer());
 
-            PolicyEquals.assertPolicyEquals(pap, pap1);
+            PolicyEquals.assertPolicyEquals(pap.policyStore, pap1.policyStore);
         }
     }
 
@@ -200,8 +207,8 @@ public abstract class PAPTest {
                     .build();
 
             pap.executePML(new UserContext("u1"), "create ua \"ua3\" assign to [\"pc2\"]\ntestfunc()", functionDefinitionStatement);
-            assertTrue(pap.graph().nodeExists("ua3"));
-            assertTrue(pap.graph().nodeExists("pc3"));
+            assertTrue(pap.policy().graph().nodeExists("ua3"));
+            assertTrue(pap.policy().graph().nodeExists("pc3"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -214,49 +221,49 @@ public abstract class PAPTest {
 
     @Test
     void testResetInitializesAdminPolicy() throws PMException {
-        pap.reset();
+        pap.policy().reset();
 
         testAdminPolicy(pap, 1);
     }
 
     public static void testAdminPolicy(PAP pap, int numExpectedPolicyClasses) throws PMException {
-        assertTrue(pap.graph().nodeExists(AdminPolicyNode.ADMIN_POLICY.nodeName()));
-        List<String> children = pap.graph().getChildren(AdminPolicyNode.ADMIN_POLICY.nodeName());
+        assertTrue(pap.policy().graph().nodeExists(AdminPolicyNode.ADMIN_POLICY.nodeName()));
+        List<String> children = pap.policy().graph().getChildren(AdminPolicyNode.ADMIN_POLICY.nodeName());
         assertEquals(5, children.size());
         assertTrue(children.containsAll(List.of(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName(), AdminPolicyNode.PML_FUNCTIONS_TARGET.nodeName(),
                                                 AdminPolicyNode.PML_CONSTANTS_TARGET.nodeName(), AdminPolicyNode.PROHIBITIONS_TARGET.nodeName(), AdminPolicyNode.OBLIGATIONS_TARGET.nodeName())));
 
-        assertTrue(pap.graph().nodeExists(AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName()));
-        List<String> parents = pap.graph().getParents(AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName());
+        assertTrue(pap.policy().graph().nodeExists(AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName()));
+        List<String> parents = pap.policy().graph().getParents(AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName());
         assertEquals(1, parents.size());
         assertTrue(parents.contains(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName()));
 
-        assertTrue(pap.graph().nodeExists(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName()));
-        children = pap.graph().getChildren(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName());
+        assertTrue(pap.policy().graph().nodeExists(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName()));
+        children = pap.policy().graph().getChildren(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName());
         assertEquals(numExpectedPolicyClasses, children.size());
         assertTrue(children.contains(AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName()));
 
-        parents = pap.graph().getParents(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName());
+        parents = pap.policy().graph().getParents(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName());
         assertEquals(1, parents.size());
         assertTrue(parents.contains(AdminPolicyNode.ADMIN_POLICY.nodeName()));
 
-        assertTrue(pap.graph().nodeExists(AdminPolicyNode.PML_FUNCTIONS_TARGET.nodeName()));
-        parents = pap.graph().getParents(AdminPolicyNode.PML_FUNCTIONS_TARGET.nodeName());
+        assertTrue(pap.policy().graph().nodeExists(AdminPolicyNode.PML_FUNCTIONS_TARGET.nodeName()));
+        parents = pap.policy().graph().getParents(AdminPolicyNode.PML_FUNCTIONS_TARGET.nodeName());
         assertEquals(1, parents.size());
         assertTrue(parents.contains(AdminPolicyNode.ADMIN_POLICY.nodeName()));
 
-        assertTrue(pap.graph().nodeExists(AdminPolicyNode.PML_CONSTANTS_TARGET.nodeName()));
-        parents = pap.graph().getParents(AdminPolicyNode.PML_CONSTANTS_TARGET.nodeName());
+        assertTrue(pap.policy().graph().nodeExists(AdminPolicyNode.PML_CONSTANTS_TARGET.nodeName()));
+        parents = pap.policy().graph().getParents(AdminPolicyNode.PML_CONSTANTS_TARGET.nodeName());
         assertEquals(1, parents.size());
         assertTrue(parents.contains(AdminPolicyNode.ADMIN_POLICY.nodeName()));
 
-        assertTrue(pap.graph().nodeExists(AdminPolicyNode.PROHIBITIONS_TARGET.nodeName()));
-        parents = pap.graph().getParents(AdminPolicyNode.PROHIBITIONS_TARGET.nodeName());
+        assertTrue(pap.policy().graph().nodeExists(AdminPolicyNode.PROHIBITIONS_TARGET.nodeName()));
+        parents = pap.policy().graph().getParents(AdminPolicyNode.PROHIBITIONS_TARGET.nodeName());
         assertEquals(1, parents.size());
         assertTrue(parents.contains(AdminPolicyNode.ADMIN_POLICY.nodeName()));
 
-        assertTrue(pap.graph().nodeExists(AdminPolicyNode.OBLIGATIONS_TARGET.nodeName()));
-        parents = pap.graph().getParents(AdminPolicyNode.OBLIGATIONS_TARGET.nodeName());
+        assertTrue(pap.policy().graph().nodeExists(AdminPolicyNode.OBLIGATIONS_TARGET.nodeName()));
+        parents = pap.policy().graph().getParents(AdminPolicyNode.OBLIGATIONS_TARGET.nodeName());
         assertEquals(1, parents.size());
         assertTrue(parents.contains(AdminPolicyNode.ADMIN_POLICY.nodeName()));
     }
@@ -271,14 +278,14 @@ public abstract class PAPTest {
             @Test
             void testAdminAccessRightExistsException() {
                 assertThrows(AdminAccessRightExistsException.class, () ->
-                        pap.graph().setResourceAccessRights(new AccessRightSet(CREATE_POLICY_CLASS)));
+                        pap.policy().graph().setResourceAccessRights(new AccessRightSet(CREATE_POLICY_CLASS)));
             }
 
             @Test
             void testSuccess() throws PMException {
                 AccessRightSet arset = new AccessRightSet("read", "write");
-                pap.graph().setResourceAccessRights(arset);
-                assertEquals(arset, pap.graph().getResourceAccessRights());
+                pap.policy().graph().setResourceAccessRights(arset);
+                assertEquals(arset, pap.policy().graph().getResourceAccessRights());
             }
 
         }
@@ -288,8 +295,8 @@ public abstract class PAPTest {
             @Test
             void testGetResourceAccessRights() throws PMException {
                 AccessRightSet arset = new AccessRightSet("read", "write");
-                pap.graph().setResourceAccessRights(arset);
-                assertEquals(arset, pap.graph().getResourceAccessRights());
+                pap.policy().graph().setResourceAccessRights(arset);
+                assertEquals(arset, pap.policy().graph().getResourceAccessRights());
             }
         }
 
@@ -297,19 +304,19 @@ public abstract class PAPTest {
         class CreatePolicyClassTest {
             @Test
             void testNodeNameExistsException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                assertDoesNotThrow(() -> pap.graph().createPolicyClass("pc2", new HashMap<>()));
-                assertThrows(NodeNameExistsException.class, () -> pap.graph().createPolicyClass("pc1", new HashMap<>()));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                assertDoesNotThrow(() -> pap.policy().graph().createPolicyClass("pc2", new HashMap<>()));
+                assertThrows(NodeNameExistsException.class, () -> pap.policy().graph().createPolicyClass("pc1", new HashMap<>()));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
                 String rep = AdminPolicy.policyClassTargetName("pc1");
-                assertTrue(pap.graph().nodeExists("pc1"));
-                assertTrue(pap.graph().nodeExists(rep));
-                assertTrue(pap.graph().getParents(rep).contains(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName()));
-                assertTrue(pap.graph().getChildren(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName()).contains(rep));
+                assertTrue(pap.policy().graph().nodeExists("pc1"));
+                assertTrue(pap.policy().graph().nodeExists(rep));
+                assertTrue(pap.policy().graph().getParents(rep).contains(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName()));
+                assertTrue(pap.policy().graph().getChildren(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName()).contains(rep));
             }
         }
 
@@ -318,67 +325,67 @@ public abstract class PAPTest {
 
             @Test
             void testNodeNameExistsException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
                 assertThrows(NodeNameExistsException.class,
-                             () -> pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1")));
+                             () -> pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1")));
             }
 
             @Test
             void testNodeDoesNotExistException() throws PMException {
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1")));
+                             () -> pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1")));
 
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
 
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1", "pc2")));
+                             () -> pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1", "pc2")));
             }
 
             @Test
             void testInvalidAssignmentException()
                     throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(InvalidAssignmentException.class,
-                             () -> pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("ua1")));
+                             () -> pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("ua1")));
             }
 
             @Test
             void testAssignmentCausesLoopException()
                     throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("oa1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("oa1"));
 
                 assertThrows(AssignmentCausesLoopException.class,
-                             () -> pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("oa3")));
+                             () -> pap.policy().graph().createObjectAttribute("oa3", new HashMap<>(), List.of("oa3")));
                 assertThrows(AssignmentCausesLoopException.class,
-                             () -> pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("oa2", "oa3")));
+                             () -> pap.policy().graph().createObjectAttribute("oa3", new HashMap<>(), List.of("oa2", "oa3")));
             }
 
             @Test
             void Success() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", toProperties("k", "v"), List.of("oa1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", toProperties("k", "v"), List.of("oa1"));
 
-                assertTrue(pap.graph().nodeExists("oa1"));
-                assertTrue(pap.graph().nodeExists("oa2"));
-                assertEquals("v", pap.graph().getNode("oa2").getProperties().get("k"));
+                assertTrue(pap.policy().graph().nodeExists("oa1"));
+                assertTrue(pap.policy().graph().nodeExists("oa2"));
+                assertEquals("v", pap.policy().graph().getNode("oa2").getProperties().get("k"));
 
-                assertTrue(pap.graph().getChildren("pc1").contains("oa1"));
-                assertTrue(pap.graph().getChildren("oa1").contains("oa2"));
+                assertTrue(pap.policy().graph().getChildren("pc1").contains("oa1"));
+                assertTrue(pap.policy().graph().getChildren("oa1").contains("oa2"));
 
-                assertTrue(pap.graph().getParents("oa1").contains("pc1"));
-                assertTrue(pap.graph().getParents("oa2").contains("oa1"));
+                assertTrue(pap.policy().graph().getParents("oa1").contains("pc1"));
+                assertTrue(pap.policy().graph().getParents("oa2").contains("oa1"));
             }
 
             @Test
             void testNoParents() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                assertThrows(DisconnectedNodeException.class, () -> pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of()));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                assertThrows(DisconnectedNodeException.class, () -> pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of()));
             }
         }
 
@@ -387,61 +394,61 @@ public abstract class PAPTest {
 
             @Test
             void testNodeNameExistsException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
                 assertThrows(NodeNameExistsException.class,
-                             () -> pap.graph().createObjectAttribute("ua1", new HashMap<>(), List.of("pc1")));
+                             () -> pap.policy().graph().createObjectAttribute("ua1", new HashMap<>(), List.of("pc1")));
             }
 
             @Test
             void testNodeDoesNotExistException() throws PMException {
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1")));
+                             () -> pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1")));
 
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
 
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1", "pc2")));
+                             () -> pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1", "pc2")));
             }
 
             @Test
             void testInvalidAssignmentException()
                     throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(InvalidAssignmentException.class,
-                             () -> pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("oa1")));
+                             () -> pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("oa1")));
             }
 
             @Test
             void testAssignmentCausesLoopException()
                     throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of("ua1"));
 
                 assertThrows(AssignmentCausesLoopException.class,
-                             () -> pap.graph().createUserAttribute("ua3", new HashMap<>(), List.of("ua3")));
+                             () -> pap.policy().graph().createUserAttribute("ua3", new HashMap<>(), List.of("ua3")));
                 assertThrows(AssignmentCausesLoopException.class,
-                             () -> pap.graph().createUserAttribute("ua3", new HashMap<>(), List.of("ua2", "ua3")));
+                             () -> pap.policy().graph().createUserAttribute("ua3", new HashMap<>(), List.of("ua2", "ua3")));
             }
 
             @Test
             void Success() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of());
-                pap.graph().createUserAttribute("ua2", toProperties("k", "v"), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of());
+                pap.policy().graph().createUserAttribute("ua2", toProperties("k", "v"), List.of("ua1"));
 
-                assertTrue(pap.graph().nodeExists("ua1"));
-                assertTrue(pap.graph().nodeExists("ua2"));
-                assertEquals("v", pap.graph().getNode("ua2").getProperties().get("k"));
+                assertTrue(pap.policy().graph().nodeExists("ua1"));
+                assertTrue(pap.policy().graph().nodeExists("ua2"));
+                assertEquals("v", pap.policy().graph().getNode("ua2").getProperties().get("k"));
 
-                assertTrue(pap.graph().getChildren("pc1").isEmpty());
-                assertTrue(pap.graph().getParents("ua1").isEmpty());
+                assertTrue(pap.policy().graph().getChildren("pc1").isEmpty());
+                assertTrue(pap.policy().graph().getParents("ua1").isEmpty());
 
-                assertTrue(pap.graph().getChildren("ua1").contains("ua2"));
-                assertTrue(pap.graph().getParents("ua2").contains("ua1"));
+                assertTrue(pap.policy().graph().getChildren("ua1").contains("ua2"));
+                assertTrue(pap.policy().graph().getParents("ua2").contains("ua1"));
             }
         }
 
@@ -450,60 +457,60 @@ public abstract class PAPTest {
 
             @Test
             void testNodeNameExistsException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObject("o1", new HashMap<>(), List.of("oa1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObject("o1", new HashMap<>(), List.of("oa1"));
                 assertThrows(NodeNameExistsException.class,
-                             () -> pap.graph().createObject("o1", new HashMap<>(), List.of("oa1")));
+                             () -> pap.policy().graph().createObject("o1", new HashMap<>(), List.of("oa1")));
             }
 
             @Test
             void testNodeDoesNotExistException() throws PMException {
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().createObject("o1", new HashMap<>(), List.of("oa1")));
+                             () -> pap.policy().graph().createObject("o1", new HashMap<>(), List.of("oa1")));
 
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().createObjectAttribute("o1", new HashMap<>(), List.of("oa1", "oa2")));
+                             () -> pap.policy().graph().createObjectAttribute("o1", new HashMap<>(), List.of("oa1", "oa2")));
             }
 
             @Test
             void testInvalidAssignmentException()
                     throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(InvalidAssignmentException.class,
-                             () -> pap.graph().createObjectAttribute("o1", new HashMap<>(), List.of("ua1")));
+                             () -> pap.policy().graph().createObjectAttribute("o1", new HashMap<>(), List.of("ua1")));
             }
 
             @Test
             void testAssignmentCausesLoopException()
                     throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(AssignmentCausesLoopException.class,
-                             () -> pap.graph().createObject("o1", new HashMap<>(), List.of("o1")));
+                             () -> pap.policy().graph().createObject("o1", new HashMap<>(), List.of("o1")));
                 assertThrows(AssignmentCausesLoopException.class,
-                             () -> pap.graph().createObject("o1", new HashMap<>(), List.of("oa1", "o1")));
+                             () -> pap.policy().graph().createObject("o1", new HashMap<>(), List.of("oa1", "o1")));
             }
 
             @Test
             void Success() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
-                pap.graph().createObject("o1", toProperties("k", "v"), List.of("oa1"));
+                pap.policy().graph().createObject("o1", toProperties("k", "v"), List.of("oa1"));
 
-                assertTrue(pap.graph().nodeExists("o1"));
-                assertEquals("v", pap.graph().getNode("o1").getProperties().get("k"));
+                assertTrue(pap.policy().graph().nodeExists("o1"));
+                assertEquals("v", pap.policy().graph().getNode("o1").getProperties().get("k"));
 
-                assertTrue(pap.graph().getChildren("oa1").contains("o1"));
-                assertEquals( List.of("oa1"), pap.graph().getParents("o1"));
-                assertTrue(pap.graph().getChildren("oa1").contains("o1"));
+                assertTrue(pap.policy().graph().getChildren("oa1").contains("o1"));
+                assertEquals( List.of("oa1"), pap.policy().graph().getParents("o1"));
+                assertTrue(pap.policy().graph().getChildren("oa1").contains("o1"));
             }
         }
 
@@ -512,60 +519,60 @@ public abstract class PAPTest {
 
             @Test
             void testNodeNameExistsException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
                 assertThrows(NodeNameExistsException.class,
-                             () -> pap.graph().createUser("u1", new HashMap<>(), List.of("ua1")));
+                             () -> pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1")));
             }
 
             @Test
             void testNodeDoesNotExistException() throws PMException {
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().createUser("u1", new HashMap<>(), List.of("ua1")));
+                             () -> pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1")));
 
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().createUser("u1", new HashMap<>(), List.of("ua1", "ua2")));
+                             () -> pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1", "ua2")));
             }
 
             @Test
             void testInvalidAssignmentException()
                     throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(InvalidAssignmentException.class,
-                             () -> pap.graph().createUser("u1", new HashMap<>(), List.of("oa1")));
+                             () -> pap.policy().graph().createUser("u1", new HashMap<>(), List.of("oa1")));
             }
 
             @Test
             void testAssignmentCausesLoopException()
                     throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(AssignmentCausesLoopException.class,
-                             () -> pap.graph().createUser("u1", new HashMap<>(), List.of("u1")));
+                             () -> pap.policy().graph().createUser("u1", new HashMap<>(), List.of("u1")));
                 assertThrows(AssignmentCausesLoopException.class,
-                             () -> pap.graph().createUser("u1", new HashMap<>(), List.of("ua1", "u1")));
+                             () -> pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1", "u1")));
             }
 
             @Test
             void Success() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
 
-                pap.graph().createUser("u1", toProperties("k", "v"), List.of("ua1"));
+                pap.policy().graph().createUser("u1", toProperties("k", "v"), List.of("ua1"));
 
-                assertTrue(pap.graph().nodeExists("u1"));
-                assertEquals("v", pap.graph().getNode("u1").getProperties().get("k"));
+                assertTrue(pap.policy().graph().nodeExists("u1"));
+                assertEquals("v", pap.policy().graph().getNode("u1").getProperties().get("k"));
 
-                assertTrue(pap.graph().getChildren("ua1").contains("u1"));
-                assertEquals( List.of("ua1"), pap.graph().getParents("u1"));
-                assertTrue(pap.graph().getChildren("ua1").contains("u1"));
+                assertTrue(pap.policy().graph().getChildren("ua1").contains("u1"));
+                assertEquals( List.of("ua1"), pap.policy().graph().getParents("u1"));
+                assertTrue(pap.policy().graph().getChildren("ua1").contains("u1"));
             }
         }
 
@@ -575,23 +582,23 @@ public abstract class PAPTest {
             @Test
             void testNodeDoesNotExistException() {
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().setNodeProperties("oa1", NO_PROPERTIES));
+                             () -> pap.policy().graph().setNodeProperties("oa1", NO_PROPERTIES));
             }
 
             @Test
             void testSuccessEmptyProperties() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().setNodeProperties("pc1", NO_PROPERTIES);
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().setNodeProperties("pc1", NO_PROPERTIES);
 
-                assertTrue(pap.graph().getNode("pc1").getProperties().isEmpty());
+                assertTrue(pap.policy().graph().getNode("pc1").getProperties().isEmpty());
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().setNodeProperties("pc1", toProperties("k", "v"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().setNodeProperties("pc1", toProperties("k", "v"));
 
-                assertEquals("v", pap.graph().getNode("pc1").getProperties().get("k"));
+                assertEquals("v", pap.policy().graph().getNode("pc1").getProperties().get("k"));
             }
         }
 
@@ -599,11 +606,11 @@ public abstract class PAPTest {
         class NodeExists {
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                assertTrue(pap.graph().nodeExists("pc1"));
-                assertTrue(pap.graph().nodeExists("ua1"));
-                assertFalse(pap.graph().nodeExists("pc2"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                assertTrue(pap.policy().graph().nodeExists("pc1"));
+                assertTrue(pap.policy().graph().nodeExists("ua1"));
+                assertFalse(pap.policy().graph().nodeExists("pc2"));
             }
         }
 
@@ -612,14 +619,14 @@ public abstract class PAPTest {
 
             @Test
             void testNodeDoesNotExistException() {
-                assertThrows(NodeDoesNotExistException.class, () -> pap.graph().getNode("pc1"));
+                assertThrows(NodeDoesNotExistException.class, () -> pap.policy().graph().getNode("pc1"));
             }
 
             @Test
             void testSuccessPolicyClass() throws PMException {
-                pap.graph().createPolicyClass("pc1", Properties.toProperties("k", "v"));
+                pap.policy().graph().createPolicyClass("pc1", Properties.toProperties("k", "v"));
 
-                Node pc1 = pap.graph().getNode("pc1");
+                Node pc1 = pap.policy().graph().getNode("pc1");
 
                 assertEquals("pc1", pc1.getName());
                 assertEquals(PC, pc1.getType());
@@ -628,10 +635,10 @@ public abstract class PAPTest {
 
             @Test
             void testSuccessObjectAttribute() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", Properties.toProperties("k", "v"), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", Properties.toProperties("k", "v"), List.of("pc1"));
 
-                Node oa1 = pap.graph().getNode("oa1");
+                Node oa1 = pap.policy().graph().getNode("oa1");
 
                 assertEquals("oa1", oa1.getName());
                 assertEquals(OA, oa1.getType());
@@ -643,33 +650,33 @@ public abstract class PAPTest {
         class Search {
             @Test
             void testSearch() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", toProperties("namespace", "test"), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", toProperties("key1", "value1"), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa3", toProperties("key1", "value1", "key2", "value2"), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", toProperties("namespace", "test"), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", toProperties("key1", "value1"), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa3", toProperties("key1", "value1", "key2", "value2"), List.of("pc1"));
 
-                List<String> nodes = pap.graph().search(OA, NO_PROPERTIES);
+                List<String> nodes = pap.policy().graph().search(OA, NO_PROPERTIES);
                 assertEquals(10, nodes.size());
 
-                nodes = pap.graph().search(ANY, toProperties("key1", "value1"));
+                nodes = pap.policy().graph().search(ANY, toProperties("key1", "value1"));
                 assertEquals(2, nodes.size());
 
-                nodes = pap.graph().search(ANY, toProperties("namespace", "test"));
+                nodes = pap.policy().graph().search(ANY, toProperties("namespace", "test"));
                 assertEquals(1, nodes.size());
 
-                nodes = pap.graph().search(OA, toProperties("namespace", "test"));
+                nodes = pap.policy().graph().search(OA, toProperties("namespace", "test"));
                 assertEquals(1, nodes.size());
-                nodes = pap.graph().search(OA, toProperties("key1", "value1"));
+                nodes = pap.policy().graph().search(OA, toProperties("key1", "value1"));
                 assertEquals(2, nodes.size());
-                nodes = pap.graph().search(OA, toProperties("key1", "*"));
+                nodes = pap.policy().graph().search(OA, toProperties("key1", "*"));
                 assertEquals(2, nodes.size());
-                nodes = pap.graph().search(OA, toProperties("key1", "value1", "key2", "value2"));
+                nodes = pap.policy().graph().search(OA, toProperties("key1", "value1", "key2", "value2"));
                 assertEquals(1, nodes.size());
-                nodes = pap.graph().search(OA, toProperties("key1", "value1", "key2", "*"));
+                nodes = pap.policy().graph().search(OA, toProperties("key1", "value1", "key2", "*"));
                 assertEquals(1, nodes.size());
-                nodes = pap.graph().search(OA, toProperties("key1", "value1", "key2", "no_value"));
+                nodes = pap.policy().graph().search(OA, toProperties("key1", "value1", "key2", "no_value"));
                 assertEquals(0, nodes.size());
-                nodes = pap.graph().search(ANY, NO_PROPERTIES);
+                nodes = pap.policy().graph().search(ANY, NO_PROPERTIES);
                 assertEquals(12, nodes.size());
             }
         }
@@ -678,11 +685,11 @@ public abstract class PAPTest {
         class GetPolicyClasses {
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createPolicyClass("pc2", new HashMap<>());
-                pap.graph().createPolicyClass("pc3", new HashMap<>());
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createPolicyClass("pc2", new HashMap<>());
+                pap.policy().graph().createPolicyClass("pc3", new HashMap<>());
 
-                assertTrue(pap.graph().getPolicyClasses().containsAll(Arrays.asList("pc1", "pc2", "pc3")));
+                assertTrue(pap.policy().graph().getPolicyClasses().containsAll(Arrays.asList("pc1", "pc2", "pc3")));
             }
         }
 
@@ -691,35 +698,35 @@ public abstract class PAPTest {
 
             @Test
             void testNodeDoesNotExistDoesNotThrowException() {
-                assertDoesNotThrow(() -> pap.graph().deleteNode("pc1"));
+                assertDoesNotThrow(() -> pap.policy().graph().deleteNode("pc1"));
             }
 
             @Test
             void testNodeHasChildrenException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(NodeHasChildrenException.class,
-                             () -> pap.graph().deleteNode("pc1"));
+                             () -> pap.policy().graph().deleteNode("pc1"));
             }
 
             @Test
             void DeleteNodeWithProhibitionsAndObligations() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua2"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.prohibitions().create("pro1", ProhibitionSubject.userAttribute("ua1"),
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua2"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().prohibitions().create("pro1", ProhibitionSubject.userAttribute("ua1"),
                                           new AccessRightSet(), true, new ContainerCondition("oa1", true));
 
                 assertThrows(NodeReferencedInProhibitionException.class,
-                             () -> pap.graph().deleteNode("ua1"));
+                             () -> pap.policy().graph().deleteNode("ua1"));
                 assertThrows(NodeReferencedInProhibitionException.class,
-                             () -> pap.graph().deleteNode("oa1"));
+                             () -> pap.policy().graph().deleteNode("oa1"));
 
-                pap.prohibitions().delete("pro1");
-                pap.obligations().create(new UserContext("u1"), "oblLabel",
+                pap.policy().prohibitions().delete("pro1");
+                pap.policy().obligations().create(new UserContext("u1"), "oblLabel",
                                          new Rule(
                                                  "rule1",
                                                  new EventPattern(
@@ -739,25 +746,25 @@ public abstract class PAPTest {
                 );
 
                 assertThrows(NodeReferencedInObligationException.class,
-                             () -> pap.graph().deleteNode("ua1"));
+                             () -> pap.policy().graph().deleteNode("ua1"));
             }
 
             @Test
             void testSuccessPolicyClass() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().deleteNode("pc1");
-                assertFalse(pap.graph().nodeExists("pc1"));
-                assertFalse(pap.graph().nodeExists(AdminPolicy.policyClassTargetName("pc1")));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().deleteNode("pc1");
+                assertFalse(pap.policy().graph().nodeExists("pc1"));
+                assertFalse(pap.policy().graph().nodeExists(AdminPolicy.policyClassTargetName("pc1")));
             }
 
             @Test
             void testSuccessObjectAttribute() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
-                pap.graph().deleteNode("oa1");
+                pap.policy().graph().deleteNode("oa1");
 
-                assertFalse(pap.graph().nodeExists("oa1"));
+                assertFalse(pap.policy().graph().nodeExists("oa1"));
             }
         }
 
@@ -767,57 +774,57 @@ public abstract class PAPTest {
             @Test
             void testChildNodeDoesNotExistException() {
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().assign("oa1", "pc1"));
+                             () -> pap.policy().graph().assign("oa1", "pc1"));
             }
 
             @Test
             void testParentNodeDoesNotExistException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().assign("oa1", "oa2"));
+                             () -> pap.policy().graph().assign("oa1", "oa2"));
             }
 
             @Test
             void testAssignmentExistsDoesNothing() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                assertDoesNotThrow(() -> pap.graph().assign("oa1", "pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                assertDoesNotThrow(() -> pap.policy().graph().assign("oa1", "pc1"));
             }
 
             @Test
             void testInvalidAssignmentException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(InvalidAssignmentException.class,
-                             () -> pap.graph().assign("ua1", "oa1"));
+                             () -> pap.policy().graph().assign("ua1", "oa1"));
             }
 
             @Test
             void testAssignmentCausesLoopException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("oa1"));
-                pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("oa2"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("oa1"));
+                pap.policy().graph().createObjectAttribute("oa3", new HashMap<>(), List.of("oa2"));
 
                 assertThrows(AssignmentCausesLoopException.class, () ->
-                        pap.graph().assign("oa1", "oa2"));
+                        pap.policy().graph().assign("oa1", "oa2"));
                 assertThrows(AssignmentCausesLoopException.class, () ->
-                        pap.graph().assign("oa1", "oa1"));
+                        pap.policy().graph().assign("oa1", "oa1"));
                 assertThrows(AssignmentCausesLoopException.class, () ->
-                        pap.graph().assign("oa1", "oa3"));
+                        pap.policy().graph().assign("oa1", "oa3"));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-                pap.graph().assign("oa2", "oa1");
-                assertTrue(pap.graph().getParents("oa2").contains("oa1"));
-                assertTrue(pap.graph().getChildren("oa1").contains("oa2"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().assign("oa2", "oa1");
+                assertTrue(pap.policy().graph().getParents("oa2").contains("oa1"));
+                assertTrue(pap.policy().graph().getChildren("oa1").contains("oa2"));
             }
         }
 
@@ -827,44 +834,44 @@ public abstract class PAPTest {
             @Test
             void testChildNodeDoesNotExistException() {
                 assertThrows(NodeDoesNotExistException.class, () ->
-                        pap.graph().deassign("oa1", "pc1"));
+                        pap.policy().graph().deassign("oa1", "pc1"));
             }
 
             @Test
             void testParentNodeDoesNotExistException() throws PMException{
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(NodeDoesNotExistException.class, () ->
-                        pap.graph().deassign("oa1", "oa2"));
+                        pap.policy().graph().deassign("oa1", "oa2"));
             }
 
             @Test
             void AssignmentDoesNotExistDoesNothing() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-                pap.graph().deassign("oa1", "oa2");
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().deassign("oa1", "oa2");
             }
 
             @Test
             void testDisconnectedNode() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(DisconnectedNodeException.class,
-                             () -> pap.graph().deassign("oa1", "pc1"));
+                             () -> pap.policy().graph().deassign("oa1", "pc1"));
             }
 
             @Test
             void Success() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createPolicyClass("pc2", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1", "pc2"));
-                pap.graph().deassign("oa1", "pc1");
-                assertEquals(List.of("pc2"), pap.graph().getParents("oa1"));
-                assertFalse(pap.graph().getParents("oa1").contains("pc1"));
-                assertFalse(pap.graph().getChildren("pc1").contains("oa1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createPolicyClass("pc2", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1", "pc2"));
+                pap.policy().graph().deassign("oa1", "pc1");
+                assertEquals(List.of("pc2"), pap.policy().graph().getParents("oa1"));
+                assertFalse(pap.policy().graph().getParents("oa1").contains("pc1"));
+                assertFalse(pap.policy().graph().getChildren("pc1").contains("oa1"));
             }
 
         }
@@ -875,18 +882,18 @@ public abstract class PAPTest {
             @Test
             void NodeDoesNotExist() {
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().getChildren("oa1"));
+                             () -> pap.policy().graph().getChildren("oa1"));
             }
 
             @Test
             void Success() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
 
 
-                assertTrue(pap.graph().getChildren("pc1").containsAll(List.of("oa1", "oa2", "oa3")));
+                assertTrue(pap.policy().graph().getChildren("pc1").containsAll(List.of("oa1", "oa2", "oa3")));
             }
         }
 
@@ -896,20 +903,20 @@ public abstract class PAPTest {
             @Test
             void NodeDoesNotExist() {
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().getParents("oa1"));
+                             () -> pap.policy().graph().getParents("oa1"));
             }
 
             @Test
             void Success() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObject("o1", new HashMap<>(), List.of("oa1"));
-                pap.graph().assign("o1", "oa2");
-                pap.graph().assign("o1", "oa3");
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObject("o1", new HashMap<>(), List.of("oa1"));
+                pap.policy().graph().assign("o1", "oa2");
+                pap.policy().graph().assign("o1", "oa3");
 
-                assertTrue(pap.graph().getParents("o1").containsAll(List.of("oa1", "oa2", "oa3")));
+                assertTrue(pap.policy().graph().getParents("o1").containsAll(List.of("oa1", "oa2", "oa3")));
             }
         }
 
@@ -919,93 +926,93 @@ public abstract class PAPTest {
             @Test
             void testUANodeDoesNotExistException() {
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().associate("ua1", "oa1", new AccessRightSet()));
+                             () -> pap.policy().graph().associate("ua1", "oa1", new AccessRightSet()));
             }
 
             @Test
             void testTargetNodeDoesNotExistException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().associate("ua1", "oa1", new AccessRightSet()));
+                             () -> pap.policy().graph().associate("ua1", "oa1", new AccessRightSet()));
             }
 
             @Test
             void testAssignmentExistsDoesNotThrowException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of("ua1"));
-                assertDoesNotThrow(() -> pap.graph().associate("ua2", "ua1", new AccessRightSet()));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of("ua1"));
+                assertDoesNotThrow(() -> pap.policy().graph().associate("ua2", "ua1", new AccessRightSet()));
             }
 
             @Test
             void testUnknownAccessRightException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
                 assertThrows(UnknownAccessRightException.class,
-                             () -> pap.graph().associate("ua1", "oa1", new AccessRightSet("read")));
-                pap.graph().setResourceAccessRights(new AccessRightSet("read"));
+                             () -> pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read")));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read"));
                 assertThrows(UnknownAccessRightException.class,
-                             () -> pap.graph().associate("ua1", "oa1", new AccessRightSet("write")));
-                assertDoesNotThrow(() -> pap.graph().associate("ua1", "oa1", new AccessRightSet("read")));
-                assertDoesNotThrow(() -> pap.graph().associate("ua1", "oa1", new AccessRightSet(ALL_ACCESS_RIGHTS)));
-                assertDoesNotThrow(() -> pap.graph().associate("ua1", "oa1", new AccessRightSet(ALL_RESOURCE_ACCESS_RIGHTS)));
-                assertDoesNotThrow(() -> pap.graph().associate("ua1", "oa1", new AccessRightSet(ALL_ADMIN_ACCESS_RIGHTS)));
+                             () -> pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("write")));
+                assertDoesNotThrow(() -> pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read")));
+                assertDoesNotThrow(() -> pap.policy().graph().associate("ua1", "oa1", new AccessRightSet(ALL_ACCESS_RIGHTS)));
+                assertDoesNotThrow(() -> pap.policy().graph().associate("ua1", "oa1", new AccessRightSet(ALL_RESOURCE_ACCESS_RIGHTS)));
+                assertDoesNotThrow(() -> pap.policy().graph().associate("ua1", "oa1", new AccessRightSet(ALL_ADMIN_ACCESS_RIGHTS)));
             }
 
             @Test
             void testInvalidAssociationException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of("ua1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(InvalidAssociationException.class,
-                             () -> pap.graph().associate("ua2", "pc1", new AccessRightSet()));
+                             () -> pap.policy().graph().associate("ua2", "pc1", new AccessRightSet()));
                 assertThrows(InvalidAssociationException.class,
-                             () -> pap.graph().associate("oa1", "oa2", new AccessRightSet()));
+                             () -> pap.policy().graph().associate("oa1", "oa2", new AccessRightSet()));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
-                pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read"));
 
                 assertEquals(
                         new Association("ua1", "oa1", new AccessRightSet("read")),
-                        pap.graph().getAssociationsWithSource("ua1").get(0)
+                        pap.policy().graph().getAssociationsWithSource("ua1").get(0)
                 );
                 assertEquals(
                         new Association("ua1", "oa1", new AccessRightSet("read")),
-                        pap.graph().getAssociationsWithTarget("oa1").get(0)
+                        pap.policy().graph().getAssociationsWithTarget("oa1").get(0)
                 );
             }
 
             @Test
             void testOverwriteSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
-                pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read"));
 
-                List<Association> assocs = pap.graph().getAssociationsWithSource("ua1");
+                List<Association> assocs = pap.policy().graph().getAssociationsWithSource("ua1");
                 Association assoc = assocs.get(0);
                 assertEquals("ua1", assoc.getSource());
                 assertEquals("oa1", assoc.getTarget());
                 assertEquals(new AccessRightSet("read"), assoc.getAccessRightSet());
 
-                pap.graph().associate("ua1", "oa1", new AccessRightSet("read", "write"));
+                pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read", "write"));
 
-                assocs = pap.graph().getAssociationsWithSource("ua1");
+                assocs = pap.policy().graph().getAssociationsWithSource("ua1");
                 assoc = assocs.get(0);
                 assertEquals("ua1", assoc.getSource());
                 assertEquals("oa1", assoc.getTarget());
@@ -1018,38 +1025,38 @@ public abstract class PAPTest {
 
             @Test
             void testUANodeDoesNotExistException() {
-                assertThrows(NodeDoesNotExistException.class, () -> pap.graph().dissociate("ua1", "oa1"));
+                assertThrows(NodeDoesNotExistException.class, () -> pap.policy().graph().dissociate("ua1", "oa1"));
             }
 
             @Test
             void testTargetNodeDoesNotExistException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
 
-                assertThrows(NodeDoesNotExistException.class, () -> pap.graph().dissociate("ua1", "oa2"));
+                assertThrows(NodeDoesNotExistException.class, () -> pap.policy().graph().dissociate("ua1", "oa2"));
             }
 
             @Test
             void testAssociationDoesNotExistDoesNotThrowException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
 
-                assertDoesNotThrow(() -> pap.graph().dissociate("ua1", "oa1"));
+                assertDoesNotThrow(() -> pap.policy().graph().dissociate("ua1", "oa1"));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().associate("ua1", "oa1", new AccessRightSet());
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().associate("ua1", "oa1", new AccessRightSet());
 
-                pap.graph().dissociate("ua1", "oa1");
+                pap.policy().graph().dissociate("ua1", "oa1");
 
-                assertTrue(pap.graph().getAssociationsWithSource("ua1").isEmpty());
-                assertTrue(pap.graph().getAssociationsWithTarget("oa1").isEmpty());
+                assertTrue(pap.policy().graph().getAssociationsWithSource("ua1").isEmpty());
+                assertTrue(pap.policy().graph().getAssociationsWithTarget("oa1").isEmpty());
             }
         }
 
@@ -1059,20 +1066,20 @@ public abstract class PAPTest {
             @Test
             void testNodeDoesNotExistException() {
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().getAssociationsWithSource("ua1"));
+                             () -> pap.policy().graph().getAssociationsWithSource("ua1"));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
-                pap.graph().associate("ua1", "oa2", new AccessRightSet("read", "write"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read"));
+                pap.policy().graph().associate("ua1", "oa2", new AccessRightSet("read", "write"));
 
-                List<Association> assocs = pap.graph().getAssociationsWithSource("ua1");
+                List<Association> assocs = pap.policy().graph().getAssociationsWithSource("ua1");
 
                 assertEquals(2, assocs.size());
 
@@ -1096,20 +1103,20 @@ public abstract class PAPTest {
             @Test
             void testNodeDoesNotExistException() {
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.graph().getAssociationsWithTarget("oa1"));
+                             () -> pap.policy().graph().getAssociationsWithTarget("oa1"));
             }
 
             @Test
             void Success() throws PMException {
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
-                pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
-                pap.graph().associate("ua2", "oa1", new AccessRightSet("read", "write"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read"));
+                pap.policy().graph().associate("ua2", "oa1", new AccessRightSet("read", "write"));
 
-                List<Association> assocs = pap.graph().getAssociationsWithTarget("oa1");
+                List<Association> assocs = pap.policy().graph().getAssociationsWithTarget("oa1");
 
                 assertEquals(2, assocs.size());
 
@@ -1135,53 +1142,53 @@ public abstract class PAPTest {
 
             @Test
             void testProhibitionExistsException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
 
-                pap.prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet(), false);
+                pap.policy().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet(), false);
 
                 assertThrows(ProhibitionExistsException.class,
-                             () -> pap.prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet(), false));
+                             () -> pap.policy().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet(), false));
             }
 
             @Test
             void testProhibitionSubjectDoesNotExistException() {
                 assertThrows(ProhibitionSubjectDoesNotExistException.class,
-                             () -> pap.prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet(ALL_ADMIN_ACCESS_RIGHTS), false));
+                             () -> pap.policy().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet(ALL_ADMIN_ACCESS_RIGHTS), false));
             }
 
 
             @Test
             void testUnknownAccessRightException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
 
                 assertThrows(UnknownAccessRightException.class,
-                             () -> pap.prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), false));
+                             () -> pap.policy().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), false));
             }
 
             @Test
             void testProhibitionContainerDoesNotExistException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
-                pap.graph().setResourceAccessRights(new AccessRightSet("read"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read"));
                 assertThrows(ProhibitionContainerDoesNotExistException.class,
-                             () -> pap.prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), false, new ContainerCondition("oa1", true)));
+                             () -> pap.policy().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), false, new ContainerCondition("oa1", true)));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
-                pap.prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
+                pap.policy().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
                                           new ContainerCondition("oa1", true),
                                           new ContainerCondition("oa2", false));
 
-                Prohibition p = pap.prohibitions().get("pro1");
+                Prohibition p = pap.policy().prohibitions().get("pro1");
                 assertEquals("pro1", p.getName());
                 assertEquals("subject", p.getSubject().getName());
                 assertEquals(new AccessRightSet("read"), p.getAccessRightSet());
@@ -1200,75 +1207,75 @@ public abstract class PAPTest {
 
             @Test
             void testProhibitionDoesNotExistException() throws PMException {
-                pap.graph().createPolicyClass("pc", new HashMap<>());
-                pap.graph().createUserAttribute("ua", new HashMap<>(), List.of("pc"));
+                pap.policy().graph().createPolicyClass("pc", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua", new HashMap<>(), List.of("pc"));
 
                 assertThrows(ProhibitionDoesNotExistException.class,
-                             () -> pap.prohibitions().update("pro1", ProhibitionSubject.userAttribute("ua"), new AccessRightSet(
+                             () -> pap.policy().prohibitions().update("pro1", ProhibitionSubject.userAttribute("ua"), new AccessRightSet(
                                      CREATE_POLICY_CLASS), false));
             }
 
 
             @Test
             void testUnknownAccessRightException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
-                pap.prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
+                pap.policy().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
                                           new ContainerCondition("oa1", true));
 
                 assertThrows(UnknownAccessRightException.class,
-                             () -> pap.prohibitions().update("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("test"), false));
+                             () -> pap.policy().prohibitions().update("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("test"), false));
             }
 
             @Test
             void testProhibitionSubjectDoesNotExistException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
-                pap.prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
+                pap.policy().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
                                           new ContainerCondition("oa1", true));
 
                 assertThrows(ProhibitionSubjectDoesNotExistException.class,
-                             () -> pap.prohibitions().update("pro1", ProhibitionSubject.userAttribute("test"), new AccessRightSet("read"), false));
-                assertDoesNotThrow(() -> pap.prohibitions().update("pro1", ProhibitionSubject.process("subject"), new AccessRightSet("read"), false));
+                             () -> pap.policy().prohibitions().update("pro1", ProhibitionSubject.userAttribute("test"), new AccessRightSet("read"), false));
+                assertDoesNotThrow(() -> pap.policy().prohibitions().update("pro1", ProhibitionSubject.process("subject"), new AccessRightSet("read"), false));
             }
 
             @Test
             void testProhibitionContainerDoesNotExistException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
-                pap.prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
+                pap.policy().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
                                           new ContainerCondition("oa1", true));
 
                 assertThrows(ProhibitionContainerDoesNotExistException.class,
-                             () -> pap.prohibitions().update("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), false, new ContainerCondition("oa3", true)));
+                             () -> pap.policy().prohibitions().update("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), false, new ContainerCondition("oa3", true)));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("subject2", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("subject2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
-                pap.prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
+                pap.policy().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
                                           new ContainerCondition("oa1", true),
                                           new ContainerCondition("oa2", false));
-                pap.prohibitions().update("pro1", ProhibitionSubject.userAttribute("subject2"), new AccessRightSet("read", "write"), true,
+                pap.policy().prohibitions().update("pro1", ProhibitionSubject.userAttribute("subject2"), new AccessRightSet("read", "write"), true,
                                           new ContainerCondition("oa1", false),
                                           new ContainerCondition("oa2", true));
 
-                Prohibition p = pap.prohibitions().get("pro1");
+                Prohibition p = pap.policy().prohibitions().get("pro1");
                 assertEquals("pro1", p.getName());
                 assertEquals("subject2", p.getSubject().getName());
                 assertEquals(new AccessRightSet("read", "write"), p.getAccessRightSet());
@@ -1287,27 +1294,27 @@ public abstract class PAPTest {
 
             @Test
             void testNonExistingProhibitionDoesNotThrowException() {
-                assertDoesNotThrow(() -> pap.prohibitions().delete("pro1"));
+                assertDoesNotThrow(() -> pap.policy().prohibitions().delete("pro1"));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
-                pap.prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
+                pap.policy().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
                                           new ContainerCondition("oa1", true),
                                           new ContainerCondition("oa2", false));
 
-                assertDoesNotThrow(() -> pap.prohibitions().get("pro1"));
+                assertDoesNotThrow(() -> pap.policy().prohibitions().get("pro1"));
 
-                pap.prohibitions().delete("pro1");
+                pap.policy().prohibitions().delete("pro1");
 
                 assertThrows(ProhibitionDoesNotExistException.class,
-                             () -> pap.prohibitions().get("pro1"));
+                             () -> pap.policy().prohibitions().get("pro1"));
             }
         }
 
@@ -1316,23 +1323,23 @@ public abstract class PAPTest {
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa4", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa4", new HashMap<>(), List.of("pc1"));
 
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
-                pap.prohibitions().create("label1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
+                pap.policy().prohibitions().create("label1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
                                           new ContainerCondition("oa1", true),
                                           new ContainerCondition("oa2", false));
-                pap.prohibitions().create("label2", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
+                pap.policy().prohibitions().create("label2", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
                                           new ContainerCondition("oa3", true),
                                           new ContainerCondition("oa4", false));
 
-                Map<String, List<Prohibition>> prohibitions = pap.prohibitions().getAll();
+                Map<String, List<Prohibition>> prohibitions = pap.policy().prohibitions().getAll();
                 assertEquals(1, prohibitions.size());
                 assertEquals(2, prohibitions.get("subject").size());
                 checkProhibitions(prohibitions.get("subject"));
@@ -1374,23 +1381,23 @@ public abstract class PAPTest {
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("subject1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("subject2", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa4", new HashMap<>(), List.of("pc1"));
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("subject1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("subject2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa4", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
-                pap.prohibitions().create("label1", ProhibitionSubject.userAttribute("subject1"), new AccessRightSet("read"), true,
+                pap.policy().prohibitions().create("label1", ProhibitionSubject.userAttribute("subject1"), new AccessRightSet("read"), true,
                                           new ContainerCondition("oa1", true),
                                           new ContainerCondition("oa2", false));
-                pap.prohibitions().create("label2", ProhibitionSubject.userAttribute("subject2"), new AccessRightSet("read"), true,
+                pap.policy().prohibitions().create("label2", ProhibitionSubject.userAttribute("subject2"), new AccessRightSet("read"), true,
                                           new ContainerCondition("oa3", true),
                                           new ContainerCondition("oa4", false));
 
-                List<Prohibition> pros = pap.prohibitions().getWithSubject("subject1");
+                List<Prohibition> pros = pap.policy().prohibitions().getWithSubject("subject1");
                 assertEquals(1, pros.size());
 
                 Prohibition p = pros.get(0);
@@ -1415,24 +1422,24 @@ public abstract class PAPTest {
             @Test
             void testSuccess() throws PMException {
                 assertThrows(ProhibitionDoesNotExistException.class,
-                             () -> pap.prohibitions().get("pro1"));
+                             () -> pap.policy().prohibitions().get("pro1"));
 
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
-                pap.graph().createObjectAttribute("oa4", new HashMap<>(), List.of("pc1"));
-                pap.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("subject", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createObjectAttribute("oa4", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
-                pap.prohibitions().create("label1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
+                pap.policy().prohibitions().create("label1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
                                           new ContainerCondition("oa1", true),
                                           new ContainerCondition("oa2", false));
-                pap.prohibitions().create("label2", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
+                pap.policy().prohibitions().create("label2", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
                                           new ContainerCondition("oa3", true),
                                           new ContainerCondition("oa4", false));
 
-                Prohibition p = pap.prohibitions().get("label1");
+                Prohibition p = pap.policy().prohibitions().get("label1");
                 assertEquals("label1", p.getName());
                 assertEquals("subject", p.getSubject().getName());
                 assertEquals(new AccessRightSet("read"), p.getAccessRightSet());
@@ -1500,30 +1507,30 @@ public abstract class PAPTest {
 
             @Test
             void testObligationNameExistsException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-                pap.obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
+                pap.policy().obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
 
-                assertThrows(ObligationNameExistsException.class, () -> pap.obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new)));
+                assertThrows(ObligationNameExistsException.class, () -> pap.policy().obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new)));
             }
 
             @Test
             void testAuthorNodeDoestNotExistException() {
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.obligations().create(new UserContext("u1"), obligation1.getName(),
+                             () -> pap.policy().obligations().create(new UserContext("u1"), obligation1.getName(),
                                                             obligation1.getRules().toArray(Rule[]::new)));
             }
 
             @Test
             void testEventSubjectNodeDoesNotExistException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.obligations().create(
+                             () -> pap.policy().obligations().create(
                                      new UserContext("u1"),
                                      "obl1",
                                      new Rule(
@@ -1537,7 +1544,7 @@ public abstract class PAPTest {
                                      )
                              ));
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.obligations().create(
+                             () -> pap.policy().obligations().create(
                                      new UserContext("u1"),
                                      "obl1",
                                      new Rule(
@@ -1554,12 +1561,12 @@ public abstract class PAPTest {
 
             @Test
             void testEventTargetNodeDoesNotExistException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.obligations().create(
+                             () -> pap.policy().obligations().create(
                                      new UserContext("u1"),
                                      "obl1",
                                      new Rule(
@@ -1573,7 +1580,7 @@ public abstract class PAPTest {
                                      )
                              ));
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.obligations().create(
+                             () -> pap.policy().obligations().create(
                                      new UserContext("u1"),
                                      "obl1",
                                      new Rule(
@@ -1587,7 +1594,7 @@ public abstract class PAPTest {
                                      )
                              ));
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.obligations().create(
+                             () -> pap.policy().obligations().create(
                                      new UserContext("u1"),
                                      "obl1",
                                      new Rule(
@@ -1604,16 +1611,16 @@ public abstract class PAPTest {
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-                pap.obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
+                pap.policy().obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
 
                 assertThrows(ObligationNameExistsException.class,
-                             () -> pap.obligations().create(obligation1.getAuthor(), obligation1.getName()));
+                             () -> pap.policy().obligations().create(obligation1.getAuthor(), obligation1.getName()));
 
-                Obligation actual = pap.obligations().get(obligation1.getName());
+                Obligation actual = pap.policy().obligations().get(obligation1.getName());
                 assertEquals(obligation1, actual);
             }
         }
@@ -1623,32 +1630,32 @@ public abstract class PAPTest {
 
             @Test
             void testObligationDoesNotExistException() {
-                assertThrows(ObligationDoesNotExistException.class, () -> pap.obligations().update(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new)));
+                assertThrows(ObligationDoesNotExistException.class, () -> pap.policy().obligations().update(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new)));
             }
 
             @Test
             void testAuthorNodeDoesNotExistException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-                pap.obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
+                pap.policy().obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
 
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.obligations().update(new UserContext("u2"), obligation1.getName(),
+                             () -> pap.policy().obligations().update(new UserContext("u2"), obligation1.getName(),
                                                             obligation1.getRules().toArray(Rule[]::new)));
             }
 
             @Test
             void testEventSubjectNodeDoesNotExistException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-                pap.obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
+                pap.policy().obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
 
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.obligations().update(
+                             () -> pap.policy().obligations().update(
                                      new UserContext("u1"),
                                      obligation1.getName(),
                                      new Rule(
@@ -1662,7 +1669,7 @@ public abstract class PAPTest {
                                      )
                              ));
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.obligations().update(
+                             () -> pap.policy().obligations().update(
                                      new UserContext("u1"),
                                      obligation1.getName(),
                                      new Rule(
@@ -1679,14 +1686,14 @@ public abstract class PAPTest {
 
             @Test
             void testEventTargetNodeDoesNotExistException() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-                pap.obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
+                pap.policy().obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
 
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.obligations().update(
+                             () -> pap.policy().obligations().update(
                                      new UserContext("u1"),
                                      obligation1.getName(),
                                      new Rule(
@@ -1700,7 +1707,7 @@ public abstract class PAPTest {
                                      )
                              ));
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.obligations().update(
+                             () -> pap.policy().obligations().update(
                                      new UserContext("u1"),
                                      obligation1.getName(),
                                      new Rule(
@@ -1714,7 +1721,7 @@ public abstract class PAPTest {
                                      )
                              ));
                 assertThrows(NodeDoesNotExistException.class,
-                             () -> pap.obligations().update(
+                             () -> pap.policy().obligations().update(
                                      new UserContext("u1"),
                                      obligation1.getName(),
                                      new Rule(
@@ -1731,22 +1738,22 @@ public abstract class PAPTest {
 
             @Test
             void testSuccess() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
                 assertThrows(ObligationDoesNotExistException.class,
-                             () -> pap.obligations().update(new UserContext("u1"), obligation1.getName()));
+                             () -> pap.policy().obligations().update(new UserContext("u1"), obligation1.getName()));
 
-                pap.obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
+                pap.policy().obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
 
-                pap.obligations().update(new UserContext("u1"), obligation1.getName(),
+                pap.policy().obligations().update(new UserContext("u1"), obligation1.getName(),
                                          obligation2.getRules().toArray(Rule[]::new));
 
                 Obligation expected = new Obligation(obligation1);
                 expected.setRules(obligation2.getRules());
 
-                Obligation actual = pap.obligations().get(obligation1.getName());
+                Obligation actual = pap.policy().obligations().get(obligation1.getName());
                 assertEquals(expected, actual);
             }
 
@@ -1757,22 +1764,22 @@ public abstract class PAPTest {
 
             @Test
             void testDeleteNonExistingObligationDoesNOtThrowExcpetion() {
-                assertDoesNotThrow(() -> pap.obligations().delete(obligation1.getName()));
+                assertDoesNotThrow(() -> pap.policy().obligations().delete(obligation1.getName()));
             }
 
             @Test
             void testDeleteObligation() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-                pap.obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
-                pap.obligations().create(obligation2.getAuthor(), obligation2.getName(), obligation2.getRules().toArray(Rule[]::new));
+                pap.policy().obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
+                pap.policy().obligations().create(obligation2.getAuthor(), obligation2.getName(), obligation2.getRules().toArray(Rule[]::new));
 
-                pap.obligations().delete(obligation1.getName());
+                pap.policy().obligations().delete(obligation1.getName());
 
                 assertThrows(ObligationDoesNotExistException.class,
-                             () -> pap.obligations().get(obligation1.getName()));
+                             () -> pap.policy().obligations().get(obligation1.getName()));
             }
         }
 
@@ -1781,14 +1788,14 @@ public abstract class PAPTest {
         class GetAll {
             @Test
             void testGetObligations() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-                pap.obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
-                pap.obligations().create(obligation2.getAuthor(), obligation2.getName(), obligation2.getRules().toArray(Rule[]::new));
+                pap.policy().obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
+                pap.policy().obligations().create(obligation2.getAuthor(), obligation2.getName(), obligation2.getRules().toArray(Rule[]::new));
 
-                List<Obligation> obligations = pap.obligations().getAll();
+                List<Obligation> obligations = pap.policy().obligations().getAll();
                 assertEquals(2, obligations.size());
                 for (Obligation obligation : obligations) {
                     if (obligation.getName().equals(obligation1.getName())) {
@@ -1807,19 +1814,19 @@ public abstract class PAPTest {
             @Test
             void testObligationDoesNotExistException() {
                 assertThrows(ObligationDoesNotExistException.class,
-                             () -> pap.obligations().get(obligation1.getName()));
+                             () -> pap.policy().obligations().get(obligation1.getName()));
             }
 
             @Test
             void testGetObligation() throws PMException {
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-                pap.obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
-                pap.obligations().create(obligation2.getAuthor(), obligation2.getName(), obligation2.getRules().toArray(Rule[]::new));
+                pap.policy().obligations().create(obligation1.getAuthor(), obligation1.getName(), obligation1.getRules().toArray(Rule[]::new));
+                pap.policy().obligations().create(obligation2.getAuthor(), obligation2.getName(), obligation2.getRules().toArray(Rule[]::new));
 
-                Obligation obligation = pap.obligations().get(obligation1.getName());
+                Obligation obligation = pap.policy().obligations().get(obligation1.getName());
                 assertEquals(obligation1, obligation);
             }
         }
@@ -1854,15 +1861,15 @@ public abstract class PAPTest {
 
             @Test
             void testPMLFunctionAlreadyDefinedException() throws PMException {
-                pap.userDefinedPML().createFunction(testFunc);
-                assertThrows(PMLFunctionAlreadyDefinedException.class, () -> pap.userDefinedPML().createFunction(testFunc));
+                pap.policy().userDefinedPML().createFunction(testFunc);
+                assertThrows(PMLFunctionAlreadyDefinedException.class, () -> pap.policy().userDefinedPML().createFunction(testFunc));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.userDefinedPML().createFunction(testFunc);
-                assertTrue(pap.userDefinedPML().getFunctions().containsKey(testFunc.getSignature().getFunctionName()));
-                FunctionDefinitionStatement actual = pap.userDefinedPML().getFunctions().get(testFunc.getSignature().getFunctionName());
+                pap.policy().userDefinedPML().createFunction(testFunc);
+                assertTrue(pap.policy().userDefinedPML().getFunctions().containsKey(testFunc.getSignature().getFunctionName()));
+                FunctionDefinitionStatement actual = pap.policy().userDefinedPML().getFunctions().get(testFunc.getSignature().getFunctionName());
                 assertEquals(testFunc, actual);
             }
         }
@@ -1872,15 +1879,15 @@ public abstract class PAPTest {
 
             @Test
             void testNonExistingFunctionDoesNotThrowException() {
-                assertDoesNotThrow(() -> pap.userDefinedPML().deleteFunction("func"));
+                assertDoesNotThrow(() -> pap.policy().userDefinedPML().deleteFunction("func"));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.userDefinedPML().createFunction(new FunctionDefinitionStatement.Builder("testFunc").returns(Type.voidType()).build());
-                assertTrue(pap.userDefinedPML().getFunctions().containsKey("testFunc"));
-                pap.userDefinedPML().deleteFunction("testFunc");
-                assertFalse(pap.userDefinedPML().getFunctions().containsKey("testFunc"));
+                pap.policy().userDefinedPML().createFunction(new FunctionDefinitionStatement.Builder("testFunc").returns(Type.voidType()).build());
+                assertTrue(pap.policy().userDefinedPML().getFunctions().containsKey("testFunc"));
+                pap.policy().userDefinedPML().deleteFunction("testFunc");
+                assertFalse(pap.policy().userDefinedPML().getFunctions().containsKey("testFunc"));
             }
         }
 
@@ -1892,10 +1899,10 @@ public abstract class PAPTest {
                 FunctionDefinitionStatement testFunc1 = new FunctionDefinitionStatement.Builder("testFunc1").returns(Type.voidType()).build();
                 FunctionDefinitionStatement testFunc2 = new FunctionDefinitionStatement.Builder("testFunc2").returns(Type.voidType()).build();
 
-                pap.userDefinedPML().createFunction(testFunc1);
-                pap.userDefinedPML().createFunction(testFunc2);
+                pap.policy().userDefinedPML().createFunction(testFunc1);
+                pap.policy().userDefinedPML().createFunction(testFunc2);
 
-                Map<String, FunctionDefinitionStatement> functions = pap.userDefinedPML().getFunctions();
+                Map<String, FunctionDefinitionStatement> functions = pap.policy().userDefinedPML().getFunctions();
                 assertTrue(functions.containsKey("testFunc1"));
                 FunctionDefinitionStatement actual = functions.get("testFunc1");
                 assertEquals(testFunc1, actual);
@@ -1912,7 +1919,7 @@ public abstract class PAPTest {
 
             @Test
             void testPMLFunctionNotDefinedException() {
-                assertThrows(PMLFunctionNotDefinedException.class, () -> pap.userDefinedPML().getFunction("func1"));
+                assertThrows(PMLFunctionNotDefinedException.class, () -> pap.policy().userDefinedPML().getFunction("func1"));
             }
 
             @Test
@@ -1920,10 +1927,10 @@ public abstract class PAPTest {
                 FunctionDefinitionStatement testFunc1 = new FunctionDefinitionStatement.Builder("testFunc1").returns(Type.voidType()).build();
                 FunctionDefinitionStatement testFunc2 = new FunctionDefinitionStatement.Builder("testFunc2").returns(Type.voidType()).build();
 
-                pap.userDefinedPML().createFunction(testFunc1);
-                pap.userDefinedPML().createFunction(testFunc2);
+                pap.policy().userDefinedPML().createFunction(testFunc1);
+                pap.policy().userDefinedPML().createFunction(testFunc2);
 
-                Map<String, FunctionDefinitionStatement> functions = pap.userDefinedPML().getFunctions();
+                Map<String, FunctionDefinitionStatement> functions = pap.policy().userDefinedPML().getFunctions();
                 assertTrue(functions.containsKey("testFunc1"));
                 FunctionDefinitionStatement actual = functions.get("testFunc1");
                 assertEquals(testFunc1, actual);
@@ -1940,18 +1947,18 @@ public abstract class PAPTest {
 
             @Test
             void testPMLConstantAlreadyDefinedException() throws PMException {
-                pap.userDefinedPML().createConstant("const1", new StringValue("test"));
+                pap.policy().userDefinedPML().createConstant("const1", new StringValue("test"));
                 assertThrows(PMLConstantAlreadyDefinedException.class,
-                             () -> pap.userDefinedPML().createConstant("const1", new StringValue("test")));
+                             () -> pap.policy().userDefinedPML().createConstant("const1", new StringValue("test")));
             }
 
             @Test
             void testSuccess() throws PMException {
                 StringValue expected = new StringValue("test");
 
-                pap.userDefinedPML().createConstant("const1", expected);
-                assertTrue(pap.userDefinedPML().getConstants().containsKey("const1"));
-                Value actual = pap.userDefinedPML().getConstants().get("const1");
+                pap.policy().userDefinedPML().createConstant("const1", expected);
+                assertTrue(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
+                Value actual = pap.policy().userDefinedPML().getConstants().get("const1");
                 assertEquals(expected, actual);
             }
         }
@@ -1961,15 +1968,15 @@ public abstract class PAPTest {
 
             @Test
             void testNonExistingConstantDoesNotThrowException() {
-                assertDoesNotThrow(() -> pap.userDefinedPML().deleteConstant("const1"));
+                assertDoesNotThrow(() -> pap.policy().userDefinedPML().deleteConstant("const1"));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.userDefinedPML().createConstant("const1", new StringValue("test"));
-                assertTrue(pap.userDefinedPML().getConstants().containsKey("const1"));
-                pap.userDefinedPML().deleteConstant("const1");
-                assertFalse(pap.userDefinedPML().getConstants().containsKey("const1"));
+                pap.policy().userDefinedPML().createConstant("const1", new StringValue("test"));
+                assertTrue(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
+                pap.policy().userDefinedPML().deleteConstant("const1");
+                assertFalse(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
             }
         }
 
@@ -1981,10 +1988,10 @@ public abstract class PAPTest {
                 StringValue const1 = new StringValue("test1");
                 StringValue const2 = new StringValue("test2");
 
-                pap.userDefinedPML().createConstant("const1", const1);
-                pap.userDefinedPML().createConstant("const2", const2);
+                pap.policy().userDefinedPML().createConstant("const1", const1);
+                pap.policy().userDefinedPML().createConstant("const2", const2);
 
-                Map<String, Value> constants = pap.userDefinedPML().getConstants();
+                Map<String, Value> constants = pap.policy().userDefinedPML().getConstants();
                 assertTrue(constants.containsKey("const1"));
                 Value actual = constants.get("const1");
                 assertEquals(const1, actual);
@@ -2001,7 +2008,7 @@ public abstract class PAPTest {
 
             @Test
             void testPMLConstantNotDefinedException() {
-                assertThrows(PMLConstantNotDefinedException.class, () -> pap.userDefinedPML().getConstant("const1"));
+                assertThrows(PMLConstantNotDefinedException.class, () -> pap.policy().userDefinedPML().getConstant("const1"));
             }
 
             @Test
@@ -2009,10 +2016,10 @@ public abstract class PAPTest {
                 StringValue const1 = new StringValue("test1");
                 StringValue const2 = new StringValue("test2");
 
-                pap.userDefinedPML().createConstant("const1", const1);
-                pap.userDefinedPML().createConstant("const2", const2);
+                pap.policy().userDefinedPML().createConstant("const1", const1);
+                pap.policy().userDefinedPML().createConstant("const2", const2);
 
-                Map<String, Value> constants = pap.userDefinedPML().getConstants();
+                Map<String, Value> constants = pap.policy().userDefinedPML().getConstants();
                 assertTrue(constants.containsKey("const1"));
                 Value actual = constants.get("const1");
                 assertEquals(const1, actual);
@@ -2029,219 +2036,219 @@ public abstract class PAPTest {
             @Test
             void testSimple() throws PMException {
                 pap.beginTx();
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
                 pap.rollback();
-                assertFalse(pap.graph().nodeExists("pc1"));
+                assertFalse(pap.policy().graph().nodeExists("pc1"));
 
                 pap.beginTx();
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
                 pap.commit();
-                assertTrue(pap.graph().nodeExists("pc1"));
+                assertTrue(pap.policy().graph().nodeExists("pc1"));
             }
 
             @Test
             void testSuccess() throws PMException {
                 pap.runTx((tx) -> {
-                    pap.graph().setResourceAccessRights(new AccessRightSet("read"));
-                    pap.graph().createPolicyClass("pc1", new HashMap<>());
-                    pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                    pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                    pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
-                    pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                    pap.policy().graph().setResourceAccessRights(new AccessRightSet("read"));
+                    pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                    pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                    pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                    pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read"));
+                    pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-                    pap.prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
+                    pap.policy().prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
                                               new AccessRightSet("read"), true,
                                               new ContainerCondition("oa1", false)
                     );
 
-                    pap.obligations().create(new UserContext("u1"), "obl1");
+                    pap.policy().obligations().create(new UserContext("u1"), "obl1");
 
-                    pap.userDefinedPML().createConstant("const1", new StringValue("value"));
+                    pap.policy().userDefinedPML().createConstant("const1", new StringValue("value"));
                 });
 
-                assertEquals(new AccessRightSet("read"), pap.graph().getResourceAccessRights());
-                assertTrue(pap.graph().nodeExists("pc1"));
-                assertTrue(pap.graph().nodeExists("ua1"));
-                assertTrue(pap.graph().nodeExists("oa1"));
-                assertTrue(pap.graph().nodeExists("u1"));
+                assertEquals(new AccessRightSet("read"), pap.policy().graph().getResourceAccessRights());
+                assertTrue(pap.policy().graph().nodeExists("pc1"));
+                assertTrue(pap.policy().graph().nodeExists("ua1"));
+                assertTrue(pap.policy().graph().nodeExists("oa1"));
+                assertTrue(pap.policy().graph().nodeExists("u1"));
                 assertEquals(
                         new Association("ua1", "oa1", new AccessRightSet("read")),
-                        pap.graph().getAssociationsWithSource("ua1").get(0)
+                        pap.policy().graph().getAssociationsWithSource("ua1").get(0)
                 );
-                assertTrue(pap.prohibitions().exists("deny-ua1"));
-                assertTrue(pap.obligations().exists("obl1"));
-                assertTrue(pap.userDefinedPML().getConstants().containsKey("const1"));
+                assertTrue(pap.policy().prohibitions().exists("deny-ua1"));
+                assertTrue(pap.policy().obligations().exists("obl1"));
+                assertTrue(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
             }
 
             @Test
             void testRollbackGraph() throws PMException {
                 assertThrows(PMException.class, () -> pap.runTx((tx) -> {
-                    pap.graph().setResourceAccessRights(new AccessRightSet("read"));
-                    pap.graph().createPolicyClass("pc1", new HashMap<>());
-                    pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                    pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                    pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
-                    pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                    pap.policy().graph().setResourceAccessRights(new AccessRightSet("read"));
+                    pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                    pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                    pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                    pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read"));
+                    pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-                    pap.prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
+                    pap.policy().prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
                                               new AccessRightSet("read"), true,
                                               new ContainerCondition("oa1", false)
                     );
 
-                    pap.obligations().create(new UserContext("u1"), "obl1");
+                    pap.policy().obligations().create(new UserContext("u1"), "obl1");
 
-                    pap.userDefinedPML().createConstant("const1", new StringValue("value"));
+                    pap.policy().userDefinedPML().createConstant("const1", new StringValue("value"));
 
-                    pap.graph().createPolicyClass("pc1", new HashMap<>());
+                    pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
                 }));
 
-                assertEquals(new AccessRightSet(), pap.graph().getResourceAccessRights());
-                assertFalse(pap.graph().nodeExists("pc1"));
-                assertFalse(pap.graph().nodeExists("ua1"));
-                assertFalse(pap.graph().nodeExists("oa1"));
-                assertFalse(pap.graph().nodeExists("u1"));
-                assertFalse(pap.prohibitions().exists("deny-ua1"));
-                assertFalse(pap.obligations().exists("obl1"));
-                assertFalse(pap.userDefinedPML().getConstants().containsKey("const1"));
+                assertEquals(new AccessRightSet(), pap.policy().graph().getResourceAccessRights());
+                assertFalse(pap.policy().graph().nodeExists("pc1"));
+                assertFalse(pap.policy().graph().nodeExists("ua1"));
+                assertFalse(pap.policy().graph().nodeExists("oa1"));
+                assertFalse(pap.policy().graph().nodeExists("u1"));
+                assertFalse(pap.policy().prohibitions().exists("deny-ua1"));
+                assertFalse(pap.policy().obligations().exists("obl1"));
+                assertFalse(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
             }
 
             @Test
             void testRollbackProhibitions() throws PMException {
-                pap.graph().setResourceAccessRights(new AccessRightSet("read"));
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
-                pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-                pap.prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
+                pap.policy().prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
                                           new AccessRightSet("read"), true,
                                           new ContainerCondition("oa1", false)
                 );
 
-                pap.userDefinedPML().createConstant("const1", new StringValue("value"));
+                pap.policy().userDefinedPML().createConstant("const1", new StringValue("value"));
 
                 assertThrows(PMException.class, () -> {
                     pap.runTx((tx) -> {
-                        pap.graph().createPolicyClass("pc2", new HashMap<>());
-                        pap.prohibitions().delete("deny-ua1");
-                        pap.obligations().create(new UserContext("u1"), "obl1");
-                        pap.userDefinedPML().createConstant("const2", new StringValue("value"));
-                        pap.prohibitions().create("deny-ua1", new ProhibitionSubject("ua2", ProhibitionSubject.Type.USER_ATTRIBUTE),
+                        pap.policy().graph().createPolicyClass("pc2", new HashMap<>());
+                        pap.policy().prohibitions().delete("deny-ua1");
+                        pap.policy().obligations().create(new UserContext("u1"), "obl1");
+                        pap.policy().userDefinedPML().createConstant("const2", new StringValue("value"));
+                        pap.policy().prohibitions().create("deny-ua1", new ProhibitionSubject("ua2", ProhibitionSubject.Type.USER_ATTRIBUTE),
                                                   new AccessRightSet("read"), true,
                                                   new ContainerCondition("oa1", false)
                         );
-                        pap.prohibitions().create("deny-ua2", new ProhibitionSubject("ua2", ProhibitionSubject.Type.USER_ATTRIBUTE),
+                        pap.policy().prohibitions().create("deny-ua2", new ProhibitionSubject("ua2", ProhibitionSubject.Type.USER_ATTRIBUTE),
                                                   new AccessRightSet("read"), true,
                                                   new ContainerCondition("oa1", false)
                         );
 
-                        pap.prohibitions().create("deny-ua1", new ProhibitionSubject("ua2", ProhibitionSubject.Type.USER_ATTRIBUTE),
+                        pap.policy().prohibitions().create("deny-ua1", new ProhibitionSubject("ua2", ProhibitionSubject.Type.USER_ATTRIBUTE),
                                                   new AccessRightSet("read"), true,
                                                   new ContainerCondition("oa1", false)
                         );
                     });
                 });
 
-                assertEquals(new AccessRightSet("read"), pap.graph().getResourceAccessRights());
-                assertTrue(pap.graph().nodeExists("pc1"));
-                assertTrue(pap.graph().nodeExists("ua1"));
-                assertTrue(pap.graph().nodeExists("oa1"));
-                assertTrue(pap.graph().nodeExists("u1"));
-                assertTrue(pap.prohibitions().exists("deny-ua1"));
-                assertFalse(pap.prohibitions().exists("deny-ua2"));
-                assertEquals("ua1", pap.prohibitions().get("deny-ua1").getSubject().getName());
-                assertFalse(pap.obligations().exists("obl1"));
-                assertTrue(pap.userDefinedPML().getConstants().containsKey("const1"));
-                assertFalse(pap.userDefinedPML().getConstants().containsKey("const2"));
+                assertEquals(new AccessRightSet("read"), pap.policy().graph().getResourceAccessRights());
+                assertTrue(pap.policy().graph().nodeExists("pc1"));
+                assertTrue(pap.policy().graph().nodeExists("ua1"));
+                assertTrue(pap.policy().graph().nodeExists("oa1"));
+                assertTrue(pap.policy().graph().nodeExists("u1"));
+                assertTrue(pap.policy().prohibitions().exists("deny-ua1"));
+                assertFalse(pap.policy().prohibitions().exists("deny-ua2"));
+                assertEquals("ua1", pap.policy().prohibitions().get("deny-ua1").getSubject().getName());
+                assertFalse(pap.policy().obligations().exists("obl1"));
+                assertTrue(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
+                assertFalse(pap.policy().userDefinedPML().getConstants().containsKey("const2"));
             }
 
             @Test
             void testRollbackObligations() throws PMException {
-                pap.graph().setResourceAccessRights(new AccessRightSet("read"));
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
-                pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
-                pap.graph().createUser("u2", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createUser("u2", new HashMap<>(), List.of("ua1"));
 
-                pap.obligations().create(new UserContext("u1"), "obl1");
+                pap.policy().obligations().create(new UserContext("u1"), "obl1");
 
-                pap.userDefinedPML().createConstant("const1", new StringValue("value"));
+                pap.policy().userDefinedPML().createConstant("const1", new StringValue("value"));
 
                 assertThrows(PMException.class, () -> {
                     pap.runTx((tx) -> {
-                        pap.prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
+                        pap.policy().prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
                                                   new AccessRightSet("read"), true,
                                                   new ContainerCondition("oa1", false)
                         );
-                        pap.graph().createUser("u3", new HashMap<>(), List.of("ua1"));
-                        pap.obligations().delete("obl1");
-                        pap.obligations().create(new UserContext("u2"), "obl1");
-                        pap.obligations().create(new UserContext("u1"), "obl2");
+                        pap.policy().graph().createUser("u3", new HashMap<>(), List.of("ua1"));
+                        pap.policy().obligations().delete("obl1");
+                        pap.policy().obligations().create(new UserContext("u2"), "obl1");
+                        pap.policy().obligations().create(new UserContext("u1"), "obl2");
 
-                        pap.obligations().create(new UserContext("u1"), "obl1");
+                        pap.policy().obligations().create(new UserContext("u1"), "obl1");
                     });
                 });
 
-                assertEquals(new AccessRightSet("read"), pap.graph().getResourceAccessRights());
-                assertTrue(pap.graph().nodeExists("pc1"));
-                assertTrue(pap.graph().nodeExists("ua1"));
-                assertTrue(pap.graph().nodeExists("oa1"));
-                assertTrue(pap.graph().nodeExists("u1"));
-                assertFalse(pap.graph().nodeExists("u3"));
-                assertFalse(pap.prohibitions().exists("deny-ua1"));
-                assertTrue(pap.obligations().exists("obl1"));
-                assertFalse(pap.obligations().exists("obl2"));
-                assertEquals("u1", pap.obligations().get("obl1").getAuthor().getUser());
-                assertTrue(pap.userDefinedPML().getConstants().containsKey("const1"));
+                assertEquals(new AccessRightSet("read"), pap.policy().graph().getResourceAccessRights());
+                assertTrue(pap.policy().graph().nodeExists("pc1"));
+                assertTrue(pap.policy().graph().nodeExists("ua1"));
+                assertTrue(pap.policy().graph().nodeExists("oa1"));
+                assertTrue(pap.policy().graph().nodeExists("u1"));
+                assertFalse(pap.policy().graph().nodeExists("u3"));
+                assertFalse(pap.policy().prohibitions().exists("deny-ua1"));
+                assertTrue(pap.policy().obligations().exists("obl1"));
+                assertFalse(pap.policy().obligations().exists("obl2"));
+                assertEquals("u1", pap.policy().obligations().get("obl1").getAuthor().getUser());
+                assertTrue(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
             }
 
             @Test
             void testRollbackUserDefinedPML() throws PMException {
-                pap.graph().setResourceAccessRights(new AccessRightSet("read"));
-                pap.graph().createPolicyClass("pc1", new HashMap<>());
-                pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-                pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
-                pap.graph().associate("ua1", "oa1", new AccessRightSet("read"));
-                pap.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
-                pap.graph().createUser("u2", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().setResourceAccessRights(new AccessRightSet("read"));
+                pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+                pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+                pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read"));
+                pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+                pap.policy().graph().createUser("u2", new HashMap<>(), List.of("ua1"));
 
-                pap.obligations().create(new UserContext("u1"), "obl1");
+                pap.policy().obligations().create(new UserContext("u1"), "obl1");
 
-                pap.userDefinedPML().createConstant("const1", new StringValue("value"));
+                pap.policy().userDefinedPML().createConstant("const1", new StringValue("value"));
 
                 assertThrows(PMException.class, () -> {
                     pap.runTx((tx) -> {
-                        pap.prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
+                        pap.policy().prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
                                                   new AccessRightSet("read"), true,
                                                   new ContainerCondition("oa1", false)
                         );
-                        pap.graph().createUser("u3", new HashMap<>(), List.of("ua1"));
-                        pap.obligations().delete("obl1");
-                        pap.obligations().create(new UserContext("u2"), "obl1");
+                        pap.policy().graph().createUser("u3", new HashMap<>(), List.of("ua1"));
+                        pap.policy().obligations().delete("obl1");
+                        pap.policy().obligations().create(new UserContext("u2"), "obl1");
 
-                        pap.userDefinedPML().createConstant("const2", new StringValue("value"));
-                        pap.userDefinedPML().createConstant("const1", new StringValue("value"));
+                        pap.policy().userDefinedPML().createConstant("const2", new StringValue("value"));
+                        pap.policy().userDefinedPML().createConstant("const1", new StringValue("value"));
                     });
                 });
 
-                assertEquals(new AccessRightSet("read"), pap.graph().getResourceAccessRights());
-                assertTrue(pap.graph().nodeExists("pc1"));
-                assertTrue(pap.graph().nodeExists("ua1"));
-                assertTrue(pap.graph().nodeExists("oa1"));
-                assertTrue(pap.graph().nodeExists("u1"));
-                assertFalse(pap.graph().nodeExists("u3"));
-                assertFalse(pap.prohibitions().exists("deny-ua1"));
-                assertTrue(pap.obligations().exists("obl1"));
-                assertFalse(pap.obligations().exists("obl2"));
-                assertEquals("u1", pap.obligations().get("obl1").getAuthor().getUser());
-                assertTrue(pap.userDefinedPML().getConstants().containsKey("const1"));
-                assertFalse(pap.userDefinedPML().getConstants().containsKey("const2"));
+                assertEquals(new AccessRightSet("read"), pap.policy().graph().getResourceAccessRights());
+                assertTrue(pap.policy().graph().nodeExists("pc1"));
+                assertTrue(pap.policy().graph().nodeExists("ua1"));
+                assertTrue(pap.policy().graph().nodeExists("oa1"));
+                assertTrue(pap.policy().graph().nodeExists("u1"));
+                assertFalse(pap.policy().graph().nodeExists("u3"));
+                assertFalse(pap.policy().prohibitions().exists("deny-ua1"));
+                assertTrue(pap.policy().obligations().exists("obl1"));
+                assertFalse(pap.policy().obligations().exists("obl2"));
+                assertEquals("u1", pap.policy().obligations().get("obl1").getAuthor().getUser());
+                assertTrue(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
+                assertFalse(pap.policy().userDefinedPML().getConstants().containsKey("const2"));
             }
         }
 

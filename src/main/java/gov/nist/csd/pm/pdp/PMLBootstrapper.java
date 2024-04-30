@@ -19,6 +19,6 @@ public class PMLBootstrapper implements PolicyBootstrapper{
 
     @Override
     public void bootstrap(PAP pap) throws PMException {
-        pap.deserialize(author, pml, new PMLDeserializer(customFunctions));
+        pap.policy().deserialize(author, pml, new PMLDeserializer(customFunctions));
     }
 }

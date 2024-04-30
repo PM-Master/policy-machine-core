@@ -1,5 +1,6 @@
 package gov.nist.csd.pm.pdp;
 
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PolicyReview;
 import gov.nist.csd.pm.pdp.adjudicator.*;
 
@@ -10,11 +11,12 @@ public class PDPReviewer implements PolicyReview {
     private final PDPProhibitionsReview prohibitionsReviewer;
     private final PDPObligationsReview obligationsReviewer;
 
-    public PDPReviewer(UserContext userCtx, PrivilegeChecker privilegeChecker, PolicyReview policyReview) {
-        this.accessReviewer = new PDPAccessReview(new AdjudicatorAccessReview(userCtx, privilegeChecker), policyReview.access());
-        this.graphReviewer = new PDPGraphReview(new AdjudicatorGraphReview(userCtx, privilegeChecker), policyReview.graph());
-        this.prohibitionsReviewer = new PDPProhibitionsReview(new AdjudicatorProhibitionsReview(userCtx, privilegeChecker), policyReview.prohibitions());
-        this.obligationsReviewer = new PDPObligationsReview(new AdjudicatorObligationsReview(userCtx, privilegeChecker), policyReview.obligations());
+    public PDPReviewer(UserContext userCtx, PAP pap, PrivilegeChecker privilegeChecker) {
+        PolicyReview review = pap.review();
+        this.accessReviewer = new PDPAccessReview(new AdjudicatorAccessReview(userCtx, privilegeChecker), review.access());
+        this.graphReviewer = new PDPGraphReview(new AdjudicatorGraphReview(userCtx, privilegeChecker), review.graph());
+        this.prohibitionsReviewer = new PDPProhibitionsReview(new AdjudicatorProhibitionsReview(userCtx, privilegeChecker), review.prohibitions());
+        this.obligationsReviewer = new PDPObligationsReview(new AdjudicatorObligationsReview(userCtx, privilegeChecker), review.obligations());
     }
 
     @Override

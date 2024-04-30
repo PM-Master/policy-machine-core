@@ -12,8 +12,10 @@ class PMLBootstrapperTest {
 
     @Test
     void test() throws PMException {
-        PAP pap = new PAP(new MemoryPolicyStore());
-        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
+        PDP pdp = new PDP(pap);
 
         String input = """
                 const read = "read"
@@ -31,10 +33,10 @@ class PMLBootstrapperTest {
 
         pdp.bootstrap(new PMLBootstrapper(new UserContext("u1"), input));
 
-        assertTrue(pap.graph().nodeExists("pc1"));
-        assertTrue(pap.graph().nodeExists("ua1"));
-        assertTrue(pap.graph().nodeExists("oa1"));
-        assertTrue(pap.graph().nodeExists("u1"));
+        assertTrue(pap.policy().graph().nodeExists("pc1"));
+        assertTrue(pap.policy().graph().nodeExists("ua1"));
+        assertTrue(pap.policy().graph().nodeExists("oa1"));
+        assertTrue(pap.policy().graph().nodeExists("u1"));
     }
 
 }

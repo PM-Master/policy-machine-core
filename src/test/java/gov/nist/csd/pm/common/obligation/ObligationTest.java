@@ -46,12 +46,14 @@ class ObligationTest {
                     }
                 }
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
-        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
+        MemoryPolicyStore policyStore = new MemoryPolicyStore();
+        MemoryPolicyReviewer reviewer = new MemoryPolicyReviewer(policyStore);
+        PAP pap = new PAP(policyStore, reviewer);
+        pap.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        PDP pdp = new PDP(pap);
         EPP epp = new EPP(pdp, pap);
         epp.getEventProcessor().processEvent(new EventContext(new UserContext("u1"), new AssignToOp("o1", "oa1")));
-        assertTrue(pap.graph().nodeExists("hello world"));
+        assertTrue(pap.policy().graph().nodeExists("hello world"));
     }
 
     @Test
@@ -75,17 +77,19 @@ class ObligationTest {
                 }
                 """;
 
-        PAP pap = new PAP(new MemoryPolicyStore());
+        MemoryPolicyStore policyStore = new MemoryPolicyStore();
+        MemoryPolicyReviewer reviewer = new MemoryPolicyReviewer(policyStore);
+        PAP pap = new PAP(policyStore, reviewer);
 
-        pap.userDefinedPML().createConstant("x", new StringValue("hello world"));
-        pap.userDefinedPML().createFunction(new FunctionDefinitionStatement.Builder("createX")
+        pap.policy().userDefinedPML().createConstant("x", new StringValue("hello world"));
+        pap.policy().userDefinedPML().createFunction(new FunctionDefinitionStatement.Builder("createX")
                 .body(List.of(new CreatePolicyStatement(new ReferenceByID("x"))))
                 .build());
         pap.executePML(new UserContext("u1"), pml);
 
-        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
+        PDP pdp = new PDP(pap);
         EPP epp = new EPP(pdp, pap);
         epp.getEventProcessor().processEvent(new EventContext(new UserContext("u1"), new AssignToOp("o1", "oa1")));
-        assertTrue(pap.graph().nodeExists("hello world"));
+        assertTrue(pap.policy().graph().nodeExists("hello world"));
     }
 }

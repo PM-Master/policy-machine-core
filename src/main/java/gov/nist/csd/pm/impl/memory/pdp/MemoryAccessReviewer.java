@@ -1,9 +1,9 @@
 package gov.nist.csd.pm.impl.memory.pdp;
 
 import gov.nist.csd.pm.pap.Graph;
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.graph.dag.BreadthFirstGraphWalker;
 import gov.nist.csd.pm.common.graph.dag.DepthFirstGraphWalker;
+import gov.nist.csd.pm.pap.PolicyStore;
 import gov.nist.csd.pm.pap.exception.NodeDoesNotExistException;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.AccessRightSet;
@@ -33,10 +33,10 @@ import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
 
 public class MemoryAccessReviewer implements AccessReview {
 
-    private final PAP pap;
+    private final PolicyStore policyStore;
 
-    public MemoryAccessReviewer(PAP pap) {
-        this.pap = pap;
+    public MemoryAccessReviewer(PolicyStore policyStore) {
+        this.policyStore = policyStore;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class MemoryAccessReviewer implements AccessReview {
         TargetDagResult targetDagResult = processTargetDAG(target, userDagResult);
 
         // resolve the permissions
-        return resolvePrivileges(userDagResult, targetDagResult, target, pap.graph().getResourceAccessRights());
+        return resolvePrivileges(userDagResult, targetDagResult, target, policyStore.graph().getResourceAccessRights());
     }
 
     @Override
@@ -118,7 +118,7 @@ public class MemoryAccessReviewer implements AccessReview {
     @Override
     public Map<String, AccessRightSet> buildACL(String target) throws PMException {
         Map<String, AccessRightSet> acl = new HashMap<>();
-        List<String> search = pap.graph().search(U, NO_PROPERTIES);
+        List<String> search = policyStore.graph().search(U, NO_PROPERTIES);
         for (String user : search) {
             AccessRightSet list = this.computePrivileges(new UserContext(user), target);
             acl.put(user, list);
@@ -156,18 +156,18 @@ public class MemoryAccessReviewer implements AccessReview {
 
     @Override
     public Explain explain(UserContext userCtx, String target) throws PMException {
-        Node userNode = pap.graph().getNode(userCtx.getUser());
-        Node targetNode = pap.graph().getNode(target);
+        Node userNode = policyStore.graph().getNode(userCtx.getUser());
+        Node targetNode = policyStore.graph().getNode(target);
 
         List<EdgePath> userPaths = explainDfs(userNode.getName());
         List<EdgePath> targetPaths = explainDfs(targetNode.getName());
 
-        Map<String, PolicyClass> resolvedPaths = resolvePaths(pap.graph(), userPaths, targetPaths, target);
+        Map<String, PolicyClass> resolvedPaths = resolvePaths(policyStore.graph(), userPaths, targetPaths, target);
 
         UserDagResult userDagResult = processUserDAG(userCtx.getUser(), userCtx.getProcess());
         TargetDagResult targetDagResult = processTargetDAG(target, userDagResult);
 
-        AccessRightSet priv = resolvePrivileges(userDagResult, targetDagResult, target, pap.graph().getResourceAccessRights());
+        AccessRightSet priv = resolvePrivileges(userDagResult, targetDagResult, target, policyStore.graph().getResourceAccessRights());
         AccessRightSet deniedPriv = resolveDeniedAccessRights(userDagResult, targetDagResult, target);
         List<Prohibition> prohibitions = computeSatisfiedProhibitions(userDagResult, targetDagResult, target);
 
@@ -212,7 +212,7 @@ public class MemoryAccessReviewer implements AccessReview {
 
     @Override
     public List<String> computeAccessibleChildren(UserContext userCtx, String root) throws PMException {
-        List<String> children = new ArrayList<>(pap.graph().getChildren(root));
+        List<String> children = new ArrayList<>(policyStore.graph().getChildren(root));
         children.removeIf(child -> {
             try {
                 return computePrivileges(userCtx, child).isEmpty();
@@ -227,7 +227,7 @@ public class MemoryAccessReviewer implements AccessReview {
 
     @Override
     public List<String> computeAccessibleParents(UserContext userCtx, String root) throws PMException {
-        List<String> parents = new ArrayList<>(pap.graph().getParents(root));
+        List<String> parents = new ArrayList<>(policyStore.graph().getParents(root));
         parents.removeIf(parent -> {
             try {
                 return computePrivileges(userCtx, parent).isEmpty();
@@ -242,7 +242,7 @@ public class MemoryAccessReviewer implements AccessReview {
 
     private void getAndStorePrivileges(Map<String, AccessRightSet> arsetMap, UserDagResult userDagResult, String target) throws PMException {
         TargetDagResult targetCtx = processTargetDAG(target, userDagResult);
-        AccessRightSet privileges = resolvePrivileges(userDagResult, targetCtx, target, pap.graph().getResourceAccessRights());
+        AccessRightSet privileges = resolvePrivileges(userDagResult, targetCtx, target, policyStore.graph().getResourceAccessRights());
         arsetMap.put(target, privileges);
     }
 
@@ -253,11 +253,11 @@ public class MemoryAccessReviewer implements AccessReview {
      * each policy class.
      */
     protected TargetDagResult processTargetDAG(String target, UserDagResult userCtx) throws PMException {
-        if (!pap.graph().nodeExists(target)) {
+        if (!policyStore.graph().nodeExists(target)) {
             throw new NodeDoesNotExistException(target);
         }
 
-        List<String> policyClasses = pap.graph().getPolicyClasses();
+        List<String> policyClasses = policyStore.graph().getPolicyClasses();
         Map<String, AccessRightSet> borderTargets = userCtx.borderTargets();
         Map<String, Map<String, AccessRightSet>> visitedNodes = new HashMap<>();
         Set<String> reachedTargets = new HashSet<>();
@@ -298,7 +298,7 @@ public class MemoryAccessReviewer implements AccessReview {
             visitedNodes.put(child, nodeCtx);
         };
 
-        new DepthFirstGraphWalker(pap.graph())
+        new DepthFirstGraphWalker(policyStore.graph())
                 .withDirection(Direction.PARENTS)
                 .withVisitor(visitor)
                 .withPropagator(propagator)
@@ -317,22 +317,22 @@ public class MemoryAccessReviewer implements AccessReview {
      * @return a Map of target nodes that the subject can reach via associations and the operations the user has on each.
      */
     protected UserDagResult processUserDAG(String subject, String process) throws PMException  {
-        if (!pap.graph().nodeExists(subject)) {
+        if (!policyStore.graph().nodeExists(subject)) {
             throw new NodeDoesNotExistException(subject);
         }
 
         final Map<String, AccessRightSet> borderTargets = new HashMap<>();
         final Set<String> prohibitionTargets = new HashSet<>();
         // initialize with the prohibitions or the provided process
-        final Set<Prohibition> reachedProhibitions = new HashSet<>(pap.prohibitions().getWithSubject(process));
+        final Set<Prohibition> reachedProhibitions = new HashSet<>(policyStore.prohibitions().getWithSubject(process));
 
         // get the associations for the subject, it the subject is a user, nothing will be returned
         // this is only when a UA is the subject
-        List<Association> subjectAssociations = pap.graph().getAssociationsWithSource(subject);
+        List<Association> subjectAssociations = policyStore.graph().getAssociationsWithSource(subject);
         collectAssociationsFromBorderTargets(subjectAssociations, borderTargets);
 
         Visitor visitor = node -> {
-            List<Prohibition> subjectProhibitions = pap.prohibitions().getWithSubject(node);
+            List<Prohibition> subjectProhibitions = policyStore.prohibitions().getWithSubject(node);
             reachedProhibitions.addAll(subjectProhibitions);
             for (Prohibition prohibition : subjectProhibitions) {
                 List<ContainerCondition> containers = prohibition.getContainers();
@@ -341,12 +341,12 @@ public class MemoryAccessReviewer implements AccessReview {
                 }
             }
 
-            List<Association> nodeAssociations = pap.graph().getAssociationsWithSource(node);
+            List<Association> nodeAssociations = policyStore.graph().getAssociationsWithSource(node);
             collectAssociationsFromBorderTargets(nodeAssociations, borderTargets);
         };
 
         // start the bfs
-        new BreadthFirstGraphWalker(pap.graph())
+        new BreadthFirstGraphWalker(policyStore.graph())
                 .withDirection(Direction.PARENTS)
                 .withVisitor(visitor)
                 .walk(subject);
@@ -368,7 +368,7 @@ public class MemoryAccessReviewer implements AccessReview {
     private Set<String> getDescendants(String vNode) throws PMException {
         Set<String> descendants = new HashSet<>();
 
-        List<String> children = pap.graph().getChildren(vNode);
+        List<String> children = policyStore.graph().getChildren(vNode);
         if (children.isEmpty()) {
             return descendants;
         }
@@ -395,7 +395,7 @@ public class MemoryAccessReviewer implements AccessReview {
         String crtNode;
 
         // Get u's directly assigned attributes and put them into the queue.
-        List<String> hsAttrs = pap.graph().getParents(userCtx.getUser());
+        List<String> hsAttrs = policyStore.graph().getParents(userCtx.getUser());
         List<String> queue = new ArrayList<>(hsAttrs);
 
         // While the queue has elements, extract an element from the queue
@@ -413,7 +413,7 @@ public class MemoryAccessReviewer implements AccessReview {
 
                     // Find the opsets of this user attribute. Note that the set of containers for this
                     // node (user attribute) may contain not only opsets.
-                    List<Association> assocs = pap.graph().getAssociationsWithSource(crtNode);
+                    List<Association> assocs = policyStore.graph().getAssociationsWithSource(crtNode);
 
                     // Go through the containers and only for opsets do the following.
                     // For each opset ops of ua:
@@ -463,7 +463,7 @@ public class MemoryAccessReviewer implements AccessReview {
                 }
                 visited.add(crtNode);
 
-                List<String> hsDescs = pap.graph().getParents(crtNode);
+                List<String> hsDescs = policyStore.graph().getParents(crtNode);
                 queue.addAll(hsDescs);
             }
         }
@@ -504,7 +504,7 @@ public class MemoryAccessReviewer implements AccessReview {
         // Insert the start node into the queue
         queue.add(node);
 
-        List<String> policyClasses = pap.graph().getPolicyClasses();
+        List<String> policyClasses = policyStore.graph().getPolicyClasses();
 
         // While queue is not empty
         while (!queue.isEmpty()) {
@@ -517,7 +517,7 @@ public class MemoryAccessReviewer implements AccessReview {
                 // Extract its direct descendants. If a descendant is an attribute,
                 // insert it into the queue. If it is a pc, add it to reachable,
                 // if not already there
-                List<String> hsContainers = pap.graph().getParents(crtNode);
+                List<String> hsContainers = policyStore.graph().getParents(crtNode);
                 for (String n : hsContainers) {
                     if (policyClasses.contains(n)) {
                         reachable.add(n);
@@ -531,7 +531,7 @@ public class MemoryAccessReviewer implements AccessReview {
     }
 
     private boolean inMemUattrHasOpsets(String uaNode) throws PMException {
-        return !pap.graph().getAssociationsWithSource(uaNode).isEmpty();
+        return !policyStore.graph().getAssociationsWithSource(uaNode).isEmpty();
     }
 
     /**
@@ -631,10 +631,10 @@ public class MemoryAccessReviewer implements AccessReview {
         Map<String, List<EdgePath>> propPaths = new HashMap<>();
 
         Visitor visitor = nodeName -> {
-            Node node = pap.graph().getNode(nodeName);
+            Node node = policyStore.graph().getNode(nodeName);
             List<EdgePath> nodePaths = new ArrayList<>();
 
-            for(String parent : pap.graph().getParents(nodeName)) {
+            for(String parent : policyStore.graph().getParents(nodeName)) {
                 Relationship edge = new Relationship(node.getName(), parent);
                 List<EdgePath> parentPaths = propPaths.get(parent);
                 if(parentPaths.isEmpty()) {
@@ -654,9 +654,9 @@ public class MemoryAccessReviewer implements AccessReview {
                 }
             }
 
-            List<Association> assocs = pap.graph().getAssociationsWithSource(node.getName());
+            List<Association> assocs = policyStore.graph().getAssociationsWithSource(node.getName());
             for(Association association : assocs) {
-                Node targetNode = pap.graph().getNode(association.getTarget());
+                Node targetNode = policyStore.graph().getNode(association.getTarget());
                 EdgePath path = new EdgePath();
                 path.addEdge(new Relationship(node.getName(), targetNode.getName(), association.getAccessRightSet()));
                 nodePaths.add(path);
@@ -674,8 +674,8 @@ public class MemoryAccessReviewer implements AccessReview {
         };
 
         Propagator propagator = (parentNodeName, childNodeName) -> {
-            Node parentNode = pap.graph().getNode(parentNodeName);
-            Node childNode = pap.graph().getNode(childNodeName);
+            Node parentNode = policyStore.graph().getNode(parentNodeName);
+            Node childNode = policyStore.graph().getNode(childNodeName);
             List<EdgePath> childPaths = propPaths.computeIfAbsent(childNode.getName(), k -> new ArrayList<>());
             List<EdgePath> parentPaths = propPaths.get(parentNode.getName());
 
@@ -699,7 +699,7 @@ public class MemoryAccessReviewer implements AccessReview {
             }
         };
 
-        new DepthFirstGraphWalker(pap.graph())
+        new DepthFirstGraphWalker(policyStore.graph())
                 .withVisitor(visitor)
                 .withPropagator(propagator)
                 .withDirection(Direction.PARENTS)

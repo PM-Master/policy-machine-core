@@ -1,10 +1,13 @@
 package gov.nist.csd.pm.pdp.memory;
 
+import gov.nist.csd.pm.impl.memory.pdp.MemoryAccessReviewer;
+import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryProhibitionsReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pdp.AccessReviewerTest;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import org.junit.jupiter.api.BeforeAll;
@@ -46,10 +49,12 @@ class MemoryProhibitionsReviewerTest {
                 access rights ["read"]
                 on intersection of [!"oa1", "oa2"]
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
+        pap.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        prohibitionsReviewer = new MemoryProhibitionsReviewer(pap);
+        prohibitionsReviewer = new MemoryProhibitionsReviewer(pap.policy());
     }
 
     @Test

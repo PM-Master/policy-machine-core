@@ -37,9 +37,11 @@ class EPPTest {
 
     @Test
     void test() throws PMException {
-        PAP pap = new PAP(new MemoryPolicyStore());
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
 
-        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
+        PDP pdp = new PDP(pap);
         EPP epp = new EPP(pdp, pap);
 
         String pml = """
@@ -59,24 +61,26 @@ class EPPTest {
                     }
                 }
                 """;
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        pap.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        assertTrue(pap.graph().nodeExists("pc1"));
-        assertTrue(pap.graph().nodeExists("oa1"));
+        assertTrue(pap.policy().graph().nodeExists("pc1"));
+        assertTrue(pap.policy().graph().nodeExists("oa1"));
 
         pdp.runTx(new UserContext("u1"), (txPDP) -> txPDP.graph().createObjectAttribute("oa2",
                 new HashMap<>(),
                 List.of("oa1")));
 
-        assertTrue(pap.graph().nodeExists("pc2"));
+        assertTrue(pap.policy().graph().nodeExists("pc2"));
 
     }
 
     @Test
     void testAccessingEventContextInResponse() throws PMException {
-        PAP pap = new PAP(new MemoryPolicyStore());
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
 
-        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
+        PDP pdp = new PDP(pap);
         EPP epp = new EPP(pdp, pap);
 
         String pml = """                
@@ -105,34 +109,35 @@ class EPPTest {
                     }
                 }
                 """;
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        pap.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
         pdp.runTx(new UserContext("u1"), (txPDP) -> txPDP.graph().createObjectAttribute("oa2", new HashMap<>(),
                 List.of("oa1")));
-        assertTrue(pap.graph().getPolicyClasses().containsAll(Arrays.asList(
+        assertTrue(pap.policy().graph().getPolicyClasses().containsAll(Arrays.asList(
                 "pc1", "create_object_attribute", "oa2_test", "u1_test"
         )));
     }
 
     @Test
-    void testErrorInEPPResponse() throws PMException {
-        PAP pap = new PAP(new MemoryPolicyStore());
-        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
+    void testErrorInEPPResponse() throws PMException { MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
+        PDP pdp = new PDP(pap);
         EPP epp = new EPP(pdp, pap);
 
-        pap.runTx((policy) -> {
-            policy.graph().createPolicyClass("pc1", new HashMap<>());
-            policy.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-            policy.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
-            policy.graph().associate("ua2", "ua1", new AccessRightSet("*"));
-            policy.graph().associate("ua2", AdminPolicyNode.OBLIGATIONS_TARGET.nodeName(), new AccessRightSet("*"));
-            policy.graph().createObjectAttribute("oa1", new HashMap<>(),  List.of("pc1"));
-            policy.graph().createUser("u1", new HashMap<>(),  List.of("ua1", "ua2"));
-            policy.graph().createObject("o1", new HashMap<>(),  List.of("oa1"));
-            policy.graph().associate("ua1", AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(),
+        pap.runTx((txPAP) -> {
+            txPAP.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            txPAP.policy().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+            txPAP.policy().graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+            txPAP.policy().graph().associate("ua2", "ua1", new AccessRightSet("*"));
+            txPAP.policy().graph().associate("ua2", AdminPolicyNode.OBLIGATIONS_TARGET.nodeName(), new AccessRightSet("*"));
+            txPAP.policy().graph().createObjectAttribute("oa1", new HashMap<>(),  List.of("pc1"));
+            txPAP.policy().graph().createUser("u1", new HashMap<>(),  List.of("ua1", "ua2"));
+            txPAP.policy().graph().createObject("o1", new HashMap<>(),  List.of("oa1"));
+            txPAP.policy().graph().associate("ua1", AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(),
                     new AccessRightSet(CREATE_OBLIGATION));
-            policy.graph().associate("ua1", "oa1", new AccessRightSet(CREATE_OBJECT));
-            policy.graph().associate("ua1", AdminPolicyNode.OBLIGATIONS_TARGET.nodeName(), new AccessRightSet("*"));
+            txPAP.policy().graph().associate("ua1", "oa1", new AccessRightSet(CREATE_OBJECT));
+            txPAP.policy().graph().associate("ua1", AdminPolicyNode.OBLIGATIONS_TARGET.nodeName(), new AccessRightSet("*"));
         });
 
         pdp.runTx(new UserContext("u1"), (policy) -> {
@@ -163,13 +168,15 @@ class EPPTest {
             epp.getEventProcessor().processEvent(eventCtx);
         });
 
-        assertFalse(pap.graph().nodeExists("o2"));
-        assertFalse(pap.graph().nodeExists("pc2"));
+        assertFalse(pap.policy().graph().nodeExists("o2"));
+        assertFalse(pap.policy().graph().nodeExists("pc2"));
     }
 
     @Test
     void testCustomFunctionInResponse() throws PMException {
-        PAP pap = new PAP(new MemoryPolicyStore());
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
 
         FunctionDefinitionStatement testFunc = new FunctionDefinitionStatement.Builder("testFunc")
                 .returns(Type.voidType())
@@ -180,7 +187,7 @@ class EPPTest {
                 })
                 .build();
 
-        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
+        PDP pdp = new PDP(pap);
         EPP epp = new EPP(pdp, pap, testFunc);
 
         String pml = """                
@@ -202,18 +209,20 @@ class EPPTest {
                     }
                 }
                 """;
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer(testFunc));
+        pap.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer(testFunc));
 
         pdp.runTx(new UserContext("u1"), (txPDP) -> txPDP.graph().createObjectAttribute("oa2", new HashMap<>(),
                 List.of("oa1")));
-        assertTrue(pap.graph().nodeExists("test"));
+        assertTrue(pap.policy().graph().nodeExists("test"));
     }
 
     @Test
     void testReturnInResponse() throws PMException {
-        PAP pap = new PAP(new MemoryPolicyStore());
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
 
-        PDP pdp = new PDP(pap, new MemoryPolicyReviewer(pap));
+        PDP pdp = new PDP(pap);
         EPP epp = new EPP(pdp, pap);
 
         String pml = """                
@@ -239,10 +248,10 @@ class EPPTest {
                     }
                 }
                 """;
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        pap.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
         pdp.runTx(new UserContext("u1"), (txPDP) -> txPDP.graph().createObjectAttribute("oa2", new HashMap<>(),
                 List.of("oa1")));
-        assertFalse(pap.graph().nodeExists("test"));
+        assertFalse(pap.policy().graph().nodeExists("test"));
     }
 }

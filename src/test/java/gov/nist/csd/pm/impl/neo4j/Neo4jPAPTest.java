@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.impl.neo4j;
 
 import gov.nist.csd.pm.impl.neo4j.pap.Neo4jPolicyStore;
+import gov.nist.csd.pm.impl.neo4j.pdp.Neo4jPolicyReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PAPTest;
 import gov.nist.csd.pm.common.exception.PMException;
@@ -23,7 +24,7 @@ public class Neo4jPAPTest extends PAPTest {
 
     @Override
     public PAP getPAP() throws PMException {
-        return new PAP(new Neo4jPolicyStore(embeddedDatabaseServer.defaultDatabaseService()));
+        return new PAP(new Neo4jPolicyStore(embeddedDatabaseServer.defaultDatabaseService()), new Neo4jPolicyReviewer());
     }
 
     @AfterEach

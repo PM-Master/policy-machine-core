@@ -35,7 +35,7 @@ class PDPObligations implements Obligations, EventEmitter {
     public void create(UserContext author, String name, Rule... rules) throws PMException {
         adjudicator.create(author, name, rules);
 
-        pap.obligations().create(author, name, rules);
+        pap.policy().obligations().create(author, name, rules);
 
         emitObligationEvent(new CreateObligationOp(author, name, List.of(rules)), rules);
     }
@@ -61,7 +61,7 @@ class PDPObligations implements Obligations, EventEmitter {
     public void update(UserContext author, String name, Rule... rules) throws PMException {
         adjudicator.update(author, name, rules);
 
-        pap.obligations().update(author, name, rules);
+        pap.policy().obligations().update(author, name, rules);
 
         emitObligationEvent(
                 new UpdateObligationOp(author, name, List.of(rules)),
@@ -80,7 +80,7 @@ class PDPObligations implements Obligations, EventEmitter {
         // get the obligation to use in the EPP before it is deleted
         Obligation obligation = get(name);
 
-        pap.obligations().delete(name);
+        pap.policy().obligations().delete(name);
 
         emitDeleteObligationEvent(obligation);
     }

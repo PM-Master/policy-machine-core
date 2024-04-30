@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pdp.neo4j;
 
 import gov.nist.csd.pm.impl.neo4j.pdp.Neo4jGraphReviewer;
+import gov.nist.csd.pm.impl.neo4j.pdp.Neo4jPolicyReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.neo4j.pap.Neo4jPolicyStore;
 import gov.nist.csd.pm.pdp.GraphReviewerTest;
@@ -40,7 +41,7 @@ public class Neo4jGraphReviewerTest extends GraphReviewerTest {
 
     @Override
     public TestContext initTest() throws PMException {
-        PAP pap = new PAP(new Neo4jPolicyStore(embeddedDatabaseServer.defaultDatabaseService()));
-        return new TestContext(new Neo4jGraphReviewer(embeddedDatabaseServer.defaultDatabaseService()), pap);
+        PAP pap = new PAP(new Neo4jPolicyStore(embeddedDatabaseServer.defaultDatabaseService()), new Neo4jPolicyReviewer());
+        return new TestContext(new Neo4jGraphReviewer(embeddedDatabaseServer.defaultDatabaseService()), pap.policy());
     }
 }

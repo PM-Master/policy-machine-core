@@ -1,5 +1,6 @@
 package gov.nist.csd.pm.pap.pml;
 
+import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.pdp.UserContext;
@@ -23,8 +24,10 @@ public class FunctionTest {
                 """;
 
         PMLCompilationException e = assertThrows(PMLCompilationException.class, () -> {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            PMLExecutor.compileAndExecutePML(pap, new UserContext("u1"), pml);
+            MemoryPolicyStore ps = new MemoryPolicyStore();
+            MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+            PAP pap = new PAP(ps, pr);
+            PMLExecutor.compileAndExecutePML(pap.policy(), new UserContext("u1"), pml);
         });
         assertEquals("not all conditional paths return", e.getErrors().get(0).errorMessage());
     }
@@ -44,8 +47,10 @@ public class FunctionTest {
                 """;
 
         assertDoesNotThrow(() -> {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            PMLExecutor.compileAndExecutePML(pap, new UserContext("u1"), pml2);
+            MemoryPolicyStore ps = new MemoryPolicyStore();
+            MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+            PAP pap = new PAP(ps, pr);
+            PMLExecutor.compileAndExecutePML(pap.policy(), new UserContext("u1"), pml2);
         });
     }
 
@@ -62,8 +67,10 @@ public class FunctionTest {
                 """;
 
         assertDoesNotThrow(() -> {
-            PAP pap = new PAP(new MemoryPolicyStore());
-            PMLExecutor.compileAndExecutePML(pap, new UserContext("u1"), pml2);
+            MemoryPolicyStore ps = new MemoryPolicyStore();
+            MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+            PAP pap = new PAP(ps, pr);
+            PMLExecutor.compileAndExecutePML(pap.policy(), new UserContext("u1"), pml2);
         });
     }
 

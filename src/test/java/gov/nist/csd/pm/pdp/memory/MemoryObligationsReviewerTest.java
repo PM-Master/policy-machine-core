@@ -1,13 +1,16 @@
 package gov.nist.csd.pm.pdp.memory;
 
 import gov.nist.csd.pm.epp.EventContext;
+import gov.nist.csd.pm.impl.memory.pdp.MemoryAccessReviewer;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryGraphReviewer;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryObligationsReviewer;
+import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.op.graph.AssignToOp;
+import gov.nist.csd.pm.pdp.AccessReviewerTest;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Response;
@@ -63,8 +66,10 @@ class MemoryObligationsReviewerTest {
                     }
                 }
                 """;
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
+        pap.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
         pml = """
               create obligation "o3" {
@@ -87,7 +92,7 @@ class MemoryObligationsReviewerTest {
               """;
         pap.executePML(new UserContext("u2"), pml);
 
-        obligationReviewer = new MemoryObligationsReviewer(pap, new MemoryGraphReviewer(pap));
+        obligationReviewer = new MemoryObligationsReviewer(pap.policy(), new MemoryGraphReviewer(pap.policy()));
     }
 
     @Test

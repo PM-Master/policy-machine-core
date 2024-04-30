@@ -1,5 +1,6 @@
 package gov.nist.csd.pm.impl.memory.dag;
 
+import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.common.exception.PMException;
@@ -20,25 +21,28 @@ class BreadthFirstGraphWalkerTest {
 
     @BeforeAll
     static void setup() throws PMException {
-        pap = new PAP(new MemoryPolicyStore());
-        pap.graph().createPolicyClass("pc1", new HashMap<>());
-        pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        pap = new PAP(ps, pr);
 
-        pap.graph().createObjectAttribute("oa1-1", new HashMap<>(), List.of("oa1"));
-        pap.graph().createObjectAttribute("oa1-1-1", new HashMap<>(), List.of("oa1-1"));
-        pap.graph().createObjectAttribute("oa1-1-2", new HashMap<>(), List.of("oa1-1"));
-        pap.graph().createObjectAttribute("oa1-1-3", new HashMap<>(), List.of("oa1-1"));
+        pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
-        pap.graph().createObjectAttribute("oa1-2", new HashMap<>(), List.of("oa1"));
-        pap.graph().createObjectAttribute("oa1-2-1", new HashMap<>(), List.of("oa1-2"));
-        pap.graph().createObjectAttribute("oa1-2-2", new HashMap<>(), List.of("oa1-2"));
-        pap.graph().createObjectAttribute("oa1-2-3", new HashMap<>(), List.of("oa1-2"));
+        pap.policy().graph().createObjectAttribute("oa1-1", new HashMap<>(), List.of("oa1"));
+        pap.policy().graph().createObjectAttribute("oa1-1-1", new HashMap<>(), List.of("oa1-1"));
+        pap.policy().graph().createObjectAttribute("oa1-1-2", new HashMap<>(), List.of("oa1-1"));
+        pap.policy().graph().createObjectAttribute("oa1-1-3", new HashMap<>(), List.of("oa1-1"));
+
+        pap.policy().graph().createObjectAttribute("oa1-2", new HashMap<>(), List.of("oa1"));
+        pap.policy().graph().createObjectAttribute("oa1-2-1", new HashMap<>(), List.of("oa1-2"));
+        pap.policy().graph().createObjectAttribute("oa1-2-2", new HashMap<>(), List.of("oa1-2"));
+        pap.policy().graph().createObjectAttribute("oa1-2-3", new HashMap<>(), List.of("oa1-2"));
     }
 
     @Test
     void testWalk() throws PMException {
         List<String> visited = new ArrayList<>();
-        BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.graph())
+        BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.policy().graph())
                 .withDirection(Direction.CHILDREN)
                 .withVisitor(node -> {
                     visited.add(node);
@@ -63,7 +67,7 @@ class BreadthFirstGraphWalkerTest {
     @Test
     void testAllPathsShortCircuit() throws PMException {
         List<String> visited = new ArrayList<>();
-        BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.graph())
+        BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.policy().graph())
                 .withDirection(Direction.CHILDREN)
                 .withVisitor(node -> {
                     visited.add(node);
@@ -75,7 +79,7 @@ class BreadthFirstGraphWalkerTest {
         assertEquals(expected, visited);
 
         visited.clear();
-        bfs = new BreadthFirstGraphWalker(pap.graph())
+        bfs = new BreadthFirstGraphWalker(pap.policy().graph())
                 .withDirection(Direction.CHILDREN)
                 .withVisitor(visited::add)
                 .withAllPathShortCircuit(node -> node.equals("oa1-1-1"));
@@ -88,7 +92,7 @@ class BreadthFirstGraphWalkerTest {
     @Test
     void testSinglePathShortCircuit() throws PMException {
         List<String> visited = new ArrayList<>();
-        BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.graph())
+        BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.policy().graph())
                 .withDirection(Direction.CHILDREN)
                 .withVisitor(visited::add)
                 .withSinglePathShortCircuit(node -> node.equals("oa1-1-1"));

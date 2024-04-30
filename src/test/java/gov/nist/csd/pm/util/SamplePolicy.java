@@ -13,7 +13,7 @@ public class SamplePolicy {
 
     public static void loadSamplePolicyFromPML(PAP pap) throws IOException, PMException {
         String s = IOUtils.resourceToString("sample/sample.pml", StandardCharsets.UTF_8, SamplePolicy.class.getClassLoader());
-        pap.deserialize(new UserContext("u1"), s, new PMLDeserializer());
+        pap.policy().deserialize(new UserContext("u1"), s, new PMLDeserializer());
     }
 
     public static String loadSamplePolicyPML() throws IOException {

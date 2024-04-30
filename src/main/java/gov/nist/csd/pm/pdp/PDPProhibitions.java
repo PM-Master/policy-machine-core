@@ -34,7 +34,7 @@ class PDPProhibitions implements Prohibitions, EventEmitter {
     public void create(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, ContainerCondition... containerConditions) throws PMException {
         adjudicator.create(name, subject, accessRightSet, intersection, containerConditions);
 
-        pap.prohibitions().create(name, subject, accessRightSet, intersection, containerConditions);
+        pap.policy().prohibitions().create(name, subject, accessRightSet, intersection, containerConditions);
 
         CreateProhibitionOp createProhibitionEvent = new CreateProhibitionOp(
                 name, subject, accessRightSet, intersection, List.of(containerConditions)
@@ -53,7 +53,7 @@ class PDPProhibitions implements Prohibitions, EventEmitter {
     public void update(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, ContainerCondition... containerConditions) throws PMException {
         adjudicator.update(name, subject, accessRightSet, intersection, containerConditions);
 
-        pap.prohibitions().update(name, subject, accessRightSet, intersection, containerConditions);
+        pap.policy().prohibitions().update(name, subject, accessRightSet, intersection, containerConditions);
 
         UpdateProhibitionOp updateProhibitionEvent = new UpdateProhibitionOp(
                 name, subject, accessRightSet, intersection, List.of(containerConditions)
@@ -76,9 +76,9 @@ class PDPProhibitions implements Prohibitions, EventEmitter {
 
         adjudicator.delete(name);
 
-        Prohibition prohibition = pap.prohibitions().get(name);
+        Prohibition prohibition = pap.policy().prohibitions().get(name);
 
-        pap.prohibitions().delete(name);
+        pap.policy().prohibitions().delete(name);
 
         emitDeleteProhibitionEvent(prohibition);
     }

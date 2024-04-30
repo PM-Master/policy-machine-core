@@ -1,5 +1,7 @@
 package gov.nist.csd.pm.impl.mysql;
 
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PAPTest;
 import gov.nist.csd.pm.common.exception.PMException;
@@ -54,7 +56,9 @@ class MysqlPAPTest extends PAPTest {
             throw new PMException(e);
         }
 
-        return new PAP(new MysqlPolicyStore(connection));
+        MysqlPolicyStore ps = new MysqlPolicyStore(connection);
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        return new PAP(ps, pr);
     }
 
     @Test
@@ -62,16 +66,18 @@ class MysqlPAPTest extends PAPTest {
         try (Connection connection = DriverManager.getConnection(testEnv.getConnectionUrl(), testEnv.getUser(), testEnv.getPassword());
              Connection connection2 = DriverManager.getConnection(testEnv.getConnectionUrl(), testEnv.getUser(), testEnv.getPassword())) {
 
-            PAP pap = new PAP(new MysqlPolicyStore(connection));
+            MysqlPolicyStore ps = new MysqlPolicyStore(connection);
+            MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+            PAP pap = new PAP(ps, pr);
             pap.beginTx();
-            pap.graph().createPolicyClass("pc1", new HashMap<>());
-            pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+            pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
+            pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
             pap.commit();
 
-
-            PAP pap2 = new PAP(new MysqlPolicyStore(connection2));
-            assertTrue(pap2.graph().nodeExists("pc1"));
-            assertTrue(pap2.graph().nodeExists("oa1"));
+            MysqlPolicyStore ps2 = new MysqlPolicyStore(connection2);
+            PAP pap2 = new PAP(ps2, new MemoryPolicyReviewer(ps2));
+            assertTrue(pap2.policy().graph().nodeExists("pc1"));
+            assertTrue(pap2.policy().graph().nodeExists("oa1"));
         }
     }
 }

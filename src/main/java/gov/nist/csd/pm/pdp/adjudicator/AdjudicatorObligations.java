@@ -69,7 +69,7 @@ public class AdjudicatorObligations implements Obligations {
 
     @Override
     public void delete(String name) throws PMException {
-        Obligation obligation = pap.obligations().get(name);
+        Obligation obligation = pap.policy().obligations().get(name);
         for (Rule rule : obligation.getRules()) {
             Subject subject = rule.getEventPattern().getSubject();
             checkSubject(subject, DELETE_OBLIGATION);
@@ -81,7 +81,7 @@ public class AdjudicatorObligations implements Obligations {
 
     @Override
     public List<Obligation> getAll() throws PMException {
-        List<Obligation> obligations = pap.obligations().getAll();
+        List<Obligation> obligations = pap.policy().obligations().getAll();
         obligations.removeIf(obligation -> {
             try {
                 for (Rule rule : obligation.getRules()) {
@@ -102,7 +102,7 @@ public class AdjudicatorObligations implements Obligations {
 
     @Override
     public boolean exists(String name) throws PMException {
-        boolean exists = pap.obligations().exists(name);
+        boolean exists = pap.policy().obligations().exists(name);
         if (!exists) {
             return false;
         }
@@ -118,7 +118,7 @@ public class AdjudicatorObligations implements Obligations {
 
     @Override
     public Obligation get(String name) throws PMException {
-        Obligation obligation = pap.obligations().get(name);
+        Obligation obligation = pap.policy().obligations().get(name);
         for (Rule rule : obligation.getRules()) {
             Subject subject = rule.getEventPattern().getSubject();
             checkSubject(subject, GET_OBLIGATION);

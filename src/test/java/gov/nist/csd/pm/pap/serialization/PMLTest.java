@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap.serialization;
 
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.common.serialization.pml.PMLSerializer;
+import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
@@ -28,14 +29,18 @@ class PMLTest {
 
         PMLDeserializer pmlDeserializer = new PMLDeserializer();
 
-        PAP pap = new PAP(new MemoryPolicyStore());
-        pap.deserialize(new UserContext("u1"), pml, pmlDeserializer);
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
+        pap.policy().deserialize(new UserContext("u1"), pml, pmlDeserializer);
 
-        String serialize = pap.serialize(new PMLSerializer());
-        PAP pap2 = new PAP(new MemoryPolicyStore());
-        pap2.deserialize(new UserContext("u1"), serialize, pmlDeserializer);
+        String serialize = pap.policy().serialize(new PMLSerializer());
+        MemoryPolicyStore ps2 = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr2 = new MemoryPolicyReviewer(ps2);
+        PAP pap2 = new PAP(ps, pr);
+        pap2.policy().deserialize(new UserContext("u1"), serialize, pmlDeserializer);
 
-        PolicyEquals.assertPolicyEquals(pap, pap2);
+        PolicyEquals.assertPolicyEquals(pap.policy(), pap2.policy());
     }
 
     @Test
@@ -46,8 +51,10 @@ class PMLTest {
 
         PMLDeserializer pmlDeserializer = new PMLDeserializer();
 
-        PAP pap = new PAP(new MemoryPolicyStore());
-        assertThrows(PMException.class, () -> pap.deserialize(new UserContext("u1"), pml, pmlDeserializer));
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
+        assertThrows(PMException.class, () -> pap.policy().deserialize(new UserContext("u1"), pml, pmlDeserializer));
 
         FunctionDefinitionStatement testFunc = new FunctionDefinitionStatement.Builder("testFunc")
                 .returns(Type.voidType())
@@ -62,8 +69,8 @@ class PMLTest {
                 .build();
 
         PMLDeserializer pmlDeserializer2 = new PMLDeserializer(testFunc);
-        pap.deserialize(new UserContext("u1"), pml, pmlDeserializer2);
-        assertTrue(pap.graph().nodeExists("hello world"));
+        pap.policy().deserialize(new UserContext("u1"), pml, pmlDeserializer2);
+        assertTrue(pap.policy().graph().nodeExists("hello world"));
     }
 
 }

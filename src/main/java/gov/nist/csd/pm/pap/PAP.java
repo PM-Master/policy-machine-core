@@ -10,65 +10,22 @@ import gov.nist.csd.pm.common.tx.Transactional;
 import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.common.serialization.PolicySerializer;
 
-public class PAP implements Transactional, PMLExecutable, Policy {
+public class PAP implements Transactional, PMLExecutable {
 
-    protected PolicyStore policyStore;
+    protected final PolicyStore policyStore;
+    protected final PolicyReview policyReview;
 
-    public PAP(PolicyStore policyStore) throws PMException {
+    public PAP(PolicyStore policyStore, PolicyReview policyReview) throws PMException {
         this.policyStore = policyStore;
+        this.policyReview = policyReview;
     }
 
-    public void runTx(TxRunner txRunner) throws PMException {
-        beginTx();
-
-        try {
-            txRunner.runTx(this);
-
-            commit();
-        } catch (PMException e) {
-            rollback();
-            throw e;
-        }
+    public PolicyStore policy() {
+        return policyStore;
     }
 
-    public interface TxRunner {
-        void runTx(PAP pap) throws PMException;
-    }
-
-    @Override
-    public Graph graph() {
-        return policyStore.graph();
-    }
-
-    @Override
-    public Prohibitions prohibitions() {
-        return policyStore.prohibitions();
-    }
-
-    @Override
-    public Obligations obligations() {
-        return policyStore.obligations();
-    }
-
-    @Override
-    public UserDefinedPML userDefinedPML() {
-        return policyStore.userDefinedPML();
-    }
-
-    @Override
-    public String serialize(PolicySerializer serializer) throws PMException {
-        return policyStore.serialize(serializer);
-    }
-
-    @Override
-    public void deserialize(UserContext author, String input, PolicyDeserializer policyDeserializer)
-            throws PMException {
-        policyStore.deserialize(author, input, policyDeserializer);
-    }
-
-    @Override
-    public void reset() throws PMException {
-        policyStore.reset();
+    public PolicyReview review() {
+        return policyReview;
     }
 
     @Override
@@ -88,7 +45,7 @@ public class PAP implements Transactional, PMLExecutable, Policy {
 
     @Override
     public void executePML(UserContext userContext, String input, FunctionDefinitionStatement... functionDefinitionStatements) throws PMException {
-        PMLExecutor.compileAndExecutePML(this, userContext, input, functionDefinitionStatements);
+        PMLExecutor.compileAndExecutePML(this.policyStore, userContext, input, functionDefinitionStatements);
     }
 
     @Override
@@ -96,6 +53,23 @@ public class PAP implements Transactional, PMLExecutable, Policy {
         String pml = String.format("%s(%s)", functionName, PMLExecutable.valuesToArgs(args));
 
         // execute function as pml
-        PMLExecutor.compileAndExecutePML(this, userContext, pml);
+        PMLExecutor.compileAndExecutePML(this.policyStore, userContext, pml);
+    }
+
+    public void runTx(TxRunner txRunner) throws PMException {
+        beginTx();
+
+        try {
+            txRunner.runTx(this);
+
+            commit();
+        } catch (PMException e) {
+            rollback();
+            throw e;
+        }
+    }
+
+    public interface TxRunner {
+        void runTx(PAP pap) throws PMException;
     }
 }

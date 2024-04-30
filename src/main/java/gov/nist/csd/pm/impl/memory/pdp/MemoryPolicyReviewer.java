@@ -2,6 +2,7 @@ package gov.nist.csd.pm.impl.memory.pdp;
 
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PolicyReview;
+import gov.nist.csd.pm.pap.PolicyStore;
 
 public class MemoryPolicyReviewer implements PolicyReview {
 
@@ -10,11 +11,11 @@ public class MemoryPolicyReviewer implements PolicyReview {
     private final MemoryProhibitionsReviewer prohibitionsReviewer;
     private final MemoryObligationsReviewer memoryObligationsReviewer;
 
-    public MemoryPolicyReviewer(PAP pap) {
-        this.accessReviewer = new MemoryAccessReviewer(pap);
-        this.graphReviewer = new MemoryGraphReviewer(pap);
-        this.prohibitionsReviewer = new MemoryProhibitionsReviewer(pap);
-        this.memoryObligationsReviewer = new MemoryObligationsReviewer(pap, graphReviewer);
+    public MemoryPolicyReviewer(PolicyStore policyStore) {
+        this.accessReviewer = new MemoryAccessReviewer(policyStore);
+        this.graphReviewer = new MemoryGraphReviewer(policyStore);
+        this.prohibitionsReviewer = new MemoryProhibitionsReviewer(policyStore);
+        this.memoryObligationsReviewer = new MemoryObligationsReviewer(policyStore, graphReviewer);
     }
 
     @Override

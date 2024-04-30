@@ -15,24 +15,28 @@ public class Adjudicator implements Policy {
 
     private final UserContext userCtx;
     private final PrivilegeChecker privilegeChecker;
-
+    private final PAP pap;
     private final AdjudicatorGraph adjudicatorGraph;
     private final AdjudicatorProhibitions adjudicatorProhibitions;
     private final AdjudicatorObligations adjudicatorObligations;
     private final AdjudicatorUserDefinedPML adjudicatorUserDefinedPML;
 
-    public Adjudicator(UserContext userCtx, PAP pap, PolicyReview policyReview) {
+    public Adjudicator(UserContext userCtx, PAP pap) {
         this.userCtx = userCtx;
-        this.privilegeChecker = new PrivilegeChecker(pap, policyReview);
-
-        adjudicatorGraph = new AdjudicatorGraph(userCtx, pap, privilegeChecker);
-        adjudicatorProhibitions = new AdjudicatorProhibitions(userCtx, pap, privilegeChecker);
-        adjudicatorObligations = new AdjudicatorObligations(userCtx, pap, privilegeChecker);
-        adjudicatorUserDefinedPML = new AdjudicatorUserDefinedPML(userCtx, pap, privilegeChecker);
+        this.privilegeChecker = new PrivilegeChecker(pap);
+        this.pap = pap;
+        this.adjudicatorGraph = new AdjudicatorGraph(userCtx, pap, privilegeChecker);
+        this.adjudicatorProhibitions = new AdjudicatorProhibitions(userCtx, pap, privilegeChecker);
+        this.adjudicatorObligations = new AdjudicatorObligations(userCtx, pap, privilegeChecker);
+        this.adjudicatorUserDefinedPML = new AdjudicatorUserDefinedPML(userCtx, pap, privilegeChecker);
     }
 
     public PrivilegeChecker getAccessRightChecker() {
         return privilegeChecker;
+    }
+
+    protected PAP getPAP() {
+        return pap;
     }
 
     @Override

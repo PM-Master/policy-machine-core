@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pap.serialization.pml;
 
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
@@ -55,19 +56,23 @@ class PMLSerializerTest {
 
     @Test
     void testSerialization() throws PMException {
-        PAP pap = new PAP(new MemoryPolicyStore());
+        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
+        PAP pap = new PAP(ps, pr);
         UserContext userContext = new UserContext("u1");
-        pap.deserialize(userContext, input, new PMLDeserializer());
+        pap.policy().deserialize(userContext, input, new PMLDeserializer());
 
-        pap.graph().createObjectAttribute("test-oa", new HashMap<>(), List.of("pc1"));
-        pap.graph().assign(AdminPolicy.policyClassTargetName("pc1"), "test-oa");
+        pap.policy().graph().createObjectAttribute("test-oa", new HashMap<>(), List.of("pc1"));
+        pap.policy().graph().assign(AdminPolicy.policyClassTargetName("pc1"), "test-oa");
 
         String expected = input + " create object attribute \"test-oa\" assign to [\"pc1\"]\n" + "assign \"pc1:target\" to [\"test-oa\"]";
 
-        PAP testPAP = new PAP(new MemoryPolicyStore());
-        testPAP.deserialize(userContext, expected, new PMLDeserializer());
+        MemoryPolicyStore testps = new MemoryPolicyStore();
+        MemoryPolicyReviewer testpr = new MemoryPolicyReviewer(ps);
+        PAP testPAP = new PAP(testps, testpr);
+        testPAP.policy().deserialize(userContext, expected, new PMLDeserializer());
 
-        PolicyEquals.assertPolicyEquals(pap, testPAP);
+        PolicyEquals.assertPolicyEquals(pap.policy(), testPAP.policy());
     }
 
 }
