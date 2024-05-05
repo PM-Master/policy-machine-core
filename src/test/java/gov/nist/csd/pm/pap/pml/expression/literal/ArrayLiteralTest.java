@@ -23,7 +23,7 @@ class ArrayLiteralTest {
                 """,
                 PMLParser.LiteralExpressionContext.class);
 
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         Expression expression = Literal.compileLiteral(visitorContext, ctx);
         assertTrue(expression instanceof ArrayLiteral);
 

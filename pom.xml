@@ -81,7 +81,7 @@
                     <visitor>true</visitor>
                     <arguments>
                         <argument>-package</argument>
-                        <argument>gov.nist.csd.pm.policy.pml.antlr</argument>
+                        <argument>gov.nist.csd.pm.pap.pml.antlr</argument>
                     </arguments>
                 </configuration>
                 <executions>
@@ -161,6 +161,6 @@
     </dependencies>
 
     <properties>
-        <antlr.version>4.8</antlr.version>
+        <antlr.version>4.13.1</antlr.version>
     </properties>
 </project>

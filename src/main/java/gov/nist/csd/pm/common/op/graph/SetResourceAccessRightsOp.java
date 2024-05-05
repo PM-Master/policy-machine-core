@@ -6,10 +6,11 @@ import gov.nist.csd.pm.pdp.AccessRightSet;
 import java.io.Serial;
 import java.util.Objects;
 
-public class SetResourceAccessRightsOp implements Operation {
+public class SetResourceAccessRightsOp extends GraphOp {
     private final AccessRightSet accessRightSet;
 
     public SetResourceAccessRightsOp(AccessRightSet accessRightSet) {
+        super(operands(accessRightSet));
         this.accessRightSet = accessRightSet;
     }
 

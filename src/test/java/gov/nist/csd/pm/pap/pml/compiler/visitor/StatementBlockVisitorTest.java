@@ -24,7 +24,7 @@ class StatementBlockVisitorTest {
 
     @BeforeAll
     static void setup() throws PMException {
-        testGlobalScope = GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore())
+        testGlobalScope = GlobalScope.forCompile(new MemoryPolicyStore())
                    .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
     }
 

@@ -43,7 +43,7 @@ public class EPP {
 
         @Override
         public void processEvent(EventContext eventCtx) throws PMException {
-            GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.withValuesAndDefinitions(pap.policy(), customFunctions);
+            GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(pap.policy(), customFunctions);
             List<Obligation> obligations = pap.policy().obligations().getAll();
             for(Obligation obligation : obligations) {
                 UserContext author = obligation.getAuthor();
@@ -51,7 +51,7 @@ public class EPP {
 
                 List<Rule> rules = obligation.getRules();
                 for(Rule rule : rules) {
-                    if(!eventCtx.matchesPattern(rule.getEventPattern(), pap.review().graph())) {
+                    if(!rule.getEventPattern().matches(eventCtx, pap)) {
                         continue;
                     }
 

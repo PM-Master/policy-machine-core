@@ -13,12 +13,7 @@ AS: 'as' ;
 ON: 'on' ;
 IN: 'in' ;
 DO: 'do' ;
-ANY_USER: 'any user' ;
-PROCESSES: 'processes' ;
-PROCESS: 'process' ;
-INTERSECTION: 'intersection' | 'inter';
-UNION: 'union' ;
-ANY: 'any';
+PATTERN_OP: '=>';
 
 SET_RESOURCE_ACCESS_RIGHTS: 'set resource access rights';
 ASSIGN: 'assign' ;

@@ -124,7 +124,7 @@ public class FunctionInvokeExpression extends Expression {
                 throw new PMLExecutionException(e);
             }
         } else {
-            List<PMLStatement> statements = funcDef.getBody();
+            List<PMLStatement> statements = funcDef.getStatements();
             for (PMLStatement stmt : statements) {
                 value = stmt.execute(invokeCtx, policy);
                 if (value instanceof ReturnValue) {

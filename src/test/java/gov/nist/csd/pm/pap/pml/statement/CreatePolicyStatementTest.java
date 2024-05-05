@@ -33,7 +33,7 @@ class CreatePolicyStatementTest {
         store.graph().createPolicyClass("pc2", new HashMap<>());
         store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc2"));
         store.graph().createUser("u2", new HashMap<>(), List.of("ua2"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.withValuesAndDefinitions(store));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(store));
 
         stmt.execute(execCtx, store);
 
@@ -100,7 +100,7 @@ class CreatePolicyStatementTest {
     void testHierarchy() throws PMException {
         MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
 
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.withValuesAndDefinitions(memoryPolicyStore));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(memoryPolicyStore));
         execCtx.scope().addVariable("ua1", new StringValue("ua1"));
 
         memoryPolicyStore.graph().setResourceAccessRights(new AccessRightSet("read", "write"));

@@ -1,4 +1,4 @@
-// Generated from PMLParser.g4 by ANTLR 4.8
+// Generated from PMLParser.g4 by ANTLR 4.13.1
 package gov.nist.csd.pm.pap.pml.antlr;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * which can be extended to create a listener which only needs to handle a subset
  * of the available methods.
  */
+@SuppressWarnings("CheckReturnValue")
 public class PMLParserBaseListener implements PMLParserListener {
 	/**
 	 * {@inheritDoc}
@@ -208,109 +209,13 @@ public class PMLParserBaseListener implements PMLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAnyUserSubject(PMLParser.AnyUserSubjectContext ctx) { }
+	@Override public void enterPattern(PMLParser.PatternContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAnyUserSubject(PMLParser.AnyUserSubjectContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterUsersSubject(PMLParser.UsersSubjectContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitUsersSubject(PMLParser.UsersSubjectContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterUsersInUnionSubject(PMLParser.UsersInUnionSubjectContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitUsersInUnionSubject(PMLParser.UsersInUnionSubjectContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterUsersInIntersectionSubject(PMLParser.UsersInIntersectionSubjectContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitUsersInIntersectionSubject(PMLParser.UsersInIntersectionSubjectContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterProcessesSubject(PMLParser.ProcessesSubjectContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitProcessesSubject(PMLParser.ProcessesSubjectContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterAnyTarget(PMLParser.AnyTargetContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAnyTarget(PMLParser.AnyTargetContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterAnyInUnionTarget(PMLParser.AnyInUnionTargetContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAnyInUnionTarget(PMLParser.AnyInUnionTargetContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterAnyInIntersectionTarget(PMLParser.AnyInIntersectionTargetContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAnyInIntersectionTarget(PMLParser.AnyInIntersectionTargetContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterOnTargets(PMLParser.OnTargetsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitOnTargets(PMLParser.OnTargetsContext ctx) { }
+	@Override public void exitPattern(PMLParser.PatternContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

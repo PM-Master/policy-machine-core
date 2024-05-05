@@ -23,7 +23,7 @@ class DeassignStmtVisitorTest {
                 deassign "a" from ["b", "c"]
                 """,
                 PMLParser.DeassignStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new DeassignStmtVisitor(visitorCtx).visitDeassignStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -39,7 +39,7 @@ class DeassignStmtVisitorTest {
                 deassign "a" from "c"
                 """,
                 PMLParser.DeassignStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new DeassignStmtVisitor(visitorCtx).visitDeassignStatement(ctx);
         assertEquals(
                 "expected expression type []string, got string",
@@ -51,7 +51,7 @@ class DeassignStmtVisitorTest {
                 deassign ["a"] from ["b", "c"]
                 """,
                 PMLParser.DeassignStatementContext.class);
-        visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new DeassignStmtVisitor(visitorCtx).visitDeassignStatement(ctx);
         assertEquals(
                 "expected expression type string, got []string",

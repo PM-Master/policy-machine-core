@@ -5,10 +5,11 @@ import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import java.io.Serial;
 import java.util.Objects;
 
-public class CreateFunctionOp implements UserDefinedPMLOp {
+public class CreateFunctionOp extends UserDefinedPMLOp {
     private final FunctionDefinitionStatement functionDefinitionStatement;
 
     public CreateFunctionOp(FunctionDefinitionStatement functionDefinitionStatement) {
+        super(operands(functionDefinitionStatement));
         this.functionDefinitionStatement = functionDefinitionStatement;
     }
 

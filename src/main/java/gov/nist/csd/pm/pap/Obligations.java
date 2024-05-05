@@ -1,17 +1,12 @@
 package gov.nist.csd.pm.pap;
 
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.op.pattern.Pattern;
+import gov.nist.csd.pm.common.op.pattern.ReferencedPolicyEntities;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.obligation.event.EventPattern;
-import gov.nist.csd.pm.common.obligation.event.subject.Subject;
-import gov.nist.csd.pm.common.obligation.event.subject.UserAttributesSubject;
-import gov.nist.csd.pm.common.obligation.event.subject.UsersSubject;
-import gov.nist.csd.pm.common.obligation.event.target.AnyInIntersectionTarget;
-import gov.nist.csd.pm.common.obligation.event.target.AnyInUnionTarget;
-import gov.nist.csd.pm.common.obligation.event.target.OnTargets;
-import gov.nist.csd.pm.common.obligation.event.target.Target;
+import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.pap.exception.*;
 
 import java.util.HashSet;
@@ -165,26 +160,19 @@ public interface Obligations {
         for (Rule rule : rules) {
             EventPattern event = rule.getEventPattern();
 
-            // check subject
-            Subject subject = event.getSubject();
-            if (subject instanceof UsersSubject ||
-                    subject instanceof UserAttributesSubject) {
-                for (String sub : subject.getSubjects()) {
-                    if (!graph.nodeExists(sub)) {
-                        throw new NodeDoesNotExistException(sub);
-                    }
-                }
+            // check subject pattern
+            Pattern<String> pattern = event.getSubjectPattern();
+            if(!pattern.checkReferencedPolicyEntitiesExist(graph)) {
+                throw new PolicyEntityDoesNotExistException("policy entity in event subject pattern does not exist");
             }
 
-            // check target
-            Target target = event.getTarget();
-            if (target instanceof AnyInUnionTarget ||
-                    target instanceof AnyInIntersectionTarget ||
-                    target instanceof OnTargets) {
-                for (String tar : target.getTargets()) {
-                    if (!graph.nodeExists(tar)) {
-                        throw new NodeDoesNotExistException(tar);
-                    }
+            // TODO add check for operations - not yet implemented
+            // pattern = event.operationPattern();
+
+            // check operand patterns
+            for (Pattern<Object> operandPattern : event.getOperandPatterns()) {
+                if(!operandPattern.checkReferencedPolicyEntitiesExist(graph)) {
+                    throw new PolicyEntityDoesNotExistException("policy entity in operand pattern does not exist");
                 }
             }
         }

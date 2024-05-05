@@ -1,16 +1,12 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.common.obligation.event.subject.*;
+import gov.nist.csd.pm.common.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.Policy;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.obligation.event.EventPattern;
-import gov.nist.csd.pm.common.obligation.event.target.AnyInIntersectionTarget;
-import gov.nist.csd.pm.common.obligation.event.target.AnyInUnionTarget;
-import gov.nist.csd.pm.common.obligation.event.target.AnyTarget;
-import gov.nist.csd.pm.common.obligation.event.target.Target;
+import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
@@ -87,13 +83,14 @@ public class CreateObligationStatement extends PMLStatement {
     }
 
     public static CreateObligationStatement fromObligation(Obligation obligation) {
-        return new CreateObligationStatement(
+        /*return new CreateObligationStatement(
                 new StringLiteral(obligation.getName()),
                 createRuleStatementsFromObligation(obligation.getRules())
-        );
+        );*/
+        throw new RuntimeException("TODO");
     }
 
-    private static List<CreateRuleStatement> createRuleStatementsFromObligation(List<Rule> rules) {
+    /*private static List<CreateRuleStatement> createRuleStatementsFromObligation(List<Rule> rules) {
         List<CreateRuleStatement> createRuleStatements = new ArrayList<>();
 
         for (Rule rule : rules) {
@@ -101,9 +98,9 @@ public class CreateObligationStatement extends PMLStatement {
 
             CreateRuleStatement createRuleStatement = new CreateRuleStatement(
                     new StringLiteral(rule.getName()),
-                    getSubjectClause(event.getSubject()),
-                    getPerformsClause(event.getOperations()),
-                    getOnClause(event.getTarget()),
+                    getSubjectPattern(event.subjectPattern()),
+                    getOperation(event.operation()),
+                    getOnClause(event.operandPatterns()),
                     new CreateRuleStatement.ResponseBlock(
                             rule.getResponse().getEventCtxVariable(),
                             rule.getResponse().getStatements()
@@ -116,7 +113,7 @@ public class CreateObligationStatement extends PMLStatement {
         return createRuleStatements;
     }
 
-    private static CreateRuleStatement.OnClause getOnClause(Target target) {
+    private static CreateRuleStatement.OperandsClause getOnClause(Target target) {
         CreateRuleStatement.TargetType type;
 
         if (target instanceof AnyTarget) {
@@ -138,18 +135,18 @@ public class CreateObligationStatement extends PMLStatement {
             arrayLiteral.add(new StringLiteral(user));
         }
 
-        return new CreateRuleStatement.OnClause(arrayLiteral, type);
+        return new CreateRuleStatement.OperandsClause(arrayLiteral, type);
     }
 
-    private static CreateRuleStatement.PerformsClause getPerformsClause(List<String> operations) {
+    private static CreateRuleStatement.OperationClause getOperation(List<String> operations) {
         ArrayLiteral arrayLiteral = new ArrayLiteral(Type.string());
         for (String op : operations) {
             arrayLiteral.add(new StringLiteral(op));
         }
-        return new CreateRuleStatement.PerformsClause(arrayLiteral);
+        return new CreateRuleStatement.OperationClause(arrayLiteral);
     }
 
-    private static CreateRuleStatement.SubjectClause getSubjectClause(Subject subject) {
+    private static CreateRuleStatement.SubjectClause getSubjectPattern(Pattern<Object> subject) {
         CreateRuleStatement.SubjectType type;
 
         if (subject instanceof AnyUserSubject) {
@@ -175,5 +172,5 @@ public class CreateObligationStatement extends PMLStatement {
         }
 
         return new CreateRuleStatement.SubjectClause(type, arrayLiteral);
-    }
+    }*/
 }

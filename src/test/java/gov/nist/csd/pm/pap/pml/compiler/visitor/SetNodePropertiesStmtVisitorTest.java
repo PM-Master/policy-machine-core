@@ -23,7 +23,7 @@ class SetNodePropertiesStmtVisitorTest {
                 set properties of "o1" to {"a": "b"}
                 """,
                 PMLParser.SetNodePropertiesStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new SetNodePropertiesStmtVisitor(visitorCtx)
                 .visitSetNodePropertiesStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
@@ -40,7 +40,7 @@ class SetNodePropertiesStmtVisitorTest {
                 set properties of ["o1"] to {"a": "b"}
                 """,
                 PMLParser.SetNodePropertiesStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new SetNodePropertiesStmtVisitor(visitorCtx)
                 .visitSetNodePropertiesStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
@@ -54,7 +54,7 @@ class SetNodePropertiesStmtVisitorTest {
                 set properties of "o1" to ["a", "b"]
                 """,
                 PMLParser.SetNodePropertiesStatementContext.class);
-        visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new SetNodePropertiesStmtVisitor(visitorCtx)
                 .visitSetNodePropertiesStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());

@@ -31,7 +31,7 @@ class FunctionInvokeStmtVisitorTest {
                 PMLParser.FunctionInvokeStatementContext.class);
 
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore())
+                GlobalScope.forCompile(new MemoryPolicyStore())
                            .withPersistedFunctions(
                                    Map.of(
                                            "func1",
@@ -70,7 +70,7 @@ class FunctionInvokeStmtVisitorTest {
                 func1("a", "b", ["c", "d"])
                 """,
                 PMLParser.FunctionInvokeStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new FunctionInvokeStmtVisitor(visitorCtx)
                 .visitFunctionInvokeStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
@@ -88,7 +88,7 @@ class FunctionInvokeStmtVisitorTest {
                 """,
                 PMLParser.FunctionInvokeStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore())
+                GlobalScope.forCompile(new MemoryPolicyStore())
                            .withPersistedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(
@@ -121,7 +121,7 @@ class FunctionInvokeStmtVisitorTest {
                 """,
                 PMLParser.FunctionInvokeStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore())
+                GlobalScope.forCompile(new MemoryPolicyStore())
                            .withPersistedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(
@@ -153,7 +153,7 @@ class FunctionInvokeStmtVisitorTest {
                 """,
                 PMLParser.FunctionInvokeStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore())
+                GlobalScope.forCompile(new MemoryPolicyStore())
                            .withPersistedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(

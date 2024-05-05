@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.dag.DepthFirstGraphWalker;
+import gov.nist.csd.pm.common.op.pattern.Pattern;
 import gov.nist.csd.pm.pdp.AccessRightSet;
 import gov.nist.csd.pm.common.graph.dag.Direction;
 import gov.nist.csd.pm.common.graph.nodes.Node;
@@ -10,11 +11,7 @@ import gov.nist.csd.pm.common.graph.relationships.Assignment;
 import gov.nist.csd.pm.common.graph.relationships.Association;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.obligation.event.EventPattern;
-import gov.nist.csd.pm.common.obligation.event.subject.Subject;
-import gov.nist.csd.pm.common.obligation.event.subject.UserAttributesSubject;
-import gov.nist.csd.pm.common.obligation.event.subject.UsersSubject;
-import gov.nist.csd.pm.common.obligation.event.target.Target;
+import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.exception.*;
@@ -417,7 +414,7 @@ public interface Graph {
         List<Obligation> obligations = obligationsStore.getAll();
         for (Obligation obligation : obligations) {
             // if the node is the author of the obligation or referenced in any rules throw an exception
-            if (obligation.getAuthor().getUser().equals(name) || nodeInObligation(name, obligation)) {
+            if (obligation.getAuthor().getUser().equals(name)) {
                 throw new NodeReferencedInObligationException(name, obligation.getName());
             }
         }
@@ -598,29 +595,5 @@ public interface Graph {
         }
 
         return false;
-    }
-
-    private static boolean nodeInObligation(String name, Obligation obligation) {
-        for (Rule rule : obligation.getRules()) {
-            if (nodeInEvent(name, rule.getEventPattern())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static boolean nodeInEvent(String name, EventPattern event) {
-        // check subject
-        Subject subject = event.getSubject();
-        if (subject instanceof UserAttributesSubject userAttributesEventSubject) {
-            return userAttributesEventSubject.getSubjects().contains(name);
-        } else if (subject instanceof UsersSubject usersEventSubject) {
-            return usersEventSubject.getSubjects().contains(name);
-        }
-
-        // check the target
-        Target target = event.getTarget();
-        return target.getTargets().contains(name);
     }
 }

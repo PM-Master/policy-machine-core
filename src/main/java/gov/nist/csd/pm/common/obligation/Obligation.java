@@ -1,6 +1,5 @@
 package gov.nist.csd.pm.common.obligation;
 
-import gov.nist.csd.pm.common.obligation.event.EventPattern;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.statement.CreateObligationStatement;
 
@@ -28,15 +27,6 @@ public class Obligation implements Serializable {
         this.author = author;
         this.name = name;
         this.rules = rules;
-    }
-
-    public Obligation(Obligation obligation) {
-        this.name = obligation.name;
-        this.rules = new ArrayList<>();
-        for (Rule rule : obligation.getRules()) {
-            this.rules.add(new Rule(rule));
-        }
-        this.author = obligation.author;
     }
 
     public Obligation addRule(String name, EventPattern eventPattern, Response response) {

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public abstract class CreateNodeOp implements Operation {
+public abstract class CreateNodeOp extends GraphOp {
 
     protected final String name;
     protected final NodeType type;
@@ -15,6 +15,7 @@ public abstract class CreateNodeOp implements Operation {
     protected List<String> parents;
 
     protected CreateNodeOp(String name, NodeType type, Map<String, String> properties, List<String> parents) {
+        super(operands(name, type, properties, parents));
         this.name = name;
         this.type = type;
         this.properties = properties;
@@ -22,6 +23,7 @@ public abstract class CreateNodeOp implements Operation {
     }
 
     protected CreateNodeOp(String name, NodeType type, Map<String, String> properties) {
+        super(operands(name, type, properties));
         this.name = name;
         this.type = type;
         this.properties = properties;

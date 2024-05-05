@@ -19,7 +19,7 @@ class ReferenceByIDTest {
     @Test
     void testGetType() throws PMException {
         ReferenceByID a = new ReferenceByID("a");
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         visitorContext.scope().addVariable("a", new Variable("a", Type.string(), false));
 
         assertEquals(
@@ -31,7 +31,7 @@ class ReferenceByIDTest {
     @Test
     void testExecute() throws PMException {
         ReferenceByID a = new ReferenceByID("a");
-        ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));
+        ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore()));
         Value expected = new StringValue("test");
         executionContext.scope().addVariable("a", expected);
 

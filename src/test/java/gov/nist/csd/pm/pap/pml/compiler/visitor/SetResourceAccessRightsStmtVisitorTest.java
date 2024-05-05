@@ -22,7 +22,7 @@ class SetResourceAccessRightsStmtVisitorTest {
                 set resource access rights ["a", "b"]
                 """,
                 PMLParser.SetResourceAccessRightsStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new SetResourceAccessRightsStmtVisitor(visitorCtx)
                 .visitSetResourceAccessRightsStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
@@ -39,7 +39,7 @@ class SetResourceAccessRightsStmtVisitorTest {
                 set resource access rights "a"
                 """,
                 PMLParser.SetResourceAccessRightsStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new SetResourceAccessRightsStmtVisitor(visitorCtx)
                 .visitSetResourceAccessRightsStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());

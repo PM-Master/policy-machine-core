@@ -5,10 +5,11 @@ import gov.nist.csd.pm.common.op.Operation;
 import java.io.Serial;
 import java.util.Objects;
 
-public class DeleteNodeOp implements Operation {
+public class DeleteNodeOp extends GraphOp {
     private final String name;
 
     public DeleteNodeOp(String name) {
+        super(operands(name));
         this.name = name;
     }
 

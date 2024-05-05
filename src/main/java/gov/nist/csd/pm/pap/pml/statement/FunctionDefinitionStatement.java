@@ -30,6 +30,15 @@ public class FunctionDefinitionStatement extends PMLStatement {
         this.functionExecutor = functionDefinitionStatement.functionExecutor;
         this.isFuncExec = functionDefinitionStatement.isFuncExec;
     }
+
+    public FunctionDefinitionStatement(FunctionSignature signature) {
+        this.signature = signature;
+    }
+
+    public FunctionDefinitionStatement(String name, Type type, List<FormalArgument> args) {
+        setSignature(new FunctionSignature(name, type, args));
+    }
+
     private FunctionDefinitionStatement(String functionName, Type returnType, List<FormalArgument> args, List<PMLStatement> stmts) {
         this.signature = new FunctionSignature(functionName, returnType, args);
         this.statements = stmts;
@@ -46,20 +55,44 @@ public class FunctionDefinitionStatement extends PMLStatement {
         super(ctx);
     }
 
-    public boolean isFunctionExecutor() {
-        return isFuncExec;
+    public FunctionSignature getSignature() {
+        return signature;
+    }
+
+    public void setSignature(FunctionSignature signature) {
+        this.signature = signature;
+    }
+
+    public void setSignature(String name, Type type, List<FormalArgument> args) {
+        this.signature = new FunctionSignature(name, type, args);
+    }
+
+    public List<PMLStatement> getStatements() {
+        return statements;
+    }
+
+    public void setStatements(List<PMLStatement> statements) {
+        this.statements = statements;
     }
 
     public FunctionExecutor getFunctionExecutor() {
         return functionExecutor;
     }
 
-    public FunctionSignature getSignature() {
-        return signature;
+    public boolean isFunctionExecutor() {
+        return functionExecutor != null;
     }
 
-    public List<PMLStatement> getBody() {
-        return statements;
+    public void setFunctionExecutor(FunctionExecutor functionExecutor) {
+        this.functionExecutor = functionExecutor;
+    }
+
+    public boolean isFuncExec() {
+        return isFuncExec;
+    }
+
+    public void setFuncExec(boolean funcExec) {
+        isFuncExec = funcExec;
     }
 
     @Override

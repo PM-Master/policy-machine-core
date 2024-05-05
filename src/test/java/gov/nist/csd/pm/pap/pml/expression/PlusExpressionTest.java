@@ -24,7 +24,7 @@ class PlusExpressionTest {
                 "a" + "b"
                 """,
                 PMLParser.PlusExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         Expression expression = PlusExpression.compilePlusExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -34,7 +34,7 @@ class PlusExpressionTest {
                 plusExpression
         );
 
-        Value value = plusExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore())), new MemoryPolicyStore());
+        Value value = plusExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
         assertEquals(
                 new StringValue("ab"),
                 value
@@ -48,7 +48,7 @@ class PlusExpressionTest {
                 "a" + "b" + "c"
                 """,
                 PMLParser.PlusExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         Expression expression = PlusExpression.compilePlusExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -58,7 +58,7 @@ class PlusExpressionTest {
                 plusExpression
         );
 
-        Value value = plusExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore())), new MemoryPolicyStore());
+        Value value = plusExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
         assertEquals(
                 new StringValue("abc"),
                 value
@@ -72,7 +72,7 @@ class PlusExpressionTest {
                 "a" + "b" + ["c"]
                 """,
                 PMLParser.PlusExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PlusExpression.compilePlusExpression(visitorContext, ctx);
         assertEquals(1, visitorContext.errorLog().getErrors().size());
         assertEquals(

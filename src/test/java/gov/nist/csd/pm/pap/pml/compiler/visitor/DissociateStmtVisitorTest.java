@@ -23,7 +23,7 @@ class DissociateStmtVisitorTest {
                 dissociate "a" and ["b"]
                 """,
                 PMLParser.DissociateStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new DissociateStmtVisitor(visitorCtx).visitDissociateStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -39,7 +39,7 @@ class DissociateStmtVisitorTest {
                 dissociate ["a"] and "b"
                 """,
                 PMLParser.DissociateStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new DissociateStmtVisitor(visitorCtx).visitDissociateStatement(ctx);
         assertEquals(2, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -56,7 +56,7 @@ class DissociateStmtVisitorTest {
                 dissociate "a" and "b"
                 """,
                 PMLParser.DissociateStatementContext.class);
-        visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new DissociateStmtVisitor(visitorCtx).visitDissociateStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(

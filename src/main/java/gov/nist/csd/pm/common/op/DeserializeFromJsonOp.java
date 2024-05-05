@@ -3,11 +3,11 @@ package gov.nist.csd.pm.common.op;
 import java.io.Serial;
 import java.util.Objects;
 
-public class DeserializeFromJsonOp implements Operation {
+public class DeserializeFromJsonOp extends Operation {
     private final String json;
 
-
     public DeserializeFromJsonOp(String json) {
+        super(operands(json));
         this.json = json;
     }
 

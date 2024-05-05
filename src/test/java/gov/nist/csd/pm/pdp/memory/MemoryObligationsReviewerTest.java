@@ -1,7 +1,6 @@
 package gov.nist.csd.pm.pdp.memory;
 
 import gov.nist.csd.pm.epp.EventContext;
-import gov.nist.csd.pm.impl.memory.pdp.MemoryAccessReviewer;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryGraphReviewer;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryObligationsReviewer;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
@@ -10,7 +9,6 @@ import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.op.graph.AssignToOp;
-import gov.nist.csd.pm.pdp.AccessReviewerTest;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Response;
@@ -119,14 +117,14 @@ class MemoryObligationsReviewerTest {
     }
 
     @Test
-    void testGetRulesWithEventTarget() throws PMException {
-        Map<String, List<Rule>> obligations = obligationReviewer.getRulesWithEventTarget("oa1");
+    void testGetRulesWithEventOperand() throws PMException {
+        Map<String, List<Rule>> obligations = obligationReviewer.getRulesWithEventOperand("oa1");
         assertEquals(
                 Set.of("o1", "o2", "o4"),
                 obligations.keySet()
         );
 
-        obligations = obligationReviewer.getRulesWithEventTarget("oa2");
+        obligations = obligationReviewer.getRulesWithEventOperand("oa2");
         assertEquals(
                 Set.of("o1", "o2", "o3"),
                 obligations.keySet()

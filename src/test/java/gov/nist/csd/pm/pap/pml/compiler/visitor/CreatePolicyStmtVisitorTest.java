@@ -36,7 +36,7 @@ class CreatePolicyStmtVisitorTest {
                 create policy class "test"
                 """,
                 PMLParser.CreatePolicyStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new CreatePolicyStmtVisitor(visitorCtx).visitCreatePolicyStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -53,7 +53,7 @@ class CreatePolicyStmtVisitorTest {
                 create policy class "test" with properties {"a": "b"}
                 """,
                 PMLParser.CreatePolicyStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new CreatePolicyStmtVisitor(visitorCtx).visitCreatePolicyStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -69,7 +69,7 @@ class CreatePolicyStmtVisitorTest {
                 create policy class ["test"]
                 """,
                 PMLParser.CreatePolicyStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new CreatePolicyStmtVisitor(visitorCtx).visitCreatePolicyStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(

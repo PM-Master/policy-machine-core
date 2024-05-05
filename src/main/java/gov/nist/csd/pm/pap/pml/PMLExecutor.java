@@ -36,7 +36,7 @@ public class PMLExecutor {
 
         // add the constants and functions to the persisted scope
         // build a global scope from the policy
-        GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.withValuesAndDefinitions(policy, customFunctions);
+        GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(policy, customFunctions);
 
         // execute other statements
         ExecutionContext ctx = new ExecutionContext(author, new Scope<>(globalScope));
@@ -51,7 +51,7 @@ public class PMLExecutor {
         Map<String, Value> constantsMap = new HashMap<>();
 
         // create empty exec ctx for constant value evaluation as all constants are literals
-        ExecutionContext ctx = new ExecutionContext(new UserContext(), new Scope<>(GlobalScope.withValuesAndDefinitions(policy)));
+        ExecutionContext ctx = new ExecutionContext(new UserContext(), new Scope<>(GlobalScope.forExecute(policy)));
 
         for (Map.Entry<String, Expression> e : constants.entrySet()) {
             constantsMap.put(e.getKey(), e.getValue().execute(ctx, policy));

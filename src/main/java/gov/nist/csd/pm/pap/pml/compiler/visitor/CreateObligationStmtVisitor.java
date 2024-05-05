@@ -22,7 +22,7 @@ public class CreateObligationStmtVisitor extends PMLBaseVisitor<CreateObligation
 
         List<CreateRuleStatement> ruleStmts = new ArrayList<>();
         for (PMLParser.CreateRuleStatementContext ruleStmt : ctx.createRuleStatement()) {
-            CreateRuleStatement createRuleStmt = (CreateRuleStatement) new CreateRuleStmtVisitor(visitorCtx)
+            CreateRuleStatement createRuleStmt = new CreateRuleStmtVisitor(visitorCtx)
                     .visitCreateRuleStatement(ruleStmt);
             ruleStmts.add(createRuleStmt);
         }

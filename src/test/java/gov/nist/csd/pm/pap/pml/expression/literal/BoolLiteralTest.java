@@ -25,7 +25,7 @@ class BoolLiteralTest {
                 """,
                 PMLParser.LiteralExpressionContext.class);
 
-        GlobalScope<Variable, FunctionSignature> globalScope = GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore());
+        GlobalScope<Variable, FunctionSignature> globalScope = GlobalScope.forCompile(new MemoryPolicyStore());
 
         VisitorContext visitorContext = new VisitorContext(globalScope);
         Expression expression = Literal.compileLiteral(visitorContext, ctx);

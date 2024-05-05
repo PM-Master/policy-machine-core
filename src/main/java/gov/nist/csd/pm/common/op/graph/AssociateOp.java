@@ -6,12 +6,13 @@ import gov.nist.csd.pm.pdp.AccessRightSet;
 import java.io.Serial;
 import java.util.Objects;
 
-public class AssociateOp implements Operation {
+public class AssociateOp extends GraphOp {
     private final String ua;
     private final String target;
     private final AccessRightSet accessRightSet;
 
     public AssociateOp(String ua, String target, AccessRightSet accessRightSet) {
+        super(operands(ua, target, accessRightSet));
         this.ua = ua;
         this.target = target;
         this.accessRightSet = accessRightSet;

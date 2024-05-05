@@ -7,12 +7,13 @@ import java.io.Serial;
 import java.util.List;
 import java.util.Objects;
 
-public class CreateObligationOp implements ObligationsOp {
+public class CreateObligationOp extends ObligationsOp {
     private final UserContext author;
     private final String name;
     private final List<Rule> rules;
 
     public CreateObligationOp(UserContext author, String name, List<Rule> rules) {
+        super(operands(author, name, rules));
         this.author = author;
         this.name = name;
         this.rules = rules;

@@ -53,21 +53,12 @@ createObligationStatement:
     CREATE OBLIGATION expression OPEN_CURLY createRuleStatement* CLOSE_CURLY;
 createRuleStatement:
     CREATE RULE ruleName=expression
-    WHEN subjectClause
-    PERFORMS performsClause=expression
-    (ON onClause)?
+    WHEN subjectPattern=pattern
+    PERFORMS operationPattern=pattern
+    (ON operandsPattern=pattern*)?
     response ;
-subjectClause:
-    ANY_USER #AnyUserSubject
-    | USERS expression #UsersSubject
-    | USERS IN UNION OF expression #UsersInUnionSubject
-    | USERS IN INTERSECTION OF expression #UsersInIntersectionSubject
-    | PROCESSES expression #ProcessesSubject;
-onClause:
-    ANY #AnyTarget
-    | UNION OF expression #AnyInUnionTarget
-    | INTERSECTION OF expression #AnyInIntersectionTarget
-    | expression #OnTargets;
+pattern: OPEN_PAREN? ID CLOSE_PAREN? PATTERN_OP patternExpression=expression;
+
 response:
     DO OPEN_PAREN ID CLOSE_PAREN responseBlock;
 responseBlock:

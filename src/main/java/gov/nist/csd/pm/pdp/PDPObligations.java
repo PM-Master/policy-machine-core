@@ -13,8 +13,6 @@ import gov.nist.csd.pm.common.op.Operation;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.obligation.event.subject.Subject;
-import gov.nist.csd.pm.common.obligation.event.target.Target;
 
 import java.util.List;
 
@@ -44,7 +42,8 @@ class PDPObligations implements Obligations, EventEmitter {
         // emit events for each rule
         for (Rule rule : rules) {
             // emit event for the subject
-            Subject subject = rule.getEventPattern().getSubject();
+            throw new RuntimeException("TODO");
+            /*Subject subject = rule.getEventPattern().getSubject();
             for (String user : subject.getSubjects()) {
                 emitEvent(new EventContext(userCtx, event));
             }
@@ -53,7 +52,7 @@ class PDPObligations implements Obligations, EventEmitter {
             Target target = rule.getEventPattern().getTarget();
             for (String policyElement : target.getTargets()) {
                 emitEvent(new EventContext(userCtx, event));
-            }
+            }*/
         }
     }
 

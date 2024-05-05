@@ -30,7 +30,7 @@ class DeassignStatementTest {
         store.graph().createUserAttribute("ua3", new HashMap<>(), List.of("ua1", "ua2", "pc1"));
         store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.withValuesAndDefinitions(store));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(store));
         stmt.execute(execCtx, store);
 
         assertEquals(

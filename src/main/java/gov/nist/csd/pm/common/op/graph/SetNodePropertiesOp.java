@@ -6,11 +6,12 @@ import java.io.Serial;
 import java.util.Map;
 import java.util.Objects;
 
-public class SetNodePropertiesOp implements Operation {
+public class SetNodePropertiesOp extends GraphOp {
     private final String name;
     private final Map<String, String> properties;
 
     public SetNodePropertiesOp(String name, Map<String, String> properties) {
+        super(operands(name, properties));
         this.name = name;
         this.properties = properties;
     }

@@ -30,7 +30,7 @@ class SetNodePropertiesStatementTest {
         store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
 
-        stmt.execute(new ExecutionContext(userContext, GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore())), store);
+        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPolicyStore())), store);
 
         assertEquals(
                 Map.of("a", "b", "c", "d"),

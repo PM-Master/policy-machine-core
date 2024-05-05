@@ -8,9 +8,7 @@ import gov.nist.csd.pm.pdp.AccessRightSet;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.obligation.Response;
 import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.obligation.event.EventPattern;
-import gov.nist.csd.pm.common.obligation.event.Performs;
-import gov.nist.csd.pm.common.obligation.event.subject.AnyUserSubject;
+import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
@@ -43,11 +41,11 @@ class DeleteStatementTest {
         store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
         store.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
         UserContext userContext = new UserContext("u1");
-        store.obligations().create(userContext, "o1", new Rule(
+        /* TODO store.obligations().create(userContext, "o1", new Rule(
                 "rule1",
                 new EventPattern(new AnyUserSubject(), new Performs("e1")),
                 new Response("e", List.of())
-        ));
+        ));*/
         store.prohibitions().create("p1",
                                     new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
                                     new AccessRightSet("read"),
@@ -57,7 +55,7 @@ class DeleteStatementTest {
         store.userDefinedPML().createFunction(new FunctionDefinitionStatement.Builder("testFunc").build());
         store.userDefinedPML().createConstant("testConst", new StringValue("test"));
 
-        GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.withValuesAndDefinitions(store);
+        GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(store);
 
         stmt2.execute(new ExecutionContext(userContext, globalScope), store);
         stmt3.execute(new ExecutionContext(userContext, globalScope), store);

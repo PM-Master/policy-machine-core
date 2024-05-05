@@ -30,7 +30,7 @@ class CreateProhibitionStmtVisitorTest {
                 on union of [!"oa1"]
                 """,
                 PMLParser.CreateProhibitionStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new CreateProhibitionStmtVisitor(visitorCtx).visitCreateProhibitionStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -56,7 +56,7 @@ class CreateProhibitionStmtVisitorTest {
                 on union of [!"oa1"]
                 """,
                 PMLParser.CreateProhibitionStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new CreateProhibitionStmtVisitor(visitorCtx).visitCreateProhibitionStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -72,7 +72,7 @@ class CreateProhibitionStmtVisitorTest {
                 on union of [!"oa1"]
                 """,
                 PMLParser.CreateProhibitionStatementContext.class);
-        visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new CreateProhibitionStmtVisitor(visitorCtx).visitCreateProhibitionStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -88,7 +88,7 @@ class CreateProhibitionStmtVisitorTest {
                 on union of [!"oa1"]
                 """,
                 PMLParser.CreateProhibitionStatementContext.class);
-        visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new CreateProhibitionStmtVisitor(visitorCtx).visitCreateProhibitionStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -104,7 +104,7 @@ class CreateProhibitionStmtVisitorTest {
                 on union of !"oa1"
                 """,
                 PMLParser.CreateProhibitionStatementContext.class);
-        visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new CreateProhibitionStmtVisitor(visitorCtx).visitCreateProhibitionStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(

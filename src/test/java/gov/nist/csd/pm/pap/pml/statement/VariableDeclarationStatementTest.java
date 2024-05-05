@@ -33,7 +33,7 @@ class VariableDeclarationStatementTest {
                 )
         );
 
-        ExecutionContext ctx = new ExecutionContext(new UserContext("u1"), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));
+        ExecutionContext ctx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(new MemoryPolicyStore()));
         ctx.scope().addVariable("c", new StringValue("123"));
         stmt1.execute(ctx, new MemoryPolicyStore());
         stmt2.execute(ctx, new MemoryPolicyStore());

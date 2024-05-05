@@ -34,7 +34,7 @@ class IfStmtVisitorTest {
                 }
                 """,
                 PMLParser.IfStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new IfStmtVisitor(visitorCtx)
                 .visitIfStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
@@ -61,7 +61,7 @@ class IfStmtVisitorTest {
                 }
                 """,
                 PMLParser.IfStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new IfStmtVisitor(visitorCtx)
                 .visitIfStatement(ctx);
         assertEquals(2, visitorCtx.errorLog().getErrors().size());

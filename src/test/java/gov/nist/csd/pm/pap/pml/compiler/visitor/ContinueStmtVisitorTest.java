@@ -27,7 +27,7 @@ class ContinueStmtVisitorTest {
                 }
                 """,
                 PMLParser.ForeachStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new ForeachStmtVisitor(visitorCtx).visitForeachStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -45,7 +45,7 @@ class ContinueStmtVisitorTest {
                 continue
                 """,
                 PMLParser.ContinueStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new ContinueStmtVisitor(visitorCtx).visitContinueStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(

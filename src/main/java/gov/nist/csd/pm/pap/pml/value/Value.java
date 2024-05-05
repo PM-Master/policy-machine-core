@@ -3,6 +3,7 @@ package gov.nist.csd.pm.pap.pml.value;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import gov.nist.csd.pm.common.obligation.Rule;
+import gov.nist.csd.pm.common.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.pml.type.Type;
 
 import java.io.Serializable;
@@ -53,6 +54,10 @@ public abstract class Value implements Serializable {
 
     public Rule getRuleValue() {
         return this.unwrap().to(RuleValue.class).getValue();
+    }
+
+    public Pattern getPatternValue() {
+        return this.unwrap().to(PatternValue.class).getValue();
     }
 
     public <T extends Value> T to(Class<T> c) {

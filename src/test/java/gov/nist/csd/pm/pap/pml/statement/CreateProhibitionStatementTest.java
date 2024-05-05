@@ -43,7 +43,7 @@ class CreateProhibitionStatementTest {
         store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc2"));
         store.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc2"));
 
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(new MemoryPolicyStore()));
 
         stmt.execute(execCtx, store);
 

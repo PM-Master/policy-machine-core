@@ -21,7 +21,7 @@ import static gov.nist.csd.pm.pap.AdminPolicyNode.OBLIGATIONS_TARGET;
 
 public class GlobalScope<V, F> implements Serializable {
 
-    public static GlobalScope<Variable, FunctionSignature> withVariablesAndSignatures(Policy policy, FunctionDefinitionStatement ... customFunctionStatements)
+    public static GlobalScope<Variable, FunctionSignature> forCompile(Policy policy, FunctionDefinitionStatement ... customFunctionStatements)
             throws PMException {
         // buitin variables
         Map<String, Variable> builtinConstants = new HashMap<>();
@@ -69,7 +69,7 @@ public class GlobalScope<V, F> implements Serializable {
         return new GlobalScope<>(builtinConstants, persistedConstants, builtinFunctions, persistedFunctions, customFunctions);
     }
 
-    public static GlobalScope<Value, FunctionDefinitionStatement> withValuesAndDefinitions(Policy policy, FunctionDefinitionStatement ... customFunctionStatements)
+    public static GlobalScope<Value, FunctionDefinitionStatement> forExecute(Policy policy, FunctionDefinitionStatement ... customFunctionStatements)
             throws PMException {
         // buitin variables
         Map<String, Value> builtinVariables = new HashMap<>();

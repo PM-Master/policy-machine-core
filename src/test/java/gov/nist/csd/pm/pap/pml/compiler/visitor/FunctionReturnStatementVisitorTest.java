@@ -19,12 +19,14 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class FunctionReturnStatementVisitorTest {
 
     @Test
     void testSuccess() throws PMException {
-        PMLParser.FunctionDefinitionStatementContext ctx1 = PMLContextVisitor.toCtx(
+        fail("TODO");
+        /*PMLParser.FunctionDefinitionStatementContext ctx1 = PMLContextVisitor.toCtx(
                 """
                 function func1(string a, bool b, []string c) string {
                     return "test"
@@ -33,7 +35,7 @@ class FunctionReturnStatementVisitorTest {
                 PMLParser.FunctionDefinitionStatementContext.class);
 
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore())
+                GlobalScope.forCompile(new MemoryPolicyStore())
                            .withPersistedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(
@@ -68,14 +70,14 @@ class FunctionReturnStatementVisitorTest {
                         """,
                 PMLParser.CreateObligationStatementContext.class
         );
-        visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         CreateObligationStatement createObligationStatement = new CreateObligationStmtVisitor(visitorCtx)
                 .visitCreateObligationStatement(ctx2);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
                 new FunctionReturnStatement(),
                 createObligationStatement.getRuleStmts().get(0).getResponse().getStatements().get(0)
-        );
+        );*/
     }
 
     @Test
@@ -86,7 +88,7 @@ class FunctionReturnStatementVisitorTest {
                         """,
                 PMLParser.ReturnStatementContext.class
         );
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new FunctionReturnStmtVisitor(visitorCtx)
                 .visitReturnStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
@@ -111,7 +113,7 @@ class FunctionReturnStatementVisitorTest {
                         """,
                 PMLParser.CreateObligationStatementContext.class
         );
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new CreateObligationStmtVisitor(visitorCtx)
                 .visitCreateObligationStatement(ctx2);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());

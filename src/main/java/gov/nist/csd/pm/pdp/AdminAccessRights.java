@@ -49,6 +49,7 @@ public class AdminAccessRights {
     public static final String DELETE_RULE = "delete_rule";
     public static final String SET_RESOURCE_ACCESS_RIGHTS = "set_resource_access_rights";
     public static final String GET_RESOURCE_ACCESS_RIGHTS = "get_resource_access_rights";
+    public static final String OBLIGATION_RESPOND = "obligation_respond";
 
     // pml
     public static final String CREATE_FUNCTION = "create_function";

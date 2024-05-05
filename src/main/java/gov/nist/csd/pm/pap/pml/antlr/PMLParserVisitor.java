@@ -1,4 +1,4 @@
-// Generated from PMLParser.g4 by ANTLR 4.8
+// Generated from PMLParser.g4 by ANTLR 4.13.1
 package gov.nist.csd.pm.pap.pml.antlr;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -107,68 +107,11 @@ public interface PMLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCreateRuleStatement(PMLParser.CreateRuleStatementContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code AnyUserSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
+	 * Visit a parse tree produced by {@link PMLParser#pattern}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAnyUserSubject(PMLParser.AnyUserSubjectContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code UsersSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitUsersSubject(PMLParser.UsersSubjectContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code UsersInUnionSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitUsersInUnionSubject(PMLParser.UsersInUnionSubjectContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code UsersInIntersectionSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitUsersInIntersectionSubject(PMLParser.UsersInIntersectionSubjectContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code ProcessesSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitProcessesSubject(PMLParser.ProcessesSubjectContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code AnyTarget}
-	 * labeled alternative in {@link PMLParser#onClause}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAnyTarget(PMLParser.AnyTargetContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code AnyInUnionTarget}
-	 * labeled alternative in {@link PMLParser#onClause}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAnyInUnionTarget(PMLParser.AnyInUnionTargetContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code AnyInIntersectionTarget}
-	 * labeled alternative in {@link PMLParser#onClause}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAnyInIntersectionTarget(PMLParser.AnyInIntersectionTargetContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code OnTargets}
-	 * labeled alternative in {@link PMLParser#onClause}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitOnTargets(PMLParser.OnTargetsContext ctx);
+	T visitPattern(PMLParser.PatternContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PMLParser#response}.
 	 * @param ctx the parse tree

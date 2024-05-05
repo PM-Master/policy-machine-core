@@ -39,7 +39,13 @@ public class AdjudicatorObligationsReview implements ObligationsReview {
     }
 
     @Override
-    public Map<String, List<Rule>> getRulesWithEventTarget(String target) throws PMException {
+    public Map<String, List<Rule>> getRulesWithEventOperation(String operation) throws PMException {
+        return Map.of();//TODO
+
+    }
+
+    @Override
+    public Map<String, List<Rule>> getRulesWithEventOperand(String target) throws PMException {
         privilegeChecker.check(this.userCtx, target, AdminAccessRights.REVIEW_POLICY);
 
         return null;

@@ -4,7 +4,7 @@ import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Response;
 import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.obligation.event.EventPattern;
+import gov.nist.csd.pm.common.obligation.EventPattern;
 
 import java.util.Collections;
 import java.util.List;

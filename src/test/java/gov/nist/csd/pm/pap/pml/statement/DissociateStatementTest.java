@@ -30,7 +30,7 @@ class DissociateStatementTest {
         store.graph().associate("ua1", "oa1", new AccessRightSet("read"));
         UserContext userContext = new UserContext("u1");
 
-        stmt.execute(new ExecutionContext(userContext, GlobalScope.withValuesAndDefinitions(store)), store);
+        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(store)), store);
 
         assertTrue(store.graph().getAssociationsWithSource("ua1").isEmpty());
         assertTrue(store.graph().getAssociationsWithTarget("oa1").isEmpty());

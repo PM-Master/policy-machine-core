@@ -3,10 +3,11 @@ package gov.nist.csd.pm.common.op.obligation;
 import java.io.Serial;
 import java.util.Objects;
 
-public class DeleteObligationOp implements ObligationsOp {
+public class DeleteObligationOp extends ObligationsOp {
     private final String name;
 
     public DeleteObligationOp(String name) {
+        super(operands(name));
         this.name = name;
     }
 

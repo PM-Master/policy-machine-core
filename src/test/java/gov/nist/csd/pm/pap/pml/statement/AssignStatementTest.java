@@ -26,7 +26,7 @@ class AssignStatementTest {
         store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
         store.graph().createUserAttribute("ua3", new HashMap<>(), List.of("pc1"));
         store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(new MemoryPolicyStore()));
         stmt.execute(execCtx, store);
 
         assertTrue(store.graph().getParents("u1").containsAll(List.of("ua1", "ua2", "ua3")));

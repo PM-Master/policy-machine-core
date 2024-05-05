@@ -14,7 +14,8 @@ public interface ObligationsReview {
 
     List<Obligation> getObligationsWithAuthor(UserContext userCtx) throws PMException;
     Map<String, List<Rule>> getRulesWithEventSubject(String subject) throws PMException;
-    Map<String, List<Rule>> getRulesWithEventTarget(String target) throws PMException;
+    Map<String, List<Rule>> getRulesWithEventOperation(String operation) throws PMException;
+    Map<String, List<Rule>> getRulesWithEventOperand(String target) throws PMException;
     List<Response> getMatchingEventResponses(EventContext eventCtx) throws PMException;
 
 }

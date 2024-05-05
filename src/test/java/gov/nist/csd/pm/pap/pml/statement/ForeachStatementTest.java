@@ -33,7 +33,7 @@ class ForeachStatementTest {
         store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
 
-        stmt.execute(new ExecutionContext(userContext, GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore())), store);
+        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPolicyStore())), store);
 
         assertEquals(5, store.graph().getPolicyClasses().size());
         assertTrue(store.graph().getPolicyClasses().containsAll(List.of("a", "b", "c")));
@@ -49,7 +49,7 @@ class ForeachStatementTest {
         store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
         store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-        stmt.execute(new ExecutionContext(userContext, GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore())), store);
+        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPolicyStore())), store);
 
         assertEquals(6, store.graph().getPolicyClasses().size());
         assertTrue(store.graph().getPolicyClasses().containsAll(List.of("a", "b", "c", "d")));
@@ -64,7 +64,7 @@ class ForeachStatementTest {
         store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
         store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-        stmt.execute(new ExecutionContext(userContext, GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore())), store);
+        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPolicyStore())), store);
 
         assertEquals(4, store.graph().getPolicyClasses().size());
         assertTrue(store.graph().getPolicyClasses().containsAll(List.of("a", "c")));
@@ -82,7 +82,7 @@ class ForeachStatementTest {
         store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
 
-        ExecutionContext executionContext = new ExecutionContext(userContext, GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));
+        ExecutionContext executionContext = new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPolicyStore()));
         executionContext.scope().addVariable("test", new StringValue("test"));
         stmt.execute(executionContext, store);
 

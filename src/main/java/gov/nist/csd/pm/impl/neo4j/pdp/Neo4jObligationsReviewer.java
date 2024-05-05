@@ -23,7 +23,12 @@ public class Neo4jObligationsReviewer implements ObligationsReview {
     }
 
     @Override
-    public Map<String, List<Rule>> getRulesWithEventTarget(String target) throws PMException {
+    public Map<String, List<Rule>> getRulesWithEventOperation(String operation) throws PMException {
+        return Map.of();
+    }
+
+    @Override
+    public Map<String, List<Rule>> getRulesWithEventOperand(String target) throws PMException {
         throw new PMException("not yet implemented");
     }
 

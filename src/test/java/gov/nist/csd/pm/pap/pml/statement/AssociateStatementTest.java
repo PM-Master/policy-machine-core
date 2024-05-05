@@ -32,7 +32,7 @@ class AssociateStatementTest {
         store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
         store.graph().createUserAttribute("u1", new HashMap<>(), List.of("pc1"));
         store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.withValuesAndDefinitions(store));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(store));
         stmt.execute(execCtx, store);
 
         assertTrue(store.graph().getAssociationsWithSource("ua1").get(0).equals(new Association("ua1", "oa1", new AccessRightSet("read"))));

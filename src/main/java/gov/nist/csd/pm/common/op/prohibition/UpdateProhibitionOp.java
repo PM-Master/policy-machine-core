@@ -8,7 +8,7 @@ import java.io.Serial;
 import java.util.List;
 import java.util.Objects;
 
-public class UpdateProhibitionOp implements ProhibitionsOp {
+public class UpdateProhibitionOp extends ProhibitionsOp {
     private final String name;
     private final ProhibitionSubject subject;
     private final AccessRightSet accessRightSet;
@@ -20,6 +20,7 @@ public class UpdateProhibitionOp implements ProhibitionsOp {
                                AccessRightSet accessRightSet,
                                boolean intersection,
                                List<ContainerCondition> containers) {
+        super(operands(name, subject, accessRightSet, intersection, containers));
         this.name = name;
         this.subject = subject;
         this.accessRightSet = accessRightSet;

@@ -26,7 +26,7 @@ class ExpressionTest {
                 """
                 a
                 """, PMLParser.VariableReferenceExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         visitorContext.scope().addVariable("a", new Variable("a", Type.string(), false));
         Expression actual = Expression.compile(visitorContext, ctx, Type.string());
         assertEquals(
@@ -38,7 +38,7 @@ class ExpressionTest {
                 """
                 a
                 """, PMLParser.VariableReferenceExpressionContext.class);
-        visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         visitorContext.scope().addVariable("a", new Variable("a", Type.array(Type.string()), false));
         actual = Expression.compile(visitorContext, ctx, Type.array(Type.string()));
         assertEquals(
@@ -53,7 +53,7 @@ class ExpressionTest {
                 """
                 a
                 """, PMLParser.VariableReferenceExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         visitorContext.scope().addVariable("a", new Variable("a", Type.string(), false));
         Expression e = Expression.compile(visitorContext, ctx, Type.array(Type.string()));
         assertTrue(e instanceof ErrorExpression);
@@ -68,7 +68,7 @@ class ExpressionTest {
 
     @Test
     void testCompileStringExpression_Literal() throws PMException {
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         Expression expression = Expression.fromString(visitorContext, "\"test\"", Type.string());
         assertEquals(0, visitorContext.errorLog().getErrors().size());
         assertEquals(new StringLiteral("test"), expression);
@@ -76,7 +76,7 @@ class ExpressionTest {
 
     @Test
     void testCompileStringExpression_VarRef() throws PMException {
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         visitorContext.scope().addVariable("test", new Variable("test", Type.string(), true));
         Expression expression = Expression.fromString(visitorContext, "test", Type.string());
         assertEquals(0, visitorContext.errorLog().getErrors().size());
@@ -85,7 +85,7 @@ class ExpressionTest {
 
     @Test
     void testCompileStringExpression_FuncInvoke() throws PMException {
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore())
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore())
                                                                    .withPersistedFunctions(Map.of("test", new FunctionSignature("test", Type.string(), List.of()))));
 
         Expression expression = Expression.fromString(visitorContext, "test()", Type.string());
@@ -95,11 +95,11 @@ class ExpressionTest {
 
     @Test
     void testCompileStringExpression_NonString_Error() throws PMException {
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         Expression.fromString(visitorContext, "\"test\" == \"test\"", Type.string());
         assertEquals(1, visitorContext.errorLog().getErrors().size());
 
-        visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         Expression.fromString(visitorContext, "[\"a\", \"b\"]", Type.string());
         assertEquals(1, visitorContext.errorLog().getErrors().size());
     }

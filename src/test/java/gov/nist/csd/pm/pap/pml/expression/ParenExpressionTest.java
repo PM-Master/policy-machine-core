@@ -29,9 +29,9 @@ class ParenExpressionTest {
 
     @BeforeAll
     static void setup() throws PMException {
-        compileGlobalScope = GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore())
+        compileGlobalScope = GlobalScope.forCompile(new MemoryPolicyStore())
                                         .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
-        executeGlobalScope = GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore())
+        executeGlobalScope = GlobalScope.forExecute(new MemoryPolicyStore())
                                         .withPersistedFunctions(Map.of("equals", new Equals()));
     }
 

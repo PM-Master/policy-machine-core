@@ -27,7 +27,7 @@ class VariableReferenceTest {
                     """
                     a
                     """, PMLParser.VariableReferenceExpressionContext.class);
-            VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
             visitorContext.scope().addVariable("a", new Variable("a", Type.string(), false));
             Expression actual = compileVariableReference(visitorContext, ctx.variableReference());
             assertEquals(0, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().toString());
@@ -43,7 +43,7 @@ class VariableReferenceTest {
                     """
                     a
                     """, PMLParser.VariableReferenceExpressionContext.class);
-            VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
             Expression e = compileVariableReference(visitorContext, ctx.variableReference());
             assertTrue(e instanceof ErrorExpression);
             assertEquals(1, visitorContext.errorLog().getErrors().size());
@@ -62,7 +62,7 @@ class VariableReferenceTest {
                     """
                     a.b.c
                     """, PMLParser.VariableReferenceExpressionContext.class);
-            VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
             visitorContext.scope().addVariable("a", new Variable("a", Type.map(Type.string(), Type.map(Type.string(), Type.string())), false));
             Expression actual = compileVariableReference(visitorContext, ctx.variableReference());
             assertEquals(0, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().toString());
@@ -75,7 +75,7 @@ class VariableReferenceTest {
                     """
                     a["b"]["c"]
                     """, PMLParser.VariableReferenceExpressionContext.class);
-            visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+            visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
             visitorContext.scope().addVariable("a", new Variable("a", Type.map(Type.string(), Type.map(Type.string(), Type.string())), false));
             actual = compileVariableReference(visitorContext, ctx.variableReference());
             assertEquals(0, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().toString());
@@ -91,7 +91,7 @@ class VariableReferenceTest {
                     """
                     a.b.c
                     """, PMLParser.VariableReferenceExpressionContext.class);
-            VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
             Expression e = compileVariableReference(visitorContext, ctx.variableReference());
             assertTrue(e instanceof ErrorExpression);
             assertEquals(1, visitorContext.errorLog().getErrors().size());
@@ -107,7 +107,7 @@ class VariableReferenceTest {
                     """
                     a.b.c
                     """, PMLParser.VariableReferenceExpressionContext.class);
-            VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
             visitorContext.scope().addVariable("a", new Variable("a", Type.map(Type.string(), Type.string()), false));
             Expression actual = compileVariableReference(visitorContext, ctx.variableReference());
             assertEquals(1, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().toString());

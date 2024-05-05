@@ -4,14 +4,16 @@ import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 
 import java.io.Serial;
+import java.util.Arrays;
 import java.util.Objects;
 
-public class DeserializeFromPMLOp implements Operation {
+public class DeserializeFromPMLOp extends Operation {
     private final UserContext author;
     private final String pml;
     private final FunctionDefinitionStatement[] customFunctions;
 
     public DeserializeFromPMLOp(UserContext author, String pml, FunctionDefinitionStatement... customFunctions) {
+        super(operands(author, pml, customFunctions));
         this.author = author;
         this.pml = pml;
         this.customFunctions = customFunctions;
@@ -45,12 +47,12 @@ public class DeserializeFromPMLOp implements Operation {
         var that = (DeserializeFromPMLOp) obj;
         return Objects.equals(this.author, that.author) &&
                 Objects.equals(this.pml, that.pml) &&
-                Objects.equals(this.customFunctions, that.customFunctions);
+                Arrays.equals(this.customFunctions, that.customFunctions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(author, pml, customFunctions);
+        return Objects.hash(author, pml, Arrays.hashCode(customFunctions));
     }
 
     @Override

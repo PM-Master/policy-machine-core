@@ -3,10 +3,11 @@ package gov.nist.csd.pm.common.op.prohibition;
 import java.io.Serial;
 import java.util.Objects;
 
-public class DeleteProhibitionOp implements ProhibitionsOp {
+public class DeleteProhibitionOp extends ProhibitionsOp {
     private final String name;
 
     public DeleteProhibitionOp(String name) {
+        super(operands(name));
         this.name = name;
     }
 

@@ -1,33 +1,63 @@
 package gov.nist.csd.pm.common.op;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.obligation.event.EventPattern;
+import gov.nist.csd.pm.common.obligation.EventPattern;
+import gov.nist.csd.pm.common.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.GraphReview;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pdp.UserContext;
 
 import java.io.Serializable;
+import java.util.List;
 
-public interface Operation extends Serializable {
+public abstract class Operation implements Serializable {
 
-    /**
-     * Get the name of this operation.
-     * @return The name of the operation.
-     */
-    String getOpName();
-
-    /**
-     * Default implementation of matches only checks that the given operation pattern is either empty, which will match
-     * all operations, or contains this Operation's name. It is expected an implementation of this method checks the
-     * target pattern of the event pattern as well as calling Operation.super.matches() to ensure the operation matches.
-     * @param pattern The event pattern.
-     * @param graphReview A GraphReview object used to determine containment.
-     * @return True if this Operation matches the given pattern, false otherwise.
-     */
-    default boolean matches(EventPattern pattern, GraphReview graphReview) throws PMException {
-        return pattern.getOperations().isEmpty() || pattern.getOperations().contains(getOpName());
+    protected static Object[] operands(Object ... ops) {
+        return ops;
     }
 
-    public  interface Pattern {
+    private final Object[] operands;
 
+    public Operation(Object[] operands) {
+        this.operands = operands;
     }
 
+    public abstract String getOpName();
+
+    // TODO - need capmap and can make it not abstract
+    //  public abstract boolean canRespond(UserContext userCtx, PAP pap) throws PMException;
+
+    public Object[] getOperands() {
+        return operands;
+    }
+
+    /*public boolean matches(EventPattern pattern, GraphReview graphReview) throws PMException {
+        boolean opPatternMatches = operationMatches(pattern.operationPattern(), graphReview);
+        boolean operandPatternsMatch = operandsMatch(graphReview, pattern.operandPatterns());
+
+        return opPatternMatches && operandPatternsMatch;
+    }
+
+    private boolean operationMatches(Pattern<String> operationPattern, GraphReview graphReview) throws PMException {
+        return operationPattern.matches(getOpName(), graphReview);
+    }
+
+    private boolean operandsMatch(GraphReview graphReview, List<Pattern<Object>> operandPatterns) throws PMException {
+        // if there are more values provided than patterns, they cannot match
+        // if there are more patterns than values than there still might be a match
+        if (operands.length > operandPatterns.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < operands.length; i++) {
+            Object operandValue = operands[i];
+            Pattern<Object> operandPattern = operandPatterns.get(i);
+
+            if (!operandPattern.matches(operandValue, graphReview)) {
+                return false;
+            }
+        }
+
+        return true;
+    }*/
 }

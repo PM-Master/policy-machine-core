@@ -30,7 +30,7 @@ class CreateNonPCStatementTest {
         store.graph().createPolicyClass("pc1", new HashMap<>());
         store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
         store.graph().createUser("u2", new HashMap<>(), List.of("ua2"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(new MemoryPolicyStore()));
 
         stmt1.execute(execCtx, store);
         stmt2.execute(execCtx, store);
@@ -57,7 +57,7 @@ class CreateNonPCStatementTest {
         store.graph().createPolicyClass("pc1", new HashMap<>());
         store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
         store.graph().createUser("u1", new HashMap<>(), List.of("ua2"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(new MemoryPolicyStore()));
 
         stmt1.execute(execCtx, store);
 

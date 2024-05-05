@@ -5,11 +5,12 @@ import gov.nist.csd.pm.common.op.Operation;
 import java.io.Serial;
 import java.util.Objects;
 
-public class DeassignOp implements Operation {
+public class DeassignOp extends GraphOp {
     private final String child;
     private final String parent;
 
     public DeassignOp(String child, String parent) {
+        super(operands(child, parent));
         this.child = child;
         this.parent = parent;
     }

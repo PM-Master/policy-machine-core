@@ -34,9 +34,14 @@ public class PDPObligationsReview implements ObligationsReview {
     }
 
     @Override
-    public Map<String, List<Rule>> getRulesWithEventTarget(String target) throws PMException {
-        adjudicator.getRulesWithEventTarget(target);
-        return obligationsReview.getRulesWithEventTarget(target);
+    public Map<String, List<Rule>> getRulesWithEventOperation(String operation) throws PMException {
+        return Map.of();//TODO
+    }
+
+    @Override
+    public Map<String, List<Rule>> getRulesWithEventOperand(String target) throws PMException {
+        adjudicator.getRulesWithEventOperand(target);
+        return obligationsReview.getRulesWithEventOperand(target);
     }
 
     @Override

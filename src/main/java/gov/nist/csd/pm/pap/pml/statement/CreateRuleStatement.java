@@ -1,18 +1,14 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.common.obligation.event.subject.*;
-import gov.nist.csd.pm.common.obligation.event.target.*;
+import gov.nist.csd.pm.common.op.pattern.Pattern;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.Policy;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.obligation.Response;
 import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.obligation.event.EventPattern;
-import gov.nist.csd.pm.common.obligation.event.Performs;
+import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
-import gov.nist.csd.pm.pap.pml.value.ArrayValue;
-import gov.nist.csd.pm.pap.pml.value.RuleValue;
-import gov.nist.csd.pm.pap.pml.value.StringValue;
-import gov.nist.csd.pm.pap.pml.value.Value;
+import gov.nist.csd.pm.pap.pml.value.*;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 
@@ -25,17 +21,20 @@ import java.util.Objects;
 public class CreateRuleStatement extends PMLStatement {
 
     private Expression name;
-    private SubjectClause subjectClause;
-    private PerformsClause performsClause;
-    private OnClause onClause;
+    private Expression subjectExpr;
+    private Expression operationExpr;
+    private Expression operandsExpr;
     private ResponseBlock responseBlock;
 
-    public CreateRuleStatement(Expression name, SubjectClause subjectClause,
-                               PerformsClause performsClause, OnClause onClause, ResponseBlock responseBlock) {
+    public CreateRuleStatement(Expression name,
+                               Expression subjectExpr,
+                               Expression operationExpr,
+                               Expression operandsExpr,
+                               ResponseBlock responseBlock) {
         this.name = name;
-        this.subjectClause = subjectClause;
-        this.performsClause = performsClause;
-        this.onClause = onClause;
+        this.subjectExpr = subjectExpr;
+        this.operationExpr = operationExpr;
+        this.operandsExpr = operandsExpr;
         this.responseBlock = responseBlock;
     }
 
@@ -47,19 +46,19 @@ public class CreateRuleStatement extends PMLStatement {
         return name;
     }
 
-    public SubjectClause getSubjectClause() {
-        return subjectClause;
+    public Expression getSubjectExpr() {
+        return subjectExpr;
     }
 
-    public PerformsClause getPerformsClause() {
-        return performsClause;
+    public Expression getOperationExpr() {
+        return operationExpr;
     }
 
-    public OnClause getOnClause() {
-        return onClause;
+    public Expression getOperandsExpr() {
+        return operandsExpr;
     }
 
-    public ResponseBlock getResponse() {
+    public ResponseBlock getResponseBlock() {
         return responseBlock;
     }
 
@@ -67,92 +66,25 @@ public class CreateRuleStatement extends PMLStatement {
     public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
         StringValue nameValue = (StringValue) name.execute(ctx, policy);
 
-        Subject subject = executeEventSubject(ctx, policy);
-        Performs performs = executePerforms(ctx, policy);
-        Target target = executeTarget(ctx, policy);
+        Pattern subject = subjectExpr.execute(ctx, policy).getPatternValue();
+        Pattern operation = operationExpr.execute(ctx, policy).getPatternValue();
+        List<Value> operandPatternValues = operandsExpr.execute(ctx, policy).getArrayValue();
+        List<Pattern<Object>> operands = new ArrayList<>();
+        for (Value operand : operandPatternValues) {
+            operands.add(operand.getPatternValue());
+        }
 
         Rule rule = new Rule(
                 nameValue.getValue(),
                 new EventPattern(
                         subject,
-                        performs,
-                        target
+                        operation,
+                        operands
                 ),
                 new Response(responseBlock.evtVar, responseBlock.getStatements())
         );
 
         return new RuleValue(rule);
-    }
-
-    private Subject executeEventSubject(ExecutionContext ctx, Policy policy) throws PMException {
-        switch (subjectClause.type) {
-            case ANY_USER -> {
-                return new AnyUserSubject();
-            }
-            case USERS -> {
-                return new UsersSubject(getListFromExpression(ctx, policy, subjectClause.expr));
-            }
-            case USERS_IN_UNION -> {
-                return new UsersInUnionSubject(getListFromExpression(ctx, policy, subjectClause.expr));
-            }
-            case USERS_IN_INTERSECTION -> {
-                return new UsersInIntersectionSubject(getListFromExpression(ctx, policy, subjectClause.expr));
-            }
-            default  -> {
-                return new ProcessesSubject(getListFromExpression(ctx, policy, subjectClause.expr));
-            }
-        }
-    }
-
-    private List<String> getListFromExpression(ExecutionContext ctx, Policy policy, Expression expr) throws PMException {
-        List<Value> arrayValue = expr.execute(ctx, policy).getArrayValue();
-        List<String> s = new ArrayList<>();
-        for (Value tv : arrayValue) {
-            s.add(tv.getStringValue());
-        }
-
-        return s;
-    }
-
-    private Performs executePerforms(ExecutionContext ctx, Policy policy) throws PMException {
-        Value performsValue = performsClause.events.execute(ctx, policy);
-
-        List<String> events = new ArrayList<>();
-        List<Value> arrayValue = performsValue.to(ArrayValue.class).getValue();
-        for (Value value : arrayValue) {
-            events.add(value.to(StringValue.class).getValue());
-        }
-
-        return Performs.events(events.toArray(new String[]{}));
-    }
-
-    private Target executeTarget(ExecutionContext ctx, Policy policy) throws PMException {
-        if (onClause == null || onClause.targets == null) {
-            return new AnyTarget();
-        }
-
-        List<Value> targetValues = onClause.targets.execute(ctx, policy).getArrayValue();
-        List<String> targetStrs = new ArrayList<>();
-        for (Value v : targetValues) {
-            targetStrs.add(v.getStringValue());
-        }
-
-        switch (onClause.onClauseType) {
-            case ANY_TARGET -> {
-                return new AnyTarget();
-            }
-            case ANY_IN_UNION -> {
-                return new AnyInUnionTarget(targetStrs);
-            }
-            case ANY_IN_INTERSECTION -> {
-                return new AnyInIntersectionTarget(targetStrs);
-            }
-            case ON_TARGETS -> {
-                return new OnTargets(targetStrs);
-            }
-        }
-
-        return new AnyTarget();
     }
 
     @Override
@@ -164,14 +96,14 @@ public class CreateRuleStatement extends PMLStatement {
         return String.format(
                 """
                 %screate rule %s
-                %s%s
-                %s%s
+                %swhen %s
+                %sperforms %s
                 %s
                 %sdo (%s) %s""",
                 indent, name,
-                indent, subjectClause,
-                indent, performsClause,
-                onClause == null ? "" : indent + onClause,
+                indent, subjectExpr,
+                indent, operationExpr,
+                operandsExpr == null ? "" : indent + " on " + operandsExpr,
                 indent, responseBlock.evtVar, block.toFormattedString(indentLevel)
         );
     }
@@ -186,161 +118,14 @@ public class CreateRuleStatement extends PMLStatement {
         }
         CreateRuleStatement that = (CreateRuleStatement) o;
         return Objects.equals(name, that.name) && Objects.equals(
-                subjectClause, that.subjectClause) && Objects.equals(
-                performsClause, that.performsClause) && Objects.equals(
-                onClause, that.onClause) && Objects.equals(responseBlock, that.responseBlock);
+                subjectExpr, that.subjectExpr) && Objects.equals(
+                operationExpr, that.operationExpr) && Objects.equals(
+                operandsExpr, that.operandsExpr) && Objects.equals(responseBlock, that.responseBlock);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, subjectClause, performsClause, onClause, responseBlock);
-    }
-
-    public enum SubjectType implements Serializable {
-        ANY_USER,
-        USERS,
-        USERS_IN_UNION,
-        USERS_IN_INTERSECTION,
-        PROCESSES
-    }
-
-    public static class SubjectClause implements Serializable {
-        private SubjectType type;
-        private Expression expr;
-
-        public SubjectClause(SubjectType type, Expression expr) {
-            this.type = type;
-            this.expr = expr;
-        }
-
-        public SubjectType getType() {
-            return type;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            SubjectClause that = (SubjectClause) o;
-            return type == that.type && Objects.equals(expr, that.expr);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(type, expr);
-        }
-
-        @Override
-        public String toString() {
-            String s = "when ";
-            switch (type) {
-                case ANY_USER -> s += "any user";
-                case USERS -> s += "users " + expr;
-                case USERS_IN_INTERSECTION -> s += "users in intersection of " + expr;
-                case USERS_IN_UNION -> s += "users in union of " + expr;
-                case PROCESSES -> s += "processes " + expr;
-            }
-
-            return s;
-        }
-    }
-
-    public static class PerformsClause implements Serializable {
-        private final Expression events;
-
-        public PerformsClause(Expression events) {
-            this.events = events;
-        }
-
-        public Expression getEvents() {
-            return events;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            PerformsClause that = (PerformsClause) o;
-            return Objects.equals(events, that.events);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(events);
-        }
-
-        @Override
-        public String toString() {
-            return "performs " + events.toString();
-        }
-
-        public record Event(String eventName, String alias) {
-            @Override
-            public String toString() {
-                return String.format("%s%s", eventName, alias == null || alias.isEmpty() ? "" : "as " + alias);
-            }
-        }
-    }
-
-    public enum TargetType {
-        ANY_TARGET,
-        ANY_IN_UNION,
-        ANY_IN_INTERSECTION,
-        ON_TARGETS
-
-    }
-
-    public static class OnClause implements Serializable {
-
-        private final Expression targets;
-        private final TargetType onClauseType;
-
-        public OnClause(Expression targets, TargetType onClauseType) {
-            this.targets = targets;
-            this.onClauseType = onClauseType;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            OnClause onClause = (OnClause) o;
-            return Objects.equals(targets, onClause.targets) && onClauseType == onClause.onClauseType;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(targets, onClauseType);
-        }
-
-        @Override
-        public String toString() {
-            if (onClauseType == null) {
-                return "";
-            }
-
-            String s = "on ";
-            switch (onClauseType) {
-                case ON_TARGETS -> s += targets;
-                case ANY_TARGET -> s += "any";
-                case ANY_IN_UNION -> s += "union of " + targets;
-                case ANY_IN_INTERSECTION -> s += "intersection of " + targets;
-            }
-
-            return s;
-        }
+        return Objects.hash(name, subjectExpr, operationExpr, operandsExpr, responseBlock);
     }
 
     public static class ResponseBlock implements Serializable {

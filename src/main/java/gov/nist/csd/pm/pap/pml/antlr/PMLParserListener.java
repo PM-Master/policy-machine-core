@@ -1,4 +1,4 @@
-// Generated from PMLParser.g4 by ANTLR 4.8
+// Generated from PMLParser.g4 by ANTLR 4.13.1
 package gov.nist.csd.pm.pap.pml.antlr;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -168,113 +168,15 @@ public interface PMLParserListener extends ParseTreeListener {
 	 */
 	void exitCreateRuleStatement(PMLParser.CreateRuleStatementContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code AnyUserSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
+	 * Enter a parse tree produced by {@link PMLParser#pattern}.
 	 * @param ctx the parse tree
 	 */
-	void enterAnyUserSubject(PMLParser.AnyUserSubjectContext ctx);
+	void enterPattern(PMLParser.PatternContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code AnyUserSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
+	 * Exit a parse tree produced by {@link PMLParser#pattern}.
 	 * @param ctx the parse tree
 	 */
-	void exitAnyUserSubject(PMLParser.AnyUserSubjectContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code UsersSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
-	 * @param ctx the parse tree
-	 */
-	void enterUsersSubject(PMLParser.UsersSubjectContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code UsersSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
-	 * @param ctx the parse tree
-	 */
-	void exitUsersSubject(PMLParser.UsersSubjectContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code UsersInUnionSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
-	 * @param ctx the parse tree
-	 */
-	void enterUsersInUnionSubject(PMLParser.UsersInUnionSubjectContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code UsersInUnionSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
-	 * @param ctx the parse tree
-	 */
-	void exitUsersInUnionSubject(PMLParser.UsersInUnionSubjectContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code UsersInIntersectionSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
-	 * @param ctx the parse tree
-	 */
-	void enterUsersInIntersectionSubject(PMLParser.UsersInIntersectionSubjectContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code UsersInIntersectionSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
-	 * @param ctx the parse tree
-	 */
-	void exitUsersInIntersectionSubject(PMLParser.UsersInIntersectionSubjectContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code ProcessesSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
-	 * @param ctx the parse tree
-	 */
-	void enterProcessesSubject(PMLParser.ProcessesSubjectContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code ProcessesSubject}
-	 * labeled alternative in {@link PMLParser#subjectClause}.
-	 * @param ctx the parse tree
-	 */
-	void exitProcessesSubject(PMLParser.ProcessesSubjectContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code AnyTarget}
-	 * labeled alternative in {@link PMLParser#onClause}.
-	 * @param ctx the parse tree
-	 */
-	void enterAnyTarget(PMLParser.AnyTargetContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code AnyTarget}
-	 * labeled alternative in {@link PMLParser#onClause}.
-	 * @param ctx the parse tree
-	 */
-	void exitAnyTarget(PMLParser.AnyTargetContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code AnyInUnionTarget}
-	 * labeled alternative in {@link PMLParser#onClause}.
-	 * @param ctx the parse tree
-	 */
-	void enterAnyInUnionTarget(PMLParser.AnyInUnionTargetContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code AnyInUnionTarget}
-	 * labeled alternative in {@link PMLParser#onClause}.
-	 * @param ctx the parse tree
-	 */
-	void exitAnyInUnionTarget(PMLParser.AnyInUnionTargetContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code AnyInIntersectionTarget}
-	 * labeled alternative in {@link PMLParser#onClause}.
-	 * @param ctx the parse tree
-	 */
-	void enterAnyInIntersectionTarget(PMLParser.AnyInIntersectionTargetContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code AnyInIntersectionTarget}
-	 * labeled alternative in {@link PMLParser#onClause}.
-	 * @param ctx the parse tree
-	 */
-	void exitAnyInIntersectionTarget(PMLParser.AnyInIntersectionTargetContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code OnTargets}
-	 * labeled alternative in {@link PMLParser#onClause}.
-	 * @param ctx the parse tree
-	 */
-	void enterOnTargets(PMLParser.OnTargetsContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code OnTargets}
-	 * labeled alternative in {@link PMLParser#onClause}.
-	 * @param ctx the parse tree
-	 */
-	void exitOnTargets(PMLParser.OnTargetsContext ctx);
+	void exitPattern(PMLParser.PatternContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PMLParser#response}.
 	 * @param ctx the parse tree

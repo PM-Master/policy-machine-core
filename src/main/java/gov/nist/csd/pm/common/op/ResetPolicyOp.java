@@ -2,9 +2,10 @@ package gov.nist.csd.pm.common.op;
 
 import java.io.Serial;
 
-public class ResetPolicyOp implements Operation {
+public class ResetPolicyOp extends Operation {
 
-    public ResetPolicyOp() {
+    public ResetPolicyOp(Object[] operands) {
+        super(operands);
     }
 
     @Override

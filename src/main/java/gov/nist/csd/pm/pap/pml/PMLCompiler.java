@@ -21,7 +21,7 @@ public class PMLCompiler {
     public static CompiledPML compilePML(Policy policy, String input, FunctionDefinitionStatement... customBuiltinFunctions) throws PMException {
         ErrorLog errorLog = new ErrorLog();
 
-        GlobalScope<Variable, FunctionSignature> globalScope = GlobalScope.withVariablesAndSignatures(policy, customBuiltinFunctions);
+        GlobalScope<Variable, FunctionSignature> globalScope = GlobalScope.forCompile(policy, customBuiltinFunctions);
 
         PMLErrorHandler pmlErrorHandler = new PMLErrorHandler();
 

@@ -24,7 +24,7 @@ class LogicalExpressionTest {
                 true && false
                 """,
                 PMLParser.LogicalExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         Expression expression = LogicalExpression.compileLogicalExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -44,11 +44,11 @@ class LogicalExpressionTest {
                 PMLParser.LogicalExpressionContext.class);
         MemoryPolicyStore store = new MemoryPolicyStore();
 
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(store));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(store));
         Expression expression = LogicalExpression.compileLogicalExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
-        ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.withValuesAndDefinitions(store));
+        ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.forExecute(store));
         Value actual = expression.execute(executionContext, store);
         assertEquals(
                 new BoolValue(false),
@@ -60,12 +60,12 @@ class LogicalExpressionTest {
                 false || true
                 """,
                 PMLParser.LogicalExpressionContext.class);
-        visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(store));
+        visitorContext = new VisitorContext(GlobalScope.forCompile(store));
         expression = LogicalExpression.compileLogicalExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
         store = new MemoryPolicyStore();
-        executionContext = new ExecutionContext(new UserContext(""), GlobalScope.withValuesAndDefinitions(store));
+        executionContext = new ExecutionContext(new UserContext(""), GlobalScope.forExecute(store));
         actual = expression.execute(executionContext, store);
         assertEquals(
                 new BoolValue(true),

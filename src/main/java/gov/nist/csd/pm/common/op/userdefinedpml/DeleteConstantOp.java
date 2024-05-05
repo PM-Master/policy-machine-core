@@ -3,10 +3,11 @@ package gov.nist.csd.pm.common.op.userdefinedpml;
 import java.io.Serial;
 import java.util.Objects;
 
-public class DeleteConstantOp implements UserDefinedPMLOp {
+public class DeleteConstantOp extends UserDefinedPMLOp {
     private final String name;
 
     public DeleteConstantOp(String name) {
+        super(operands(name));
         this.name = name;
     }
 

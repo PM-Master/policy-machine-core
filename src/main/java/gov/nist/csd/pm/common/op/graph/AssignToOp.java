@@ -1,15 +1,19 @@
 package gov.nist.csd.pm.common.op.graph;
 
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.common.op.Operation;
+import gov.nist.csd.pm.pap.GraphReview;
 
 import java.io.Serial;
 import java.util.Objects;
 
-public class AssignToOp implements Operation {
+public class AssignToOp extends GraphOp {
     private final String child;
     private final String parent;
 
     public AssignToOp(String child, String parent) {
+        super(operands(child, parent));
         this.child = child;
         this.parent = parent;
     }

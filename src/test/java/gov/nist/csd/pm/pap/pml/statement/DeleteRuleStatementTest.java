@@ -5,9 +5,7 @@ import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.obligation.Response;
 import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.obligation.event.EventPattern;
-import gov.nist.csd.pm.common.obligation.event.Performs;
-import gov.nist.csd.pm.common.obligation.event.subject.AnyUserSubject;
+import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
@@ -30,13 +28,13 @@ class DeleteRuleStatementTest {
         store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
         store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
-        store.obligations().create(userContext, "obl1", new Rule(
+        /* TODO store.obligations().create(userContext, "obl1", new Rule(
                 "rule1",
                 new EventPattern(new AnyUserSubject(), new Performs("e1")),
                 new Response("e",List.of())
-        ));
+        ));*/
 
-        ExecutionContext execCtx = new ExecutionContext(userContext, GlobalScope.withValuesAndDefinitions(store));
+        ExecutionContext execCtx = new ExecutionContext(userContext, GlobalScope.forExecute(store));
         stmt.execute(execCtx, store);
 
         assertTrue(store.obligations().get("obl1").getRules().isEmpty());

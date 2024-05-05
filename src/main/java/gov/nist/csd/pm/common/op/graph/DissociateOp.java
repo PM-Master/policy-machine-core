@@ -5,11 +5,12 @@ import gov.nist.csd.pm.common.op.Operation;
 import java.io.Serial;
 import java.util.Objects;
 
-public class DissociateOp implements Operation {
+public class DissociateOp extends GraphOp {
     private final String ua;
     private final String target;
 
     public DissociateOp(String ua, String target) {
+        super(operands(ua, target));
         this.ua = ua;
         this.target = target;
     }

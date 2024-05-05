@@ -5,11 +5,12 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 import java.io.Serial;
 import java.util.Objects;
 
-public class CreateConstantOp implements UserDefinedPMLOp {
+public class CreateConstantOp extends UserDefinedPMLOp {
     private final String name;
     private final Value value;
 
     public CreateConstantOp(String name, Value value) {
+        super(operands(name, value));
         this.name = name;
         this.value = value;
     }

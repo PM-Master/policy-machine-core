@@ -25,7 +25,7 @@ class ReferenceByBracketIndexTest {
     @Test
     void testGetType() throws PMException {
         ReferenceByBracketIndex a = new ReferenceByBracketIndex(new ReferenceByID("a"), new StringLiteral("b"));
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         Type expected =  Type.array(Type.string());
         visitorContext.scope().addVariable("a", new Variable("a", Type.map(Type.string(), expected), false));
 
@@ -38,7 +38,7 @@ class ReferenceByBracketIndexTest {
     @Test
     void testExecute() throws PMException {
         ReferenceByBracketIndex a = new ReferenceByBracketIndex(new ReferenceByID("a"),  new StringLiteral("b"));
-        ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore()));
+        ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore()));
         ArrayValue expected = new ArrayValue(List.of(new StringValue("1"), new StringValue("2")), Type.string());
         MapValue mapValue = new MapValue(Map.of(new StringValue("b"), expected), Type.string(), Type.array(Type.string()));
         executionContext.scope().addVariable("a", mapValue);

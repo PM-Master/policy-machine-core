@@ -56,7 +56,7 @@ public class JSONDeserializer implements PolicyDeserializer {
         // this will allow all function signatures to be compiled before the function bodies in the case of functions
         // calling other functions
         StringBuilder pml = new StringBuilder();
-        VisitorContext visitorCtx = new VisitorContext(new Scope<>(GlobalScope.withVariablesAndSignatures(policy, customPMLFunctions)));
+        VisitorContext visitorCtx = new VisitorContext(new Scope<>(GlobalScope.forCompile(policy, customPMLFunctions)));
 
         Map<String, String> constants = userDefinedPML.getConstants();
         List<VariableDeclarationStatement.Declaration> constDecs = new ArrayList<>();

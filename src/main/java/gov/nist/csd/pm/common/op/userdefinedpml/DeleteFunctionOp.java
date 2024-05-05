@@ -3,10 +3,11 @@ package gov.nist.csd.pm.common.op.userdefinedpml;
 import java.io.Serial;
 import java.util.Objects;
 
-public class DeleteFunctionOp implements UserDefinedPMLOp {
+public class DeleteFunctionOp extends UserDefinedPMLOp {
     private final String functionName;
 
     public DeleteFunctionOp(String functionName) {
+        super(operands(functionName));
         this.functionName = functionName;
     }
 

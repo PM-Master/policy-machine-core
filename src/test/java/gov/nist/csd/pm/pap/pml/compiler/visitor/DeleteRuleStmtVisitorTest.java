@@ -22,7 +22,7 @@ class DeleteRuleStmtVisitorTest {
                 delete rule "rule1" from obligation "obl1"
                 """,
                 PMLParser.DeleteRuleStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new DeleteRuleStmtVisitor(visitorCtx).visitDeleteRuleStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -38,7 +38,7 @@ class DeleteRuleStmtVisitorTest {
                 delete rule ["rule1"] from obligation "obl1"
                 """,
                 PMLParser.DeleteRuleStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new DeleteRuleStmtVisitor(visitorCtx).visitDeleteRuleStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -51,7 +51,7 @@ class DeleteRuleStmtVisitorTest {
                 delete rule "rule1" from obligation ["obl1"]
                 """,
                 PMLParser.DeleteRuleStatementContext.class);
-        visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new DeleteRuleStmtVisitor(visitorCtx).visitDeleteRuleStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(

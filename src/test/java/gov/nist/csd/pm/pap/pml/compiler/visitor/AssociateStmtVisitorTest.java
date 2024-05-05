@@ -23,7 +23,7 @@ class AssociateStmtVisitorTest {
                 associate "a" and "b" with ["c", "d"]
                 """,
                 PMLParser.AssociateStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new AssociateStmtVisitor(visitorCtx).visitAssociateStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -39,7 +39,7 @@ class AssociateStmtVisitorTest {
                 associate ["a"] and "b" with ["c", "d"]
                 """,
                 PMLParser.AssociateStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new AssociateStmtVisitor(visitorCtx).visitAssociateStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -52,7 +52,7 @@ class AssociateStmtVisitorTest {
                 associate "a" and ["b"] with ["c", "d"]
                 """,
                 PMLParser.AssociateStatementContext.class);
-        visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new AssociateStmtVisitor(visitorCtx).visitAssociateStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -65,7 +65,7 @@ class AssociateStmtVisitorTest {
                 associate "a" and "b" with "c"
                 """,
                 PMLParser.AssociateStatementContext.class);
-        visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new AssociateStmtVisitor(visitorCtx).visitAssociateStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(

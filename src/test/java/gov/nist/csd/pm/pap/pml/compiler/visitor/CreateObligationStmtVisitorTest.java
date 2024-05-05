@@ -24,7 +24,7 @@ class CreateObligationStmtVisitorTest {
                 create obligation "test" {}
                 """,
                 PMLParser.CreateObligationStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         PMLStatement stmt = new CreateObligationStmtVisitor(visitorCtx).visitCreateObligationStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -40,7 +40,7 @@ class CreateObligationStmtVisitorTest {
                 create obligation ["test"] {}
                 """,
                 PMLParser.CreateObligationStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.withVariablesAndSignatures(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
         new CreateObligationStmtVisitor(visitorCtx).visitCreateObligationStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(

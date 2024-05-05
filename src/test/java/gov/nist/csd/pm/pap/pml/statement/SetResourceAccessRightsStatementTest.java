@@ -21,7 +21,7 @@ class SetResourceAccessRightsStatementTest {
 
         MemoryPolicyStore store = new MemoryPolicyStore();
 
-        stmt.execute(new ExecutionContext(new UserContext(""), GlobalScope.withValuesAndDefinitions(new MemoryPolicyStore())), store);
+        stmt.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), store);
 
         assertEquals(
                 new AccessRightSet("a", "b", "c", "d"),
