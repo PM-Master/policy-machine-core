@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.audit;
 
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 
 import java.util.*;

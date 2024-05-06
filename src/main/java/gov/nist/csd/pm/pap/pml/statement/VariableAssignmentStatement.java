@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
@@ -53,13 +53,13 @@ public class VariableAssignmentStatement extends PMLStatement{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-        Value value = expression.execute(ctx, policy);
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+        Value value = expression.execute(ctx, policyModification);
 
         // if statement uses '+=' add the existing value to the new value
         if (isPlus) {
             String strValue = ctx.scope().getVariable(id).getStringValue();
-            String exprValue = expression.execute(ctx, policy).getStringValue();
+            String exprValue = expression.execute(ctx, policyModification).getStringValue();
 
             value = new StringValue(strValue + exprValue);
         }

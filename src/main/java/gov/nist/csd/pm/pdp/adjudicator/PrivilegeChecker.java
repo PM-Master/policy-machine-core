@@ -4,14 +4,13 @@ import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.exception.UnauthorizedException;
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pdp.UserContext;
-import gov.nist.csd.pm.common.graph.nodes.Node;
-import gov.nist.csd.pm.pap.PolicyReview;
+import gov.nist.csd.pm.common.graph.node.Node;
 
 import java.util.Arrays;
 
-import static gov.nist.csd.pm.common.graph.nodes.NodeType.PC;
+import static gov.nist.csd.pm.common.graph.node.NodeType.PC;
 
 public class PrivilegeChecker {
 

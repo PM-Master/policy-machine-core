@@ -1,8 +1,7 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.common.op.pattern.Pattern;
-import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.op.pattern.Pattern;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.obligation.Response;
 import gov.nist.csd.pm.common.obligation.Rule;
@@ -63,12 +62,12 @@ public class CreateRuleStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-        StringValue nameValue = (StringValue) name.execute(ctx, policy);
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+        StringValue nameValue = (StringValue) name.execute(ctx, policyModification);
 
-        Pattern subject = subjectExpr.execute(ctx, policy).getPatternValue();
-        Pattern operation = operationExpr.execute(ctx, policy).getPatternValue();
-        List<Value> operandPatternValues = operandsExpr.execute(ctx, policy).getArrayValue();
+        Pattern subject = subjectExpr.execute(ctx, policyModification).getPatternValue();
+        Pattern operation = operationExpr.execute(ctx, policyModification).getPatternValue();
+        List<Value> operandPatternValues = operandsExpr.execute(ctx, policyModification).getArrayValue();
         List<Pattern<Object>> operands = new ArrayList<>();
         for (Value operand : operandPatternValues) {
             operands.add(operand.getPatternValue());

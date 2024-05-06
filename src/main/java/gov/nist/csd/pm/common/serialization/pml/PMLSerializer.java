@@ -4,9 +4,9 @@ import gov.nist.csd.pm.common.serialization.json.*;
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.graph.nodes.NodeType;
+import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
@@ -20,14 +20,14 @@ import gov.nist.csd.pm.common.serialization.PolicySerializer;
 
 import java.util.*;
 
-import static gov.nist.csd.pm.common.graph.nodes.NodeType.*;
+import static gov.nist.csd.pm.common.graph.node.NodeType.*;
 
 public class PMLSerializer implements PolicySerializer {
 
     @Override
-    public String serialize(Policy policy) throws PMException {
+    public String serialize(PolicyModification policyModification) throws PMException {
         JSONSerializer json = new JSONSerializer();
-        JSONPolicy jsonPolicy = json.buildJSONPolicy(policy);
+        JSONPolicy jsonPolicy = json.buildJSONPolicy(policyModification);
 
         return serialize(jsonPolicy);
     }

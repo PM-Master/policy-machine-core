@@ -1,10 +1,7 @@
 package gov.nist.csd.pm.epp;
 
-import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.GraphReview;
 import gov.nist.csd.pm.pdp.UserContext;
-import gov.nist.csd.pm.common.obligation.EventPattern;
-import gov.nist.csd.pm.common.op.Operation;
+import gov.nist.csd.pm.pap.op.Operation;
 
 import java.util.Objects;
 

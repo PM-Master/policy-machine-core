@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
@@ -31,7 +31,7 @@ class FunctionInvokeStmtVisitorTest {
                 PMLParser.FunctionInvokeStatementContext.class);
 
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyStore())
+                GlobalScope.forCompile(new MemoryPolicyModifier())
                            .withPersistedFunctions(
                                    Map.of(
                                            "func1",
@@ -70,7 +70,7 @@ class FunctionInvokeStmtVisitorTest {
                 func1("a", "b", ["c", "d"])
                 """,
                 PMLParser.FunctionInvokeStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         new FunctionInvokeStmtVisitor(visitorCtx)
                 .visitFunctionInvokeStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
@@ -88,7 +88,7 @@ class FunctionInvokeStmtVisitorTest {
                 """,
                 PMLParser.FunctionInvokeStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyStore())
+                GlobalScope.forCompile(new MemoryPolicyModifier())
                            .withPersistedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(
@@ -121,7 +121,7 @@ class FunctionInvokeStmtVisitorTest {
                 """,
                 PMLParser.FunctionInvokeStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyStore())
+                GlobalScope.forCompile(new MemoryPolicyModifier())
                            .withPersistedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(
@@ -153,7 +153,7 @@ class FunctionInvokeStmtVisitorTest {
                 """,
                 PMLParser.FunctionInvokeStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyStore())
+                GlobalScope.forCompile(new MemoryPolicyModifier())
                            .withPersistedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(

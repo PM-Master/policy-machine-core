@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.impl.memory.pap.unmodifiable;
 
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 
 import java.util.*;
 import java.util.function.Consumer;

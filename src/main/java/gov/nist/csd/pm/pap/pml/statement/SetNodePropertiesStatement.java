@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -31,15 +31,15 @@ public class SetNodePropertiesStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-        String name = nameExpr.execute(ctx, policy).getStringValue();
-        Map<Value, Value> map = propertiesExpr.execute(ctx, policy).getMapValue();
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+        String name = nameExpr.execute(ctx, policyModification).getStringValue();
+        Map<Value, Value> map = propertiesExpr.execute(ctx, policyModification).getMapValue();
         Map<String, String> properties = new HashMap<>();
         for (Value key : map.keySet()) {
             properties.put(key.getStringValue(), map.get(key).getStringValue());
         }
 
-        policy.graph().setNodeProperties(name, properties);
+        policyModification.graph().setNodeProperties(name, properties);
 
         return new VoidValue();
     }

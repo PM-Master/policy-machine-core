@@ -1,41 +1,41 @@
 package gov.nist.csd.pm.pdp;
 
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.PolicyReview;
+import gov.nist.csd.pm.pap.query.PolicyQuery;
 import gov.nist.csd.pm.pdp.adjudicator.*;
 
-public class PDPReviewer implements PolicyReview {
+public class PDPReviewer implements PolicyQuery {
 
-    private final PDPAccessReview accessReviewer;
-    private final PDPGraphReview graphReviewer;
-    private final PDPProhibitionsReview prohibitionsReviewer;
-    private final PDPObligationsReview obligationsReviewer;
+    private final PDPAccessQuery accessReviewer;
+    private final PDPGraphQuery graphReviewer;
+    private final PDPProhibitionsQuery prohibitionsReviewer;
+    private final PDPObligationsQuery obligationsReviewer;
 
     public PDPReviewer(UserContext userCtx, PAP pap, PrivilegeChecker privilegeChecker) {
-        PolicyReview review = pap.review();
-        this.accessReviewer = new PDPAccessReview(new AdjudicatorAccessReview(userCtx, privilegeChecker), review.access());
-        this.graphReviewer = new PDPGraphReview(new AdjudicatorGraphReview(userCtx, privilegeChecker), review.graph());
-        this.prohibitionsReviewer = new PDPProhibitionsReview(new AdjudicatorProhibitionsReview(userCtx, privilegeChecker), review.prohibitions());
-        this.obligationsReviewer = new PDPObligationsReview(new AdjudicatorObligationsReview(userCtx, privilegeChecker), review.obligations());
+        PolicyQuery review = pap.review();
+        this.accessReviewer = new PDPAccessQuery(new AdjudicatorAccessQuery(userCtx, privilegeChecker), review.access());
+        this.graphReviewer = new PDPGraphQuery(new AdjudicatorGraphQuery(userCtx, privilegeChecker), review.graph());
+        this.prohibitionsReviewer = new PDPProhibitionsQuery(new AdjudicatorProhibitionsQuery(userCtx, privilegeChecker), review.prohibitions());
+        this.obligationsReviewer = new PDPObligationsQuery(new AdjudicatorObligationsQuery(userCtx, privilegeChecker), review.obligations());
     }
 
     @Override
-    public PDPAccessReview access() {
+    public PDPAccessQuery access() {
         return accessReviewer;
     }
 
     @Override
-    public PDPGraphReview graph() {
+    public PDPGraphQuery graph() {
         return graphReviewer;
     }
 
     @Override
-    public PDPProhibitionsReview prohibitions() {
+    public PDPProhibitionsQuery prohibitions() {
         return prohibitionsReviewer;
     }
 
     @Override
-    public PDPObligationsReview obligations() {
+    public PDPObligationsQuery obligations() {
         return obligationsReviewer;
     }
 }

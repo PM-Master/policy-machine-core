@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
@@ -42,8 +42,8 @@ public class ShortDeclarationStatement extends PMLStatement{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-        ctx.scope().addVariable(id, expression.execute(ctx, policy));
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+        ctx.scope().addVariable(id, expression.execute(ctx, policyModification));
 
         return new VoidValue();
     }

@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
@@ -24,7 +24,7 @@ class LogicalExpressionTest {
                 true && false
                 """,
                 PMLParser.LogicalExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Expression expression = LogicalExpression.compileLogicalExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -42,7 +42,7 @@ class LogicalExpressionTest {
                 true && false
                 """,
                 PMLParser.LogicalExpressionContext.class);
-        MemoryPolicyStore store = new MemoryPolicyStore();
+        MemoryPolicyModifier store = new MemoryPolicyModifier();
 
         VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(store));
         Expression expression = LogicalExpression.compileLogicalExpression(visitorContext, ctx);
@@ -64,7 +64,7 @@ class LogicalExpressionTest {
         expression = LogicalExpression.compileLogicalExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
-        store = new MemoryPolicyStore();
+        store = new MemoryPolicyModifier();
         executionContext = new ExecutionContext(new UserContext(""), GlobalScope.forExecute(store));
         actual = expression.execute(executionContext, store);
         assertEquals(

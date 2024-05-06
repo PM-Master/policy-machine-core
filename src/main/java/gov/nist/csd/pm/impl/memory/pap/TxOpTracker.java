@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
-import gov.nist.csd.pm.common.op.Operation;
+import gov.nist.csd.pm.pap.op.Operation;
 
 import java.util.ArrayList;
 import java.util.Collections;

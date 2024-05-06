@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.common.graph.dag;
 
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 
 import java.util.Map;
 import java.util.Set;

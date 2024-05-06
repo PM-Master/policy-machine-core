@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
@@ -20,13 +20,13 @@ class AssignStatementTest {
     void testSuccess() throws PMException {
         AssignStatement stmt = new AssignStatement(new StringLiteral("u1"), buildArrayLiteral("ua2", "ua3"));
 
-        MemoryPolicyStore store = new MemoryPolicyStore();
+        MemoryPolicyModifier store = new MemoryPolicyModifier();
         store.graph().createPolicyClass("pc1", new HashMap<>());
         store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
         store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
         store.graph().createUserAttribute("ua3", new HashMap<>(), List.of("pc1"));
         store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(new MemoryPolicyStore()));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(new MemoryPolicyModifier()));
         stmt.execute(execCtx, store);
 
         assertTrue(store.graph().getParents("u1").containsAll(List.of("ua1", "ua2", "ua3")));

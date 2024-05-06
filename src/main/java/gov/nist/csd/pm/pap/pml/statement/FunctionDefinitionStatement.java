@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
@@ -96,9 +96,9 @@ public class FunctionDefinitionStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMLExecutionException {
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMLExecutionException {
         try {
-            policy.userDefinedPML().createFunction(this);
+            policyModification.pml().createFunction(this);
         } catch (PMException e) {
             throw new PMLExecutionException(e);
         }

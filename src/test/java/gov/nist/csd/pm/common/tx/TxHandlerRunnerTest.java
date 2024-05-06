@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.common.tx;
 
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.pap.exception.NodeNameExistsException;
 import gov.nist.csd.pm.common.exception.PMException;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ class TxHandlerRunnerTest {
 
     @Test
     void testRunTx() throws PMException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
 

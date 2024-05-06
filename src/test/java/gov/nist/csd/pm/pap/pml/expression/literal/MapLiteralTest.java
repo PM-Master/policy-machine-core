@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression.literal;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
@@ -28,7 +28,7 @@ class MapLiteralTest {
                 """,
                 PMLParser.LiteralExpressionContext.class);
 
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Expression expression = Literal.compileLiteral(visitorContext, ctx);
         assertTrue(expression instanceof MapLiteral);
 

@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.common.serialization.json;
 
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 
 import java.util.ArrayList;
 import java.util.List;

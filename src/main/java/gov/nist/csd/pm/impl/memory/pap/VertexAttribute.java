@@ -2,10 +2,10 @@ package gov.nist.csd.pm.impl.memory.pap;
 
 import gov.nist.csd.pm.impl.memory.pap.unmodifiable.UnmodifiableAssociation;
 import gov.nist.csd.pm.impl.memory.pap.unmodifiable.UnmodifiableNode;
-import gov.nist.csd.pm.pdp.AccessRightSet;
-import gov.nist.csd.pm.common.graph.nodes.Node;
-import gov.nist.csd.pm.common.graph.nodes.NodeType;
-import gov.nist.csd.pm.common.graph.relationships.Association;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
+import gov.nist.csd.pm.common.graph.node.Node;
+import gov.nist.csd.pm.common.graph.node.NodeType;
+import gov.nist.csd.pm.common.graph.relationship.Association;
 
 import java.util.ArrayList;
 import java.util.Collections;

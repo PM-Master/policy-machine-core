@@ -1,23 +1,16 @@
 package gov.nist.csd.pm.pap.op;
 
-import gov.nist.csd.pm.common.obligation.EventPattern;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.serialization.pml.PMLSerializer;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.op.graph.CreatePolicyClassOp;
-import gov.nist.csd.pm.common.op.obligation.CreateObligationOp;
-import gov.nist.csd.pm.common.op.prohibition.CreateProhibitionOp;
-import gov.nist.csd.pm.common.op.userdefinedpml.CreateFunctionOp;
-import gov.nist.csd.pm.pdp.AccessRightSet;
-import gov.nist.csd.pm.pdp.UserContext;
-import gov.nist.csd.pm.common.obligation.Response;
-import gov.nist.csd.pm.common.obligation.Rule;
+import gov.nist.csd.pm.pap.op.graph.CreatePolicyClassOp;
+import gov.nist.csd.pm.pap.op.prohibition.CreateProhibitionOp;
+import gov.nist.csd.pm.pap.op.userdefinedpml.CreateFunctionOp;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
-import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
-import gov.nist.csd.pm.pap.pml.statement.CreatePolicyStatement;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
 import org.apache.commons.lang3.SerializationUtils;
@@ -77,7 +70,7 @@ public class SerializationTest {
 
     @Test
     void testFuncExecDoestNotSerialize() throws PMException {
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         CreateFunctionOp createFunctionOp = new CreateFunctionOp(new FunctionDefinitionStatement.Builder("test_func")
                                                                                   .returns(Type.string())
                                                                                   .args(
@@ -86,7 +79,7 @@ public class SerializationTest {
                                                                                   .executor((ctx, policy) -> new StringValue("hello world"))
                                                                                   .build());
 
-        memoryPolicyStore.userDefinedPML().createFunction(createFunctionOp.functionDefinitionStatement());
+        memoryPolicyStore.pml().createFunction(createFunctionOp.functionDefinitionStatement());
 
         assertThrows(RuntimeException.class, () -> memoryPolicyStore.serialize(new PMLSerializer()));
     }

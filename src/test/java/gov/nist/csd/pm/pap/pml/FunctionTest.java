@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml;
 
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ public class FunctionTest {
                 """;
 
         PMLCompilationException e = assertThrows(PMLCompilationException.class, () -> {
-            MemoryPolicyStore ps = new MemoryPolicyStore();
+            MemoryPolicyModifier ps = new MemoryPolicyModifier();
             MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
             PAP pap = new PAP(ps, pr);
             PMLExecutor.compileAndExecutePML(pap.policy(), new UserContext("u1"), pml);
@@ -47,7 +47,7 @@ public class FunctionTest {
                 """;
 
         assertDoesNotThrow(() -> {
-            MemoryPolicyStore ps = new MemoryPolicyStore();
+            MemoryPolicyModifier ps = new MemoryPolicyModifier();
             MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
             PAP pap = new PAP(ps, pr);
             PMLExecutor.compileAndExecutePML(pap.policy(), new UserContext("u1"), pml2);
@@ -67,7 +67,7 @@ public class FunctionTest {
                 """;
 
         assertDoesNotThrow(() -> {
-            MemoryPolicyStore ps = new MemoryPolicyStore();
+            MemoryPolicyModifier ps = new MemoryPolicyModifier();
             MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
             PAP pap = new PAP(ps, pr);
             PMLExecutor.compileAndExecutePML(pap.policy(), new UserContext("u1"), pml2);

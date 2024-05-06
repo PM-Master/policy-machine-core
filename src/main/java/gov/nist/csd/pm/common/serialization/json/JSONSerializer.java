@@ -2,11 +2,11 @@ package gov.nist.csd.pm.common.serialization.json;
 
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.graph.nodes.Node;
-import gov.nist.csd.pm.common.graph.nodes.NodeType;
-import gov.nist.csd.pm.common.graph.relationships.Association;
+import gov.nist.csd.pm.common.graph.node.Node;
+import gov.nist.csd.pm.common.graph.node.NodeType;
+import gov.nist.csd.pm.common.graph.relationship.Association;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
@@ -15,51 +15,51 @@ import gov.nist.csd.pm.common.serialization.PolicySerializer;
 
 import java.util.*;
 
-import static gov.nist.csd.pm.common.graph.nodes.NodeType.*;
-import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.common.graph.node.NodeType.*;
+import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
 
 public class JSONSerializer implements PolicySerializer {
 
     private Map<Association, List<String>> delayedAssociations;
     private Set<String> createdPCs;
     private Set<String> createdAttrs;
-    private Policy policy;
+    private PolicyModification policyModification;
 
     public JSONSerializer() {}
 
     @Override
-    public String serialize(Policy policy) throws PMException {
-        return buildJSONPolicy(policy)
+    public String serialize(PolicyModification policyModification) throws PMException {
+        return buildJSONPolicy(policyModification)
                 .toString();
     }
 
-    public JSONPolicy buildJSONPolicy(Policy policy) throws PMException {
-        resetBuild(policy);
+    public JSONPolicy buildJSONPolicy(PolicyModification policyModification) throws PMException {
+        resetBuild(policyModification);
 
         return new JSONPolicy(
-                buildGraphJSON(policy),
-                buildProhibitionsJSON(policy),
-                buildObligationsJSON(policy),
-                buildUserDefinedPML(policy)
+                buildGraphJSON(policyModification),
+                buildProhibitionsJSON(policyModification),
+                buildObligationsJSON(policyModification),
+                buildUserDefinedPML(policyModification)
         );
     }
 
-    private void resetBuild(Policy policy) throws PMException {
+    private void resetBuild(PolicyModification policyModification) throws PMException {
         this.delayedAssociations = new HashMap<>();
         this.createdPCs = new HashSet<>();
         this.createdAttrs = new HashSet<>();
-        this.policy = policy;
+        this.policyModification = policyModification;
     }
 
 
-    private JSONUserDefinedPML buildUserDefinedPML(Policy policy) throws PMException {
-        Map<String, FunctionDefinitionStatement> functions = policy.userDefinedPML().getFunctions();
+    private JSONUserDefinedPML buildUserDefinedPML(PolicyModification policyModification) throws PMException {
+        Map<String, FunctionDefinitionStatement> functions = policyModification.pml().getFunctions();
         Map<String, String> jsonFunctions = new HashMap<>();
         for (Map.Entry<String, FunctionDefinitionStatement> e : functions.entrySet()) {
             jsonFunctions.put(e.getKey(), e.getValue().toString());
         }
 
-        Map<String, Value> constants = policy.userDefinedPML().getConstants();
+        Map<String, Value> constants = policyModification.pml().getConstants();
         Map<String, String> jsonConstants = new HashMap<>();
         for (Map.Entry<String, Value> e : constants.entrySet()) {
             if (AdminPolicy.isAdminPolicyNodeConstantName(e.getKey())) {
@@ -72,9 +72,9 @@ public class JSONSerializer implements PolicySerializer {
         return new JSONUserDefinedPML(jsonFunctions, jsonConstants);
     }
 
-    private List<String> buildObligationsJSON(Policy policy) throws PMException {
+    private List<String> buildObligationsJSON(PolicyModification policyModification) throws PMException {
         List<String> jsonObligations = new ArrayList<>();
-        List<Obligation> all = policy.obligations().getAll();
+        List<Obligation> all = policyModification.obligations().getAll();
         for (Obligation obligation : all) {
             jsonObligations.add(obligation.toString());
         }
@@ -82,9 +82,9 @@ public class JSONSerializer implements PolicySerializer {
         return jsonObligations;
     }
 
-    private List<Prohibition> buildProhibitionsJSON(Policy policy) throws PMException {
+    private List<Prohibition> buildProhibitionsJSON(PolicyModification policyModification) throws PMException {
         List<Prohibition> prohibitions = new ArrayList<>();
-        Map<String, List<Prohibition>> all = policy.prohibitions().getAll();
+        Map<String, List<Prohibition>> all = policyModification.prohibitions().getAll();
         for (List<Prohibition> value : all.values()) {
             prohibitions.addAll(value);
         }
@@ -92,30 +92,30 @@ public class JSONSerializer implements PolicySerializer {
         return prohibitions;
     }
 
-    private JSONGraph buildGraphJSON(Policy policy) throws PMException {
+    private JSONGraph buildGraphJSON(PolicyModification policyModification) throws PMException {
         return new JSONGraph(
-                policy.graph().getResourceAccessRights(),
-                buildPolicyClasses(policy),
-                buildUsersOrObjects(policy, U),
-                buildUsersOrObjects(policy, O)
+                policyModification.graph().getResourceAccessRights(),
+                buildPolicyClasses(policyModification),
+                buildUsersOrObjects(policyModification, U),
+                buildUsersOrObjects(policyModification, O)
         );
     }
 
-    private List<JSONUserOrObject> buildUsersOrObjects(Policy policy, NodeType type)
+    private List<JSONUserOrObject> buildUsersOrObjects(PolicyModification policyModification, NodeType type)
             throws PMException {
         List<JSONUserOrObject> userOrObjects = new ArrayList<>();
 
-        List<String> search = policy.graph().search(type, NO_PROPERTIES);
+        List<String> search = policyModification.graph().search(type, NO_PROPERTIES);
         for (String userOrObject : search) {
             JSONUserOrObject jsonUserOrObject = new JSONUserOrObject();
             jsonUserOrObject.setName(userOrObject);
 
-            Node node = policy.graph().getNode(userOrObject);
+            Node node = policyModification.graph().getNode(userOrObject);
             if (!node.getProperties().isEmpty()) {
                 jsonUserOrObject.setProperties(node.getProperties());
             }
 
-            jsonUserOrObject.setParents(policy.graph().getParents(userOrObject));
+            jsonUserOrObject.setParents(policyModification.graph().getParents(userOrObject));
 
             userOrObjects.add(jsonUserOrObject);
         }
@@ -123,10 +123,10 @@ public class JSONSerializer implements PolicySerializer {
         return userOrObjects;
     }
 
-    private List<JSONPolicyClass> buildPolicyClasses(Policy policy) throws PMException {
+    private List<JSONPolicyClass> buildPolicyClasses(PolicyModification policyModification) throws PMException {
         List<JSONPolicyClass> policyClassesList = new ArrayList<>();
 
-        List<String> policyClasses = policy.graph().getPolicyClasses();
+        List<String> policyClasses = policyModification.graph().getPolicyClasses();
         for (String pc : policyClasses) {
             JSONPolicyClass jsonPolicyClass = buildJSONPolicyCLass(pc);
 
@@ -187,7 +187,7 @@ public class JSONSerializer implements PolicySerializer {
             }
         }
 
-        Node node = policy.graph().getNode(pc);
+        Node node = policyModification.graph().getNode(pc);
         boolean isAdminNode = AdminPolicy.isAdminPolicyNodeName(pc);
 
         JSONPolicyClass jsonPolicyClass = new JSONPolicyClass();
@@ -210,14 +210,14 @@ public class JSONSerializer implements PolicySerializer {
 
     private List<JSONNode> getAttributes(String start, NodeType type, List<Association> associations) throws PMException {
         List<JSONNode> jsonNodes = new ArrayList<>();
-        List<String> children = policy.graph().getChildren(start);
+        List<String> children = policyModification.graph().getChildren(start);
         for(String child : children) {
-            Node node = policy.graph().getNode(child);
+            Node node = policyModification.graph().getNode(child);
             if (node.getType() != type) {
                 continue;
             }
 
-            List<Association> nodeAssociations = policy.graph().getAssociationsWithTarget(node.getName());
+            List<Association> nodeAssociations = policyModification.graph().getAssociationsWithTarget(node.getName());
             for (Association association : nodeAssociations) {
                 List<String> waitingFor = new ArrayList<>(List.of(association.getSource()));
                 if (!AdminPolicy.isAdminPolicyNodeName(association.getTarget())) {

@@ -1,10 +1,10 @@
 package gov.nist.csd.pm.pap.serialization.pml;
 
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.util.PolicyEquals;
@@ -56,7 +56,7 @@ class PMLSerializerTest {
 
     @Test
     void testSerialization() throws PMException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         UserContext userContext = new UserContext("u1");
@@ -67,7 +67,7 @@ class PMLSerializerTest {
 
         String expected = input + " create object attribute \"test-oa\" assign to [\"pc1\"]\n" + "assign \"pc1:target\" to [\"test-oa\"]";
 
-        MemoryPolicyStore testps = new MemoryPolicyStore();
+        MemoryPolicyModifier testps = new MemoryPolicyModifier();
         MemoryPolicyReviewer testpr = new MemoryPolicyReviewer(ps);
         PAP testPAP = new PAP(testps, testpr);
         testPAP.policy().deserialize(userContext, expected, new PMLDeserializer());

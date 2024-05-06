@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.function.builtin;
 
-import gov.nist.csd.pm.common.graph.relationships.Association;
+import gov.nist.csd.pm.common.graph.relationship.Association;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;

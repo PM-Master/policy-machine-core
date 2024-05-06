@@ -1,27 +1,5 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
-import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.pml.CompiledPML;
-import gov.nist.csd.pm.pap.pml.PMLCompiler;
-import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
-import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
-import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
-import gov.nist.csd.pm.pap.pml.expression.reference.ReferenceByID;
-import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
-import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
-import gov.nist.csd.pm.pap.pml.context.VisitorContext;
-import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
-import gov.nist.csd.pm.pap.pml.statement.CreateObligationStatement;
-import gov.nist.csd.pm.pap.pml.statement.CreatePolicyStatement;
-import gov.nist.csd.pm.pap.pml.statement.CreateRuleStatement;
-import gov.nist.csd.pm.pap.pml.type.Type;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static gov.nist.csd.pm.pap.pml.PMLUtil.buildArrayLiteral;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

@@ -1,13 +1,12 @@
 package gov.nist.csd.pm.common.obligation;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.op.Operation;
-import gov.nist.csd.pm.common.op.pattern.Pattern;
+import gov.nist.csd.pm.pap.op.Operation;
+import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pdp.UserContext;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 

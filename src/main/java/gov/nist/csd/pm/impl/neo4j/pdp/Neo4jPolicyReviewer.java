@@ -1,28 +1,28 @@
 package gov.nist.csd.pm.impl.neo4j.pdp;
 
-import gov.nist.csd.pm.pap.*;
+import gov.nist.csd.pm.pap.query.*;
 
-public class Neo4jPolicyReviewer implements PolicyReview {
+public class Neo4jPolicyReviewer implements PolicyQuery {
 
 
 
     @Override
-    public AccessReview access() {
+    public AccessQuery access() {
         return null;
     }
 
     @Override
-    public GraphReview graph() {
+    public GraphQuery graph() {
         return null;
     }
 
     @Override
-    public ProhibitionsReview prohibitions() {
+    public ProhibitionsQuery prohibitions() {
         return null;
     }
 
     @Override
-    public ObligationsReview obligations() {
+    public ObligationsQuery obligations() {
         return null;
     }
 }

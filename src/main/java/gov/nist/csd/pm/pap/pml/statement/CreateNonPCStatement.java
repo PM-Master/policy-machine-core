@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.graph.nodes.NodeType;
+import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
@@ -53,9 +53,9 @@ public class CreateNonPCStatement extends PMLStatement{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-        Value nameValue = name.execute(ctx, policy);
-        Value assignToValue = assignTo.execute(ctx, policy);
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+        Value nameValue = name.execute(ctx, policyModification);
+        Value assignToValue = assignTo.execute(ctx, policyModification);
 
         List<String> parents = new ArrayList<>();
 
@@ -65,22 +65,22 @@ public class CreateNonPCStatement extends PMLStatement{
         }
 
         switch (type) {
-            case UA -> policy.graph().createUserAttribute(
+            case UA -> policyModification.graph().createUserAttribute(
                     nameValue.getStringValue(),
                     new HashMap<>(),
                     parents
             );
-            case OA -> policy.graph().createObjectAttribute(
+            case OA -> policyModification.graph().createObjectAttribute(
                     nameValue.getStringValue(),
                     new HashMap<>(),
                     parents
             );
-            case U -> policy.graph().createUser(
+            case U -> policyModification.graph().createUser(
                     nameValue.getStringValue(),
                     new HashMap<>(),
                     parents
             );
-            case O -> policy.graph().createObject(
+            case O -> policyModification.graph().createObject(
                     nameValue.getStringValue(),
                     new HashMap<>(),
                     parents
@@ -88,14 +88,14 @@ public class CreateNonPCStatement extends PMLStatement{
         }
 
         if (withProperties != null) {
-            Value propertiesValue = withProperties.execute(ctx, policy);
+            Value propertiesValue = withProperties.execute(ctx, policyModification);
 
             Map<String, String> properties = new HashMap<>();
             for (Map.Entry<Value, Value> e : propertiesValue.getMapValue().entrySet()) {
                 properties.put(e.getKey().getStringValue(), e.getValue().getStringValue());
             }
 
-            policy.graph().setNodeProperties(nameValue.getStringValue(), properties);
+            policyModification.graph().setNodeProperties(nameValue.getStringValue(), properties);
         }
 
         return new VoidValue();

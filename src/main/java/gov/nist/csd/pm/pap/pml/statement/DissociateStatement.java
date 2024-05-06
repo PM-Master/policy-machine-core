@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -30,12 +30,12 @@ public class DissociateStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-        String ua = uaExpr.execute(ctx, policy).getStringValue();
-        List<Value> targets = targetExpr.execute(ctx, policy).getArrayValue();
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+        String ua = uaExpr.execute(ctx, policyModification).getStringValue();
+        List<Value> targets = targetExpr.execute(ctx, policyModification).getArrayValue();
 
         for (Value target : targets) {
-            policy.graph().dissociate(ua, target.getStringValue());
+            policyModification.graph().dissociate(ua, target.getStringValue());
         }
 
         return new VoidValue();

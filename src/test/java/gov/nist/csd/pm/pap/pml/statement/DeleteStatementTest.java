@@ -1,14 +1,11 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.exception.PMLConstantNotDefinedException;
 import gov.nist.csd.pm.pap.exception.PMLFunctionNotDefinedException;
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pdp.UserContext;
-import gov.nist.csd.pm.common.obligation.Response;
-import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
@@ -33,7 +30,7 @@ class DeleteStatementTest {
         DeleteStatement stmt4 = new DeleteStatement(DeleteStatement.Type.FUNCTION, new StringLiteral("testFunc"));
         DeleteStatement stmt5 = new DeleteStatement(DeleteStatement.Type.CONST, new StringLiteral("testConst"));
 
-        MemoryPolicyStore store = new MemoryPolicyStore();
+        MemoryPolicyModifier store = new MemoryPolicyModifier();
         store.graph().setResourceAccessRights(new AccessRightSet("read"));
         store.graph().createPolicyClass("pc1", new HashMap<>());
         store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
@@ -52,8 +49,8 @@ class DeleteStatementTest {
                                     true,
                                     new ContainerCondition("oa1", true)
         );
-        store.userDefinedPML().createFunction(new FunctionDefinitionStatement.Builder("testFunc").build());
-        store.userDefinedPML().createConstant("testConst", new StringValue("test"));
+        store.pml().createFunction(new FunctionDefinitionStatement.Builder("testFunc").build());
+        store.pml().createConstant("testConst", new StringValue("test"));
 
         GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(store);
 
@@ -66,8 +63,8 @@ class DeleteStatementTest {
         assertFalse(store.graph().nodeExists("oa1"));
         assertFalse(store.prohibitions().exists("p1"));
         assertFalse(store.obligations().exists("o1"));
-        assertThrows(PMLFunctionNotDefinedException.class, () -> store.userDefinedPML().getFunction("testFunc"));
-        assertThrows(PMLConstantNotDefinedException.class, () -> store.userDefinedPML().getConstant("testConst"));
+        assertThrows(PMLFunctionNotDefinedException.class, () -> store.pml().getFunction("testFunc"));
+        assertThrows(PMLConstantNotDefinedException.class, () -> store.pml().getConstant("testConst"));
     }
 
     @Test

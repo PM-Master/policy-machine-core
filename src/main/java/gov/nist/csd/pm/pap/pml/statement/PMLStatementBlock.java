@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
@@ -27,9 +27,9 @@ public class PMLStatementBlock extends PMLStatement{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
         for (PMLStatement stmt : stmts) {
-            stmt.execute(ctx, policy);
+            stmt.execute(ctx, policyModification);
         }
 
         return new VoidValue();

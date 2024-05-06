@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.graph.nodes.NodeType;
+import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
@@ -68,56 +68,56 @@ public class CreatePolicyStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
         Map<String, String> props = new HashMap<>();
 
         if (this.properties != null) {
-            Value propertiesValue = properties.execute(ctx, policy);
+            Value propertiesValue = properties.execute(ctx, policyModification);
             for (Map.Entry<Value, Value> e : propertiesValue.getMapValue().entrySet()) {
                 props.put(e.getKey().getStringValue(), e.getValue().getStringValue());
             }
         }
 
-        policy.graph().createPolicyClass(name.execute(ctx, policy).getStringValue(), props);
+        policyModification.graph().createPolicyClass(name.execute(ctx, policyModification).getStringValue(), props);
 
         // create hierarchy
-        createHierarchy(ctx, policy);
+        createHierarchy(ctx, policyModification);
 
         return new VoidValue();
     }
 
-    private void createHierarchy(ExecutionContext ctx, Policy policy) throws PMException {
+    private void createHierarchy(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
         // create uas
         if (uas != null) {
-            createUas(ctx, policy);
+            createUas(ctx, policyModification);
         }
 
         // create oas
         if (oas != null) {
-            createOas(ctx, policy);
+            createOas(ctx, policyModification);
         }
 
         // assocs
         if (assocs != null) {
-            createAssocs(ctx, policy);
+            createAssocs(ctx, policyModification);
         }
     }
 
-    private void createUas(ExecutionContext ctx, Policy policy) throws PMException {
+    private void createUas(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
         for (CreateOrAssignAttributeStatement stmt : uas) {
-            stmt.execute(ctx, policy);
+            stmt.execute(ctx, policyModification);
         }
     }
 
-    private void createOas(ExecutionContext ctx, Policy policy) throws PMException {
+    private void createOas(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
         for (CreateOrAssignAttributeStatement stmt : oas) {
-            stmt.execute(ctx, policy);
+            stmt.execute(ctx, policyModification);
         }
     }
 
-    private void createAssocs(ExecutionContext ctx, Policy policy) throws PMException {
+    private void createAssocs(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
         for (AssociateStatement associateStatement : assocs) {
-            associateStatement.execute(ctx, policy);
+            associateStatement.execute(ctx, policyModification);
         }
     }
 
@@ -238,15 +238,15 @@ public class CreatePolicyStatement extends PMLStatement {
         }
 
         @Override
-        public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-            Value nameValue = getName().execute(ctx, policy);
+        public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+            Value nameValue = getName().execute(ctx, policyModification);
 
-            if (!policy.graph().nodeExists(nameValue.getStringValue())) {
-                return super.execute(ctx, policy);
+            if (!policyModification.graph().nodeExists(nameValue.getStringValue())) {
+                return super.execute(ctx, policyModification);
             }
 
             AssignStatement assignStatement = new AssignStatement(getName(), getAssignTo());
-            return assignStatement.execute(ctx, policy);
+            return assignStatement.execute(ctx, policyModification);
         }
 
         @Override

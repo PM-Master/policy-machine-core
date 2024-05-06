@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.scope;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.AdminAccessRights;
+import gov.nist.csd.pm.pap.op.AdminAccessRights;
 import gov.nist.csd.pm.pap.pml.PMLBuiltinFunctions;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
@@ -21,7 +21,7 @@ import static gov.nist.csd.pm.pap.AdminPolicyNode.OBLIGATIONS_TARGET;
 
 public class GlobalScope<V, F> implements Serializable {
 
-    public static GlobalScope<Variable, FunctionSignature> forCompile(Policy policy, FunctionDefinitionStatement ... customFunctionStatements)
+    public static GlobalScope<Variable, FunctionSignature> forCompile(PolicyModification policyModification, FunctionDefinitionStatement ... customFunctionStatements)
             throws PMException {
         // buitin variables
         Map<String, Variable> builtinConstants = new HashMap<>();
@@ -38,7 +38,7 @@ public class GlobalScope<V, F> implements Serializable {
         builtinConstants.put(PROHIBITIONS_TARGET.constantName(), new Variable(PROHIBITIONS_TARGET.constantName(), Type.string(), true));
         builtinConstants.put(OBLIGATIONS_TARGET.constantName(), new Variable(OBLIGATIONS_TARGET.constantName(), Type.string(), true));
 
-        Map<String, Value> constants = policy.userDefinedPML().getConstants();
+        Map<String, Value> constants = policyModification.pml().getConstants();
         Map<String, Variable> persistedConstants = new HashMap<>();
         for (Map.Entry<String, Value> e : constants.entrySet()) {
             String varName = e.getKey();
@@ -46,7 +46,7 @@ public class GlobalScope<V, F> implements Serializable {
             persistedConstants.put(varName, new Variable(varName, value.getType(), true));
         }
 
-        Map<String, FunctionDefinitionStatement> functions = policy.userDefinedPML().getFunctions();
+        Map<String, FunctionDefinitionStatement> functions = policyModification.pml().getFunctions();
         Map<String, FunctionSignature> persistedFunctions = new HashMap<>();
         for (Map.Entry<String, FunctionDefinitionStatement> e : functions.entrySet()) {
             String varName = e.getKey();
@@ -69,7 +69,7 @@ public class GlobalScope<V, F> implements Serializable {
         return new GlobalScope<>(builtinConstants, persistedConstants, builtinFunctions, persistedFunctions, customFunctions);
     }
 
-    public static GlobalScope<Value, FunctionDefinitionStatement> forExecute(Policy policy, FunctionDefinitionStatement ... customFunctionStatements)
+    public static GlobalScope<Value, FunctionDefinitionStatement> forExecute(PolicyModification policyModification, FunctionDefinitionStatement ... customFunctionStatements)
             throws PMException {
         // buitin variables
         Map<String, Value> builtinVariables = new HashMap<>();
@@ -85,9 +85,9 @@ public class GlobalScope<V, F> implements Serializable {
         builtinVariables.put(PROHIBITIONS_TARGET.constantName(), new StringValue(PROHIBITIONS_TARGET.nodeName()));
         builtinVariables.put(OBLIGATIONS_TARGET.constantName(), new StringValue(OBLIGATIONS_TARGET.nodeName()));
 
-        Map<String, Value> persistedVariables = policy.userDefinedPML().getConstants();
+        Map<String, Value> persistedVariables = policyModification.pml().getConstants();
 
-        Map<String, FunctionDefinitionStatement> persistedFunctions = policy.userDefinedPML().getFunctions();
+        Map<String, FunctionDefinitionStatement> persistedFunctions = policyModification.pml().getFunctions();
 
         // add built in functions
         Map<String, FunctionDefinitionStatement> builtinFunctions = PMLBuiltinFunctions.builtinFunctions();

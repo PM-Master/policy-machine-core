@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.graph.relationships.InvalidAssignmentException;
 import gov.nist.csd.pm.pap.exception.*;
+import gov.nist.csd.pm.pap.modification.GraphModification;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,24 +61,24 @@ public class AdminPolicy {
      * Verify that all policy classes have a target attribute in the admin policy.
      *
      * @param verifier The verifier used to verify the admin policy nodes exist.
-     * @param graph The graph store used to verify nodes.
+     * @param graphModification The graph store used to verify nodes.
      * @throws PMException If there is an error verifying any element of the admin policy.
      */
-    public static void verify(Verifier verifier, Graph graph) throws PMException {
+    public static void verify(Verifier verifier, GraphModification graphModification) throws PMException {
         verifyAdminPolicy(verifier);
 
-        verifyPolicyClasses(graph);
+        verifyPolicyClasses(graphModification);
     }
 
-    private static void verifyPolicyClasses(Graph graph) throws PMException {
-        List<String> policyClasses = graph.getPolicyClasses();
+    private static void verifyPolicyClasses(GraphModification graphModification) throws PMException {
+        List<String> policyClasses = graphModification.getPolicyClasses();
         for (String pc : policyClasses) {
             String repOA = policyClassTargetName(pc);
-            if (graph.nodeExists(repOA)) {
+            if (graphModification.nodeExists(repOA)) {
                 continue;
             }
 
-            graph.createObjectAttribute(repOA, new HashMap<>(), List.of(POLICY_CLASS_TARGETS.nodeName()));
+            graphModification.createObjectAttribute(repOA, new HashMap<>(), List.of(POLICY_CLASS_TARGETS.nodeName()));
         }
     }
 

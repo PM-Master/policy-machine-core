@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.serialization;
 
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.common.serialization.json.JSONDeserializer;
 import gov.nist.csd.pm.common.serialization.json.JSONSerializer;
 import gov.nist.csd.pm.common.exception.PMException;
@@ -22,7 +22,7 @@ public class JSONTest {
     void testSerialization() throws PMException, IOException {
         String json = IOUtils.resourceToString("json/JSONTest.json", StandardCharsets.UTF_8, JSONTest.class.getClassLoader());
 
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         pap.policy().deserialize(new UserContext("u1"), json, new JSONDeserializer());
@@ -31,7 +31,7 @@ public class JSONTest {
 
         assertEquals(json, serialize);
 
-        MemoryPolicyStore ps2 = new MemoryPolicyStore();
+        MemoryPolicyModifier ps2 = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr2 = new MemoryPolicyReviewer(ps2);
         PAP pap2 = new PAP(ps2, pr2);
         pap2.policy().deserialize(new UserContext("u1"), serialize, new JSONDeserializer());

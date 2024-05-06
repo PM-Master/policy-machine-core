@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression.literal;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
@@ -76,10 +76,10 @@ public class ArrayLiteral extends Literal {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
         List<Value> values = new ArrayList<>();
         for (Expression expr : array) {
-            values.add(expr.execute(ctx, policy));
+            values.add(expr.execute(ctx, policyModification));
         }
 
         return new ArrayValue(values, type.getArrayElementType());

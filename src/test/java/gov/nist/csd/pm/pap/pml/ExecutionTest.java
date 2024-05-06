@@ -1,13 +1,13 @@
 package gov.nist.csd.pm.pap.pml;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
-import gov.nist.csd.pm.common.graph.relationships.Association;
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.Association;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pap.PAP;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +23,7 @@ public class ExecutionTest {
 
     @Test
     void testGraphPML() throws PMException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
 
@@ -159,7 +159,7 @@ public class ExecutionTest {
 
     @Test
     void testIf() throws PMException {
-         MemoryPolicyStore ps = new MemoryPolicyStore();
+         MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         String input = """
@@ -182,7 +182,7 @@ public class ExecutionTest {
                     create policy class "pc2"
                 }
                 """;
-        ps = new MemoryPolicyStore();
+        ps = new MemoryPolicyModifier();
         pr = new MemoryPolicyReviewer(ps);
         pap = new PAP(ps, pr);
         PMLExecutor.compileAndExecutePML(pap.policy(), superUser, input);
@@ -202,7 +202,7 @@ public class ExecutionTest {
                     create policy class "pc3"
                 }
                 """;
-        ps = new MemoryPolicyStore();
+        ps = new MemoryPolicyModifier();
         pr = new MemoryPolicyReviewer(ps);
         pap = new PAP(ps, pr);
         
@@ -222,7 +222,7 @@ public class ExecutionTest {
                     create policy class "pc2"
                 }
                 """;
-        ps = new MemoryPolicyStore();
+        ps = new MemoryPolicyModifier();
         pr = new MemoryPolicyReviewer(ps);
         pap = new PAP(ps, pr);
         
@@ -241,7 +241,7 @@ public class ExecutionTest {
                     create policy class "pc2"
                 }
                 """;
-        ps = new MemoryPolicyStore();
+        ps = new MemoryPolicyModifier();
         pr = new MemoryPolicyReviewer(ps);
         pap = new PAP(ps, pr);
         
@@ -253,7 +253,7 @@ public class ExecutionTest {
 
     @Test
     void testForeach() throws PMException {
-         MemoryPolicyStore ps = new MemoryPolicyStore();
+         MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         
@@ -274,7 +274,7 @@ public class ExecutionTest {
                     create policy class y
                 }
                 """;
-        ps = new MemoryPolicyStore();
+        ps = new MemoryPolicyModifier();
         pr = new MemoryPolicyReviewer(ps);
         pap = new PAP(ps, pr);
         
@@ -291,7 +291,7 @@ public class ExecutionTest {
                     }
                 }
                 """;
-        ps = new MemoryPolicyStore();
+        ps = new MemoryPolicyModifier();
         pr = new MemoryPolicyReviewer(ps);
         pap = new PAP(ps, pr);
         
@@ -309,7 +309,7 @@ public class ExecutionTest {
                     }
                 }
                 """;
-        ps = new MemoryPolicyStore();
+        ps = new MemoryPolicyModifier();
         pr = new MemoryPolicyReviewer(ps);
         pap = new PAP(ps, pr);
         
@@ -327,7 +327,7 @@ public class ExecutionTest {
                     }
                 }
                 """;
-        ps = new MemoryPolicyStore();
+        ps = new MemoryPolicyModifier();
         pr = new MemoryPolicyReviewer(ps);
         pap = new PAP(ps, pr);
         
@@ -349,7 +349,7 @@ public class ExecutionTest {
                     create policy class x
                 }
                 """;
-        ps = new MemoryPolicyStore();
+        ps = new MemoryPolicyModifier();
         pr = new MemoryPolicyReviewer(ps);
         pap = new PAP(ps, pr);
         
@@ -369,7 +369,7 @@ public class ExecutionTest {
                 
                 testFunc("pc1")
                 """;
-         MemoryPolicyStore ps = new MemoryPolicyStore();
+         MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         
@@ -385,12 +385,12 @@ public class ExecutionTest {
                 testFunc(["pc1"])
                 """;
 
-        MemoryPolicyStore ps1 = new MemoryPolicyStore();
+        MemoryPolicyModifier ps1 = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr1 = new MemoryPolicyReviewer(ps);
         PAP pap1 = new PAP(ps1, pr1);
         assertThrows(ClassCastException.class, () -> PMLExecutor.compileAndExecutePML(pap1.policy(), superUser, input1));
 
-        MemoryPolicyStore ps2 = new MemoryPolicyStore();
+        MemoryPolicyModifier ps2 = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr2 = new MemoryPolicyReviewer(ps);
         PAP pap2 = new PAP(ps2, pr2);
         input = """
@@ -412,7 +412,7 @@ public class ExecutionTest {
                 var x = m["k1"]["k1-1"]["k1-1-1"]
                 create policy class x
                 """;
-         MemoryPolicyStore ps = new MemoryPolicyStore();
+         MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         
@@ -425,7 +425,7 @@ public class ExecutionTest {
         String input = """
                 set resource access rights ["read", "write"]
                 """;
-         MemoryPolicyStore ps = new MemoryPolicyStore();
+         MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         
@@ -443,7 +443,7 @@ public class ExecutionTest {
         String input = """
                 delete pc "pc1"
                 """;
-         MemoryPolicyStore ps = new MemoryPolicyStore();
+         MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         
@@ -452,7 +452,7 @@ public class ExecutionTest {
 
     @Test
     void testDeleteProhibition() throws PMException {
-         MemoryPolicyStore ps = new MemoryPolicyStore();
+         MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         
@@ -486,7 +486,7 @@ public class ExecutionTest {
                 create policy class testFunc("test")
                 """;
 
-         MemoryPolicyStore ps = new MemoryPolicyStore();
+         MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         pap.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
@@ -505,7 +505,7 @@ public class ExecutionTest {
                 create policy class testFunc("test")
                 """;
 
-         MemoryPolicyStore ps = new MemoryPolicyStore();
+         MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         pap.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
@@ -524,7 +524,7 @@ public class ExecutionTest {
                 
                 testFunc()
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         PMLExecutor.compileAndExecutePML(memoryPolicyStore, superUser, pml);
 
         assertTrue(memoryPolicyStore.graph().nodeExists("x"));
@@ -542,7 +542,7 @@ public class ExecutionTest {
                 
                 testFunc()
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         PMLCompilationException e =
                 assertThrows(PMLCompilationException.class,
                              () -> PMLExecutor.compileAndExecutePML(memoryPolicyStore, superUser, pml)

@@ -2,33 +2,32 @@ package gov.nist.csd.pm.pdp.adjudicator;
 
 import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
-import gov.nist.csd.pm.pap.PolicyReview;
 import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.common.serialization.PolicySerializer;
 
-import static gov.nist.csd.pm.pdp.AdminAccessRights.*;
+import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 
-public class Adjudicator implements Policy {
+public class Adjudicator implements PolicyModification {
 
     private final UserContext userCtx;
     private final PrivilegeChecker privilegeChecker;
     private final PAP pap;
-    private final AdjudicatorGraph adjudicatorGraph;
-    private final AdjudicatorProhibitions adjudicatorProhibitions;
-    private final AdjudicatorObligations adjudicatorObligations;
-    private final AdjudicatorUserDefinedPML adjudicatorUserDefinedPML;
+    private final AdjudicatorGraphModification adjudicatorGraph;
+    private final AdjudicatorProhibitionsModification adjudicatorProhibitions;
+    private final AdjudicatorObligationsModification adjudicatorObligations;
+    private final AdjudicatorPMLModification adjudicatorUserDefinedPML;
 
     public Adjudicator(UserContext userCtx, PAP pap) {
         this.userCtx = userCtx;
         this.privilegeChecker = new PrivilegeChecker(pap);
         this.pap = pap;
-        this.adjudicatorGraph = new AdjudicatorGraph(userCtx, pap, privilegeChecker);
-        this.adjudicatorProhibitions = new AdjudicatorProhibitions(userCtx, pap, privilegeChecker);
-        this.adjudicatorObligations = new AdjudicatorObligations(userCtx, pap, privilegeChecker);
-        this.adjudicatorUserDefinedPML = new AdjudicatorUserDefinedPML(userCtx, pap, privilegeChecker);
+        this.adjudicatorGraph = new AdjudicatorGraphModification(userCtx, pap, privilegeChecker);
+        this.adjudicatorProhibitions = new AdjudicatorProhibitionsModification(userCtx, pap, privilegeChecker);
+        this.adjudicatorObligations = new AdjudicatorObligationsModification(userCtx, pap, privilegeChecker);
+        this.adjudicatorUserDefinedPML = new AdjudicatorPMLModification(userCtx, pap, privilegeChecker);
     }
 
     public PrivilegeChecker getAccessRightChecker() {
@@ -40,22 +39,22 @@ public class Adjudicator implements Policy {
     }
 
     @Override
-    public AdjudicatorGraph graph() {
+    public AdjudicatorGraphModification graph() {
         return adjudicatorGraph;
     }
 
     @Override
-    public AdjudicatorProhibitions prohibitions() {
+    public AdjudicatorProhibitionsModification prohibitions() {
         return adjudicatorProhibitions;
     }
 
     @Override
-    public AdjudicatorObligations obligations() {
+    public AdjudicatorObligationsModification obligations() {
         return adjudicatorObligations;
     }
 
     @Override
-    public AdjudicatorUserDefinedPML userDefinedPML() {
+    public AdjudicatorPMLModification pml() {
         return adjudicatorUserDefinedPML;
     }
 

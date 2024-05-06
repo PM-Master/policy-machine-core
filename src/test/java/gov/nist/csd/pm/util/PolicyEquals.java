@@ -1,10 +1,10 @@
 package gov.nist.csd.pm.util;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.graph.nodes.Node;
-import gov.nist.csd.pm.common.graph.nodes.NodeType;
-import gov.nist.csd.pm.common.graph.relationships.Association;
+import gov.nist.csd.pm.common.graph.node.Node;
+import gov.nist.csd.pm.common.graph.node.NodeType;
+import gov.nist.csd.pm.common.graph.relationship.Association;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
@@ -13,13 +13,13 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 import java.util.List;
 import java.util.Map;
 
-import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PolicyEquals {
 
-    public static void assertPolicyEquals(Policy a, Policy b) throws PMException {
+    public static void assertPolicyEquals(PolicyModification a, PolicyModification b) throws PMException {
         // check nodes
         // assignments
         // associations
@@ -71,12 +71,12 @@ public class PolicyEquals {
         assertTrue(bObligations.containsAll(aObligations));
 
         // check user defined pml
-        Map<String, Value> aConstants = a.userDefinedPML().getConstants();
-        Map<String, Value> bConstants = b.userDefinedPML().getConstants();
+        Map<String, Value> aConstants = a.pml().getConstants();
+        Map<String, Value> bConstants = b.pml().getConstants();
         assertEquals(aConstants, bConstants);
 
-        Map<String, FunctionDefinitionStatement> aFunctions = a.userDefinedPML().getFunctions();
-        Map<String, FunctionDefinitionStatement> bFunctions = b.userDefinedPML().getFunctions();
+        Map<String, FunctionDefinitionStatement> aFunctions = a.pml().getFunctions();
+        Map<String, FunctionDefinitionStatement> bFunctions = b.pml().getFunctions();
         assertEquals(aFunctions, bFunctions);
     }
 

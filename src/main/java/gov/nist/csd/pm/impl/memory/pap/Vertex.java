@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
-import gov.nist.csd.pm.pdp.AccessRightSet;
-import gov.nist.csd.pm.common.graph.nodes.Node;
-import gov.nist.csd.pm.common.graph.relationships.Association;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
+import gov.nist.csd.pm.common.graph.node.Node;
+import gov.nist.csd.pm.common.graph.relationship.Association;
 
 import java.util.List;
 import java.util.Map;

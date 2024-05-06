@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLCompiler;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
@@ -42,7 +42,7 @@ class FunctionDefinitionVisitorTest {
                 """,
                 PMLParser.FunctionDefinitionStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyStore()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
+                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
         );
         PMLStatement stmt = new FunctionDefinitionVisitor(visitorCtx)
                 .visitFunctionDefinitionStatement(ctx);
@@ -70,7 +70,7 @@ class FunctionDefinitionVisitorTest {
                 """,
                 PMLParser.FunctionDefinitionStatementContext.class);
         visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyStore()).withPersistedFunctions(Map.of("func1", new FunctionSignature("func1", Type.voidType(), List.of(new FormalArgument("a", Type.string())))))
+                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of("func1", new FunctionSignature("func1", Type.voidType(), List.of(new FormalArgument("a", Type.string())))))
         );
         stmt = new FunctionDefinitionVisitor(visitorCtx)
                 .visitFunctionDefinitionStatement(ctx);
@@ -101,7 +101,7 @@ class FunctionDefinitionVisitorTest {
                 """,
                 PMLParser.FunctionDefinitionStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyStore()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
+                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
         );
         new FunctionDefinitionVisitor(visitorCtx)
                 .visitFunctionDefinitionStatement(ctx);
@@ -121,7 +121,7 @@ class FunctionDefinitionVisitorTest {
                 """,
                 PMLParser.FunctionDefinitionStatementContext.class);
         visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyStore()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
+                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
         );
         new FunctionDefinitionVisitor(visitorCtx)
                 .visitFunctionDefinitionStatement(ctx);
@@ -139,7 +139,7 @@ class FunctionDefinitionVisitorTest {
                 """,
                 PMLParser.FunctionDefinitionStatementContext.class);
         visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyStore()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
+                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
         );
         new FunctionDefinitionVisitor(visitorCtx)
                 .visitFunctionDefinitionStatement(ctx);
@@ -160,7 +160,7 @@ class FunctionDefinitionVisitorTest {
                 """,
                 PMLParser.FunctionDefinitionStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyStore()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
+                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
         );
         new FunctionDefinitionVisitor(visitorCtx)
                 .visitFunctionDefinitionStatement(ctx);
@@ -181,7 +181,7 @@ class FunctionDefinitionVisitorTest {
                 """,
                 PMLParser.FunctionDefinitionStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyStore()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
+                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
         );
         new FunctionDefinitionVisitor(visitorCtx)
                 .visitFunctionDefinitionStatement(ctx);
@@ -203,7 +203,7 @@ class FunctionDefinitionVisitorTest {
                     }
                     """;
             PMLCompilationException e =
-                    assertThrows(PMLCompilationException.class, () -> PMLCompiler.compilePML(new MemoryPolicyStore(), pml));
+                    assertThrows(PMLCompilationException.class, () -> PMLCompiler.compilePML(new MemoryPolicyModifier(), pml));
             assertEquals(1, e.getErrors().size());
             assertEquals("formal arg 'a' already defined in signature", e.getErrors().get(0).errorMessage());
         }

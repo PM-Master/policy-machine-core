@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.pattern;
 
-import gov.nist.csd.pm.common.op.pattern.Pattern;
+import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;

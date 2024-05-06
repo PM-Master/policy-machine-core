@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static gov.nist.csd.pm.pdp.AdminAccessRights.isAdminAccessRight;
+import static gov.nist.csd.pm.pap.op.AdminAccessRights.isAdminAccessRight;
 
 public class CreateProhibitionStatement extends PMLStatement {
 
@@ -68,10 +68,10 @@ public class CreateProhibitionStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-        Value idValue = this.name .execute(ctx, policy);
-        Value subjectValue = this.subject.execute(ctx, policy);
-        Value permissionsValue = this.accessRights.execute(ctx, policy);
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+        Value idValue = this.name .execute(ctx, policyModification);
+        Value subjectValue = this.subject.execute(ctx, policyModification);
+        Value permissionsValue = this.accessRights.execute(ctx, policyModification);
 
         List<Value> arrayValue = permissionsValue.getArrayValue();
         AccessRightSet ops = new AccessRightSet();
@@ -80,7 +80,7 @@ public class CreateProhibitionStatement extends PMLStatement {
         }
 
         List<ContainerCondition> containerConditions = new ArrayList<>();
-        for (Value container : containers.execute(ctx, policy).getArrayValue()) {
+        for (Value container : containers.execute(ctx, policyModification).getArrayValue()) {
             boolean isComplement = container instanceof ComplementedValue;
             String containerName = container.getStringValue();
 
@@ -88,7 +88,7 @@ public class CreateProhibitionStatement extends PMLStatement {
         }
 
 
-        policy.prohibitions().create(
+        policyModification.prohibitions().create(
                 idValue.getStringValue(),
                 new ProhibitionSubject(subjectValue.getStringValue(), subjectType),
                 ops,

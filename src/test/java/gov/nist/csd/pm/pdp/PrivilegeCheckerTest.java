@@ -1,8 +1,10 @@
 package gov.nist.csd.pm.pdp;
 
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+import gov.nist.csd.pm.pap.op.AdminAccessRights;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.pdp.adjudicator.PrivilegeChecker;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.common.exception.PMException;
@@ -21,7 +23,7 @@ class PrivilegeCheckerTest {
 
     @BeforeEach
     void setup() throws PMException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         pap = new PAP(ps, pr);
 
@@ -32,7 +34,8 @@ class PrivilegeCheckerTest {
         pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
         pap.policy().graph().associate("ua1", "oa1", new AccessRightSet("read"));
-        pap.policy().graph().associate("ua1", AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName(), new AccessRightSet(AdminAccessRights.ASSIGN_TO));
+        pap.policy().graph().associate("ua1", AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName(), new AccessRightSet(
+                AdminAccessRights.ASSIGN_TO));
 
         pap.policy().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         pap.policy().graph().createObject("o1", new HashMap<>(), List.of("oa1"));

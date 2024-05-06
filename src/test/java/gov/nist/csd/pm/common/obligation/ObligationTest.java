@@ -2,10 +2,10 @@ package gov.nist.csd.pm.common.obligation;
 
 import gov.nist.csd.pm.epp.EPP;
 import gov.nist.csd.pm.epp.EventContext;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
-import gov.nist.csd.pm.common.op.graph.AssignToOp;
+import gov.nist.csd.pm.pap.op.graph.AssignToOp;
 import gov.nist.csd.pm.pap.pml.expression.reference.ReferenceByID;
 import gov.nist.csd.pm.pap.pml.statement.CreatePolicyStatement;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
@@ -17,8 +17,6 @@ import gov.nist.csd.pm.pdp.UserContext;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class ObligationTest {
 
@@ -46,7 +44,7 @@ class ObligationTest {
                     }
                 }
                 """;
-        MemoryPolicyStore policyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier policyStore = new MemoryPolicyModifier();
         MemoryPolicyReviewer reviewer = new MemoryPolicyReviewer(policyStore);
         PAP pap = new PAP(policyStore, reviewer);
         pap.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
@@ -77,12 +75,12 @@ class ObligationTest {
                 }
                 """;
 
-        MemoryPolicyStore policyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier policyStore = new MemoryPolicyModifier();
         MemoryPolicyReviewer reviewer = new MemoryPolicyReviewer(policyStore);
         PAP pap = new PAP(policyStore, reviewer);
 
-        pap.policy().userDefinedPML().createConstant("x", new StringValue("hello world"));
-        pap.policy().userDefinedPML().createFunction(new FunctionDefinitionStatement.Builder("createX")
+        pap.policy().pml().createConstant("x", new StringValue("hello world"));
+        pap.policy().pml().createFunction(new FunctionDefinitionStatement.Builder("createX")
                 .body(List.of(new CreatePolicyStatement(new ReferenceByID("x"))))
                 .build());
         pap.executePML(new UserContext("u1"), pml);

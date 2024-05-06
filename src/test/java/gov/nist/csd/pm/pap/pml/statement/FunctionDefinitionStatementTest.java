@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
@@ -82,7 +82,7 @@ class FunctionDefinitionStatementTest {
                     create policy class b
                 }
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext(""), pml);
 
         assertTrue(memoryPolicyStore.graph().nodeExists("test"));
@@ -103,7 +103,7 @@ class FunctionDefinitionStatementTest {
                 
                 f2()
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext(""), pml);
 
         assertTrue(memoryPolicyStore.graph().nodeExists("test"));
@@ -124,7 +124,7 @@ class FunctionDefinitionStatementTest {
                     create policy class x
                 }
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext(""), pml);
         assertTrue(memoryPolicyStore.graph().nodeExists("x"));
     }

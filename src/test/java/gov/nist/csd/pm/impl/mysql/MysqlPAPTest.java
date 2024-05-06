@@ -1,6 +1,5 @@
 package gov.nist.csd.pm.impl.mysql;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PAPTest;
@@ -56,7 +55,7 @@ class MysqlPAPTest extends PAPTest {
             throw new PMException(e);
         }
 
-        MysqlPolicyStore ps = new MysqlPolicyStore(connection);
+        MysqlPolicyModifier ps = new MysqlPolicyModifier(connection);
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         return new PAP(ps, pr);
     }
@@ -66,7 +65,7 @@ class MysqlPAPTest extends PAPTest {
         try (Connection connection = DriverManager.getConnection(testEnv.getConnectionUrl(), testEnv.getUser(), testEnv.getPassword());
              Connection connection2 = DriverManager.getConnection(testEnv.getConnectionUrl(), testEnv.getUser(), testEnv.getPassword())) {
 
-            MysqlPolicyStore ps = new MysqlPolicyStore(connection);
+            MysqlPolicyModifier ps = new MysqlPolicyModifier(connection);
             MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
             PAP pap = new PAP(ps, pr);
             pap.beginTx();
@@ -74,7 +73,7 @@ class MysqlPAPTest extends PAPTest {
             pap.policy().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
             pap.commit();
 
-            MysqlPolicyStore ps2 = new MysqlPolicyStore(connection2);
+            MysqlPolicyModifier ps2 = new MysqlPolicyModifier(connection2);
             PAP pap2 = new PAP(ps2, new MemoryPolicyReviewer(ps2));
             assertTrue(pap2.policy().graph().nodeExists("pc1"));
             assertTrue(pap2.policy().graph().nodeExists("oa1"));

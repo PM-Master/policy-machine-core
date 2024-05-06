@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap.serialization;
 
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.common.serialization.pml.PMLSerializer;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
@@ -10,7 +11,6 @@ import gov.nist.csd.pm.pap.pml.value.VoidValue;
 import gov.nist.csd.pm.util.PolicyEquals;
 import gov.nist.csd.pm.util.SamplePolicy;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import org.junit.jupiter.api.Test;
@@ -29,13 +29,13 @@ class PMLTest {
 
         PMLDeserializer pmlDeserializer = new PMLDeserializer();
 
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         pap.policy().deserialize(new UserContext("u1"), pml, pmlDeserializer);
 
         String serialize = pap.policy().serialize(new PMLSerializer());
-        MemoryPolicyStore ps2 = new MemoryPolicyStore();
+        MemoryPolicyModifier ps2 = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr2 = new MemoryPolicyReviewer(ps2);
         PAP pap2 = new PAP(ps2, pr2);
         pap2.policy().deserialize(new UserContext("u1"), serialize, pmlDeserializer);
@@ -51,7 +51,7 @@ class PMLTest {
 
         PMLDeserializer pmlDeserializer = new PMLDeserializer();
 
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         assertThrows(PMException.class, () -> pap.policy().deserialize(new UserContext("u1"), pml, pmlDeserializer));

@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
@@ -47,7 +47,7 @@ class FunctionInvokeExpressionTest {
                 """
                 voidFunc("a", "b")
                 """, PMLParser.FunctionInvokeExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore())
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier())
                                                                       .withPersistedFunctions(Map.of(voidFunc.getSignature().getFunctionName(), voidFunc.getSignature())));
 
         Expression e = FunctionInvokeExpression.compileFunctionInvokeExpression(visitorContext, ctx);
@@ -64,9 +64,9 @@ class FunctionInvokeExpressionTest {
                 e.getType(visitorContext.scope())
         );
 
-        ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())
+        ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())
                                                                                                  .withPersistedFunctions(Map.of(voidFunc.getSignature().getFunctionName(), voidFunc)));
-        Value value = e.execute(executionContext, new MemoryPolicyStore());
+        Value value = e.execute(executionContext, new MemoryPolicyModifier());
         assertEquals(
                 new VoidValue(),
                 value
@@ -84,7 +84,7 @@ class FunctionInvokeExpressionTest {
                 """
                 voidFunc("a", "b")
                 """, PMLParser.FunctionInvokeExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         FunctionInvokeExpression.compileFunctionInvokeExpression(visitorContext, ctx);
         assertEquals(1, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().getErrors().toString());
         assertEquals(
@@ -99,7 +99,7 @@ class FunctionInvokeExpressionTest {
                 """
                 voidFunc("a")
                 """, PMLParser.FunctionInvokeExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore())
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier())
                                                                       .withPersistedFunctions(Map.of(voidFunc.getSignature().getFunctionName(), voidFunc.getSignature())));
         FunctionInvokeExpression.compileFunctionInvokeExpression(visitorContext, ctx);
         assertEquals(1, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().getErrors().toString());
@@ -115,7 +115,7 @@ class FunctionInvokeExpressionTest {
                 """
                 voidFunc("a", ["b", "c"])
                 """, PMLParser.FunctionInvokeExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore())
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier())
                                                                       .withPersistedFunctions(Map.of(voidFunc.getSignature().getFunctionName(), voidFunc.getSignature())));
 
         Expression e = FunctionInvokeExpression.compileFunctionInvokeExpression(visitorContext, ctx);
@@ -144,7 +144,7 @@ class FunctionInvokeExpressionTest {
                 """
                 stringFunc("a", "b")
                 """, PMLParser.FunctionInvokeExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore())
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier())
                                                                       .withPersistedFunctions(Map.of(stringFunc.getSignature().getFunctionName(), stringFunc.getSignature())));
 
         Expression e = FunctionInvokeExpression.compileFunctionInvokeExpression(visitorContext, ctx);
@@ -172,17 +172,17 @@ class FunctionInvokeExpressionTest {
                 stringFunc("a", "b")
                 """, PMLParser.FunctionInvokeExpressionContext.class);
         VisitorContext visitorContext = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyStore())
+                GlobalScope.forCompile(new MemoryPolicyModifier())
                            .withPersistedFunctions(Map.of(stringFunc.getSignature().getFunctionName(), stringFunc.getSignature()))
         );
         Expression e = FunctionInvokeExpression.compileFunctionInvokeExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().getErrors().toString());
 
-        MemoryPolicyStore store = new MemoryPolicyStore();
+        MemoryPolicyModifier store = new MemoryPolicyModifier();
         ExecutionContext executionContext =
                 new ExecutionContext(
                         new UserContext(""),
-                        GlobalScope.forExecute(new MemoryPolicyStore())
+                        GlobalScope.forExecute(new MemoryPolicyModifier())
                                    .withPersistedFunctions(Map.of(stringFunc.getSignature().getFunctionName(), stringFunc))
                 );
         Value value = e.execute(executionContext, store);
@@ -217,7 +217,7 @@ class FunctionInvokeExpressionTest {
                     b(x, y)
                 }
                 """;
-        MemoryPolicyStore store = new MemoryPolicyStore();
+        MemoryPolicyModifier store = new MemoryPolicyModifier();
         PMLExecutor.compileAndExecutePML(store, new UserContext(), pml);
         assertTrue(store.graph().nodeExists("cx"));
         assertTrue(store.graph().nodeExists("cy"));
@@ -234,7 +234,7 @@ class FunctionInvokeExpressionTest {
                     x = "x"                               
                 }
                 """;
-        MemoryPolicyStore store = new MemoryPolicyStore();
+        MemoryPolicyModifier store = new MemoryPolicyModifier();
         PMLExecutor.compileAndExecutePML(store, new UserContext(), pml);
         assertFalse(store.graph().nodeExists("x"));
         assertTrue(store.graph().nodeExists("test"));
@@ -253,7 +253,7 @@ class FunctionInvokeExpressionTest {
                 
                 a()
                 """;
-        MemoryPolicyStore store = new MemoryPolicyStore();
+        MemoryPolicyModifier store = new MemoryPolicyModifier();
         PMLExecutor.compileAndExecutePML(store, new UserContext(), pml);
         assertFalse(store.graph().nodeExists("pc1"));
     }

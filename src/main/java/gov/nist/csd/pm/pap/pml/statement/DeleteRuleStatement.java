@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
@@ -33,11 +33,11 @@ public class DeleteRuleStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-        String ruleName = ruleExpr.execute(ctx, policy).getStringValue();
-        String oblName = oblExpr.execute(ctx, policy).getStringValue();
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+        String ruleName = ruleExpr.execute(ctx, policyModification).getStringValue();
+        String oblName = oblExpr.execute(ctx, policyModification).getStringValue();
 
-        Obligation obligation = policy.obligations().get(oblName);
+        Obligation obligation = policyModification.obligations().get(oblName);
         List<Rule> rules = new ArrayList<>();
         for (Rule rule : obligation.getRules()) {
             if (rule.getName().equals(ruleName)) {
@@ -47,7 +47,7 @@ public class DeleteRuleStatement extends PMLStatement {
             rules.add(rule);
         }
 
-        policy.obligations().update(
+        policyModification.obligations().update(
                 obligation.getAuthor(),
                 obligation.getName(),
                 rules.toArray(new Rule[]{})

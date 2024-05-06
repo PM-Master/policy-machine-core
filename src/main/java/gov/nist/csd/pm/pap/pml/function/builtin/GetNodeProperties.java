@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.function.builtin;
 
-import gov.nist.csd.pm.common.graph.nodes.Node;
+import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;

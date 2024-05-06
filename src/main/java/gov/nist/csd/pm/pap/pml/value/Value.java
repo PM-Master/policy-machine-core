@@ -3,7 +3,7 @@ package gov.nist.csd.pm.pap.pml.value;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.op.pattern.Pattern;
+import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.pml.type.Type;
 
 import java.io.Serializable;

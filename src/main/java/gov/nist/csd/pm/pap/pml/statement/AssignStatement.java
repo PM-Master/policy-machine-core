@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.value.Value;
@@ -30,16 +30,16 @@ public class AssignStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-        Value childValue = this.child.execute(ctx, policy);
-        Value assignToValue = this.assignTo.execute(ctx, policy);
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+        Value childValue = this.child.execute(ctx, policyModification);
+        Value assignToValue = this.assignTo.execute(ctx, policyModification);
 
         String childStringValue = childValue.getStringValue();
 
         List<Value> valueArr = assignToValue.getArrayValue();
         for (Value value : valueArr) {
             String parent = value.getStringValue();
-            policy.graph().assign(childStringValue, parent);
+            policyModification.graph().assign(childStringValue, parent);
         }
 
         return new VoidValue();

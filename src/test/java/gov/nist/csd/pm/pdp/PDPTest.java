@@ -1,9 +1,10 @@
 package gov.nist.csd.pm.pdp;
 
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.exception.BootstrapExistingPolicyException;
 import gov.nist.csd.pm.pap.exception.NodeNameExistsException;
@@ -22,14 +23,14 @@ import java.util.HashMap;
 import java.util.List;
 
 import static gov.nist.csd.pm.pap.PAPTest.testAdminPolicy;
-import static gov.nist.csd.pm.pdp.AdminAccessRights.CREATE_OBJECT_ATTRIBUTE;
+import static gov.nist.csd.pm.pap.op.AdminAccessRights.CREATE_OBJECT_ATTRIBUTE;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PDPTest {
 
     @Test
     void testRunTx() throws PMException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         PDP pdp = new PDP(pap);
@@ -53,7 +54,7 @@ class PDPTest {
 
     @Test
     void testBootstrapWithAdminPolicyOnly() throws PMException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         PDP pdp = new PDP(pap);
@@ -69,7 +70,7 @@ class PDPTest {
 
     @Test
     void testBootstrapWithExistingPolicyThrowsException() throws PMException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         PDP pdp = new PDP(pap);
@@ -103,7 +104,7 @@ class PDPTest {
 
     @Test
     void testRollback() throws PMException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         PDP pdp = new PDP(pap);
@@ -130,7 +131,7 @@ class PDPTest {
     @Test
     void testExecutePML() throws PMException {
         try {
-            MemoryPolicyStore ps = new MemoryPolicyStore();
+            MemoryPolicyModifier ps = new MemoryPolicyModifier();
             MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
             PAP pap = new PAP(ps, pr);
             PDP pdp = new PDP(pap);
@@ -146,7 +147,7 @@ class PDPTest {
                     .build();
 
             pdp.runTx(new UserContext("u1"), policy -> {
-                policy.userDefinedPML().createFunction(functionDefinitionStatement);
+                policy.pml().createFunction(functionDefinitionStatement);
                 policy.executePML(new UserContext("u1"), "create ua \"ua3\" assign to [\"pc2\"]");
             });
 

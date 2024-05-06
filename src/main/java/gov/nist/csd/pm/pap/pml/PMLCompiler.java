@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLLexer;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
@@ -18,10 +18,10 @@ import org.antlr.v4.runtime.CommonTokenStream;
 
 public class PMLCompiler {
 
-    public static CompiledPML compilePML(Policy policy, String input, FunctionDefinitionStatement... customBuiltinFunctions) throws PMException {
+    public static CompiledPML compilePML(PolicyModification policyModification, String input, FunctionDefinitionStatement... customBuiltinFunctions) throws PMException {
         ErrorLog errorLog = new ErrorLog();
 
-        GlobalScope<Variable, FunctionSignature> globalScope = GlobalScope.forCompile(policy, customBuiltinFunctions);
+        GlobalScope<Variable, FunctionSignature> globalScope = GlobalScope.forCompile(policyModification, customBuiltinFunctions);
 
         PMLErrorHandler pmlErrorHandler = new PMLErrorHandler();
 

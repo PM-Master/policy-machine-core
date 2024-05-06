@@ -1,17 +1,14 @@
 package gov.nist.csd.pm.pap.pml;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.op.pattern.Pattern;
-import gov.nist.csd.pm.common.op.pattern.ReferencedPolicyEntities;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
-import gov.nist.csd.pm.pap.GraphReview;
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.op.pattern.Pattern;
+import gov.nist.csd.pm.pap.op.pattern.ReferencedPolicyEntities;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
-import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
-import org.antlr.v4.runtime.ParserRuleContext;
+import gov.nist.csd.pm.pap.query.PolicyQuery;
 
 import java.util.Objects;
 
@@ -46,7 +43,7 @@ public class PMLPattern<T> extends Pattern<T> {
     }
 
     @Override
-    public boolean matches(T value, GraphReview graphReview) throws PMException {
+    public boolean matches(T value, PolicyQuery querier) throws PMException {
         // TODO need PAP not GraphReview
         return true;
     }
@@ -82,8 +79,8 @@ public class PMLPattern<T> extends Pattern<T> {
         }
 
         @Override
-        public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-            return pattern.patternExpr.execute(ctx, policy);
+        public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+            return pattern.patternExpr.execute(ctx, policyModification);
         }
 
         @Override

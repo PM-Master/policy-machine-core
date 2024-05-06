@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression.literal;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
@@ -25,7 +25,7 @@ class BoolLiteralTest {
                 """,
                 PMLParser.LiteralExpressionContext.class);
 
-        GlobalScope<Variable, FunctionSignature> globalScope = GlobalScope.forCompile(new MemoryPolicyStore());
+        GlobalScope<Variable, FunctionSignature> globalScope = GlobalScope.forCompile(new MemoryPolicyModifier());
 
         VisitorContext visitorContext = new VisitorContext(globalScope);
         Expression expression = Literal.compileLiteral(visitorContext, ctx);

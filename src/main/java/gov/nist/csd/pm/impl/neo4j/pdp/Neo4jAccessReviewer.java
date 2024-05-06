@@ -1,11 +1,11 @@
 package gov.nist.csd.pm.impl.neo4j.pdp;
 
+import gov.nist.csd.pm.impl.neo4j.pap.Neo4JGraphModification;
+import gov.nist.csd.pm.impl.neo4j.pap.Neo4JProhibitionsModification;
 import gov.nist.csd.pm.impl.neo4j.pap.Neo4jConnection;
-import gov.nist.csd.pm.impl.neo4j.pap.Neo4JGraph;
-import gov.nist.csd.pm.impl.neo4j.pap.Neo4JProhibitions;
 import gov.nist.csd.pm.pdp.AccessRightResolver;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.audit.EdgePath;
 import gov.nist.csd.pm.pap.audit.Explain;
@@ -15,10 +15,10 @@ import gov.nist.csd.pm.common.graph.dag.UserDagResult;
 import gov.nist.csd.pm.common.graph.dag.Propagator;
 import gov.nist.csd.pm.common.graph.dag.Visitor;
 import gov.nist.csd.pm.common.graph.dag.DepthFirstGraphWalker;
-import gov.nist.csd.pm.common.graph.relationships.Association;
+import gov.nist.csd.pm.common.graph.relationship.Association;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
-import gov.nist.csd.pm.pap.AccessReview;
+import gov.nist.csd.pm.pap.query.AccessQuery;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Traverser;
@@ -26,21 +26,21 @@ import org.neo4j.graphdb.traversal.Uniqueness;
 
 import java.util.*;
 
-import static gov.nist.csd.pm.impl.neo4j.pap.Neo4JGraph.*;
-import static gov.nist.csd.pm.impl.neo4j.pap.Neo4JProhibitions.*;
+import static gov.nist.csd.pm.impl.neo4j.pap.Neo4JGraphModification.*;
+import static gov.nist.csd.pm.impl.neo4j.pap.Neo4JProhibitionsModification.*;
 import static gov.nist.csd.pm.pdp.AccessRightResolver.*;
 import static gov.nist.csd.pm.impl.memory.pdp.MemoryAccessReviewer.resolvePaths;
-import static gov.nist.csd.pm.common.graph.nodes.NodeType.U;
-import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.common.graph.node.NodeType.U;
+import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
 
-public class Neo4jAccessReviewer implements AccessReview {
+public class Neo4jAccessReviewer implements AccessQuery {
 
     private final Neo4jConnection neo4j;
-    private final Neo4JGraph neo4jGraphStore;
+    private final Neo4JGraphModification neo4jGraphStore;
 
     public Neo4jAccessReviewer(GraphDatabaseService graph) {
         this.neo4j = new Neo4jConnection(graph);
-        this.neo4jGraphStore = new Neo4JGraph(neo4j);
+        this.neo4jGraphStore = new Neo4JGraphModification(neo4j);
     }
 
     @Override
@@ -166,8 +166,8 @@ public class Neo4jAccessReviewer implements AccessReview {
 
     @Override
     public Explain explain(UserContext userCtx, String target) throws PMException {
-        gov.nist.csd.pm.common.graph.nodes.Node userNode = neo4jGraphStore.getNode(userCtx.getUser());
-        gov.nist.csd.pm.common.graph.nodes.Node targetNode = neo4jGraphStore.getNode(target);
+        gov.nist.csd.pm.common.graph.node.Node userNode = neo4jGraphStore.getNode(userCtx.getUser());
+        gov.nist.csd.pm.common.graph.node.Node targetNode = neo4jGraphStore.getNode(target);
 
         List<EdgePath> userPaths = explainDfs(userNode.getName());
         List<EdgePath> targetPaths = explainDfs(targetNode.getName());
@@ -316,7 +316,7 @@ public class Neo4jAccessReviewer implements AccessReview {
                 String endNodeName = String.valueOf(endNode.getProperty(NAME_PROPERTY));
 
                 if (endNode.hasLabel(PROHIBITION_LABEL)) {
-                    Prohibition prohibition = Neo4JProhibitions.getProhibitionFromNode(endNode);
+                    Prohibition prohibition = Neo4JProhibitionsModification.getProhibitionFromNode(endNode);
                     prohibitions.add(prohibition);
 
                     List<ContainerCondition> containers = prohibition.getContainers();
@@ -345,7 +345,7 @@ public class Neo4jAccessReviewer implements AccessReview {
                     Relationship next = rels.next();
                     Node proNode = next.getEndNode();
 
-                    Prohibition prohibition = Neo4JProhibitions.getProhibitionFromNode(proNode);
+                    Prohibition prohibition = Neo4JProhibitionsModification.getProhibitionFromNode(proNode);
                     prohibitions.add(prohibition);
 
                     List<ContainerCondition> containers = prohibition.getContainers();
@@ -573,11 +573,11 @@ public class Neo4jAccessReviewer implements AccessReview {
         Map<String, List<EdgePath>> propPaths = new HashMap<>();
 
         Visitor visitor = nodeName -> {
-            gov.nist.csd.pm.common.graph.nodes.Node node = neo4jGraphStore.getNode(nodeName);
+            gov.nist.csd.pm.common.graph.node.Node node = neo4jGraphStore.getNode(nodeName);
             List<EdgePath> nodePaths = new ArrayList<>();
 
             for(String parent : neo4jGraphStore.getParents(nodeName)) {
-                gov.nist.csd.pm.common.graph.relationships.Relationship edge = new gov.nist.csd.pm.common.graph.relationships.Relationship(node.getName(), parent);
+                gov.nist.csd.pm.common.graph.relationship.Relationship edge = new gov.nist.csd.pm.common.graph.relationship.Relationship(node.getName(), parent);
                 List<EdgePath> parentPaths = propPaths.get(parent);
                 if(parentPaths.isEmpty()) {
                     EdgePath path = new EdgePath();
@@ -586,8 +586,8 @@ public class Neo4jAccessReviewer implements AccessReview {
                 } else {
                     for(EdgePath p : parentPaths) {
                         EdgePath parentPath = new EdgePath();
-                        for(gov.nist.csd.pm.common.graph.relationships.Relationship e : p.getEdges()) {
-                            parentPath.addEdge(new gov.nist.csd.pm.common.graph.relationships.Relationship(e.getSource(), e.getTarget(), e.getAccessRightSet()));
+                        for(gov.nist.csd.pm.common.graph.relationship.Relationship e : p.getEdges()) {
+                            parentPath.addEdge(new gov.nist.csd.pm.common.graph.relationship.Relationship(e.getSource(), e.getTarget(), e.getAccessRightSet()));
                         }
 
                         parentPath.getEdges().add(0, edge);
@@ -598,9 +598,9 @@ public class Neo4jAccessReviewer implements AccessReview {
 
             List<Association> assocs = neo4jGraphStore.getAssociationsWithSource(node.getName());
             for(Association association : assocs) {
-                gov.nist.csd.pm.common.graph.nodes.Node targetNode = neo4jGraphStore.getNode(association.getTarget());
+                gov.nist.csd.pm.common.graph.node.Node targetNode = neo4jGraphStore.getNode(association.getTarget());
                 EdgePath path = new EdgePath();
-                path.addEdge(new gov.nist.csd.pm.common.graph.relationships.Relationship(node.getName(), targetNode.getName(), association.getAccessRightSet()));
+                path.addEdge(new gov.nist.csd.pm.common.graph.relationship.Relationship(node.getName(), targetNode.getName(), association.getAccessRightSet()));
                 nodePaths.add(path);
             }
 
@@ -616,20 +616,20 @@ public class Neo4jAccessReviewer implements AccessReview {
         };
 
         Propagator propagator = (parentNodeName, childNodeName) -> {
-            gov.nist.csd.pm.common.graph.nodes.Node parentNode = neo4jGraphStore.getNode(parentNodeName);
-            gov.nist.csd.pm.common.graph.nodes.Node childNode = neo4jGraphStore.getNode(childNodeName);
+            gov.nist.csd.pm.common.graph.node.Node parentNode = neo4jGraphStore.getNode(parentNodeName);
+            gov.nist.csd.pm.common.graph.node.Node childNode = neo4jGraphStore.getNode(childNodeName);
             List<EdgePath> childPaths = propPaths.computeIfAbsent(childNode.getName(), k -> new ArrayList<>());
             List<EdgePath> parentPaths = propPaths.get(parentNode.getName());
 
             for(EdgePath p : parentPaths) {
                 EdgePath path = new EdgePath();
-                for(gov.nist.csd.pm.common.graph.relationships.Relationship edge : p.getEdges()) {
-                    path.addEdge(new gov.nist.csd.pm.common.graph.relationships.Relationship(edge.getSource(), edge.getTarget(), edge.getAccessRightSet()));
+                for(gov.nist.csd.pm.common.graph.relationship.Relationship edge : p.getEdges()) {
+                    path.addEdge(new gov.nist.csd.pm.common.graph.relationship.Relationship(edge.getSource(), edge.getTarget(), edge.getAccessRightSet()));
                 }
 
                 EdgePath newPath = new EdgePath();
                 newPath.getEdges().addAll(path.getEdges());
-                gov.nist.csd.pm.common.graph.relationships.Relationship edge = new gov.nist.csd.pm.common.graph.relationships.Relationship(childNode.getName(), parentNode.getName(), null);
+                gov.nist.csd.pm.common.graph.relationship.Relationship edge = new gov.nist.csd.pm.common.graph.relationship.Relationship(childNode.getName(), parentNode.getName(), null);
                 newPath.getEdges().add(0, edge);
                 childPaths.add(newPath);
                 propPaths.put(childNode.getName(), childPaths);

@@ -1,9 +1,9 @@
 package gov.nist.csd.pm.impl.neo4j.pdp;
 
+import gov.nist.csd.pm.impl.neo4j.pap.Neo4JGraphModification;
 import gov.nist.csd.pm.impl.neo4j.pap.Neo4jConnection;
-import gov.nist.csd.pm.impl.neo4j.pap.Neo4JGraph;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.GraphReview;
+import gov.nist.csd.pm.pap.query.GraphQuery;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Traverser;
@@ -12,16 +12,16 @@ import org.neo4j.graphdb.traversal.Uniqueness;
 import java.util.ArrayList;
 import java.util.List;
 
-import static gov.nist.csd.pm.impl.neo4j.pap.Neo4JGraph.*;
+import static gov.nist.csd.pm.impl.neo4j.pap.Neo4JGraphModification.*;
 
-public class Neo4jGraphReviewer implements GraphReview {
+public class Neo4jGraphReviewer implements GraphQuery {
 
     private final Neo4jConnection neo4j;
-    private final Neo4JGraph neo4jGraphStore;
+    private final Neo4JGraphModification neo4jGraphStore;
 
     public Neo4jGraphReviewer(GraphDatabaseService graph) {
         this.neo4j = new Neo4jConnection(graph);
-        this.neo4jGraphStore = new Neo4JGraph(neo4j);
+        this.neo4jGraphStore = new Neo4JGraphModification(neo4j);
     }
 
     @Override

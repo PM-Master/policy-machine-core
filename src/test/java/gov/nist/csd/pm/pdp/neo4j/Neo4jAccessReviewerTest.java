@@ -1,9 +1,9 @@
 package gov.nist.csd.pm.pdp.neo4j;
 
+import gov.nist.csd.pm.impl.neo4j.pap.Neo4JPolicyModifier;
 import gov.nist.csd.pm.impl.neo4j.pdp.Neo4jAccessReviewer;
 import gov.nist.csd.pm.impl.neo4j.pdp.Neo4jPolicyReviewer;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.neo4j.pap.Neo4jPolicyStore;
 import gov.nist.csd.pm.pdp.AccessReviewerTest;
 import gov.nist.csd.pm.common.exception.PMException;
 import org.junit.jupiter.api.AfterAll;
@@ -41,7 +41,7 @@ public class Neo4jAccessReviewerTest extends AccessReviewerTest {
     @Override
     public TestContext initTest() throws PMException {
         GraphDatabaseService graph = embeddedDatabaseServer.defaultDatabaseService();
-        PAP pap = new PAP(new Neo4jPolicyStore(graph), new Neo4jPolicyReviewer());
+        PAP pap = new PAP(new Neo4JPolicyModifier(graph), new Neo4jPolicyReviewer());
         return new TestContext(new Neo4jAccessReviewer(graph), pap.policy());
     }
 }

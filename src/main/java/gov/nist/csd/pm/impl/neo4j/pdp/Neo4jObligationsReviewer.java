@@ -6,12 +6,12 @@ import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Response;
 import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.pap.ObligationsReview;
+import gov.nist.csd.pm.pap.query.ObligationsQuery;
 
 import java.util.List;
 import java.util.Map;
 
-public class Neo4jObligationsReviewer implements ObligationsReview {
+public class Neo4jObligationsReviewer implements ObligationsQuery {
     @Override
     public List<Obligation> getObligationsWithAuthor(UserContext userCtx) throws PMException {
         throw new PMException("not yet implemented");

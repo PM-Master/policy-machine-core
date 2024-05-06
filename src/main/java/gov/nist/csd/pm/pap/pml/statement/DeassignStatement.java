@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -30,16 +30,16 @@ public class DeassignStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-        Value childValue = child.execute(ctx, policy);
-        Value deassignFromValue = deassignFrom.execute(ctx, policy);
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+        Value childValue = child.execute(ctx, policyModification);
+        Value deassignFromValue = deassignFrom.execute(ctx, policyModification);
 
         String childStringValue = childValue.getStringValue();
 
         List<Value> valueArr = deassignFromValue.getArrayValue();
         for (Value value : valueArr) {
             String parent = value.getStringValue();
-            policy.graph().deassign(childStringValue, parent);
+            policyModification.graph().deassign(childStringValue, parent);
         }
 
         return new VoidValue();

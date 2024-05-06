@@ -1,8 +1,7 @@
 package gov.nist.csd.pm.pap;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
-import gov.nist.csd.pm.common.obligation.EventPattern;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.serialization.json.JSONDeserializer;
 import gov.nist.csd.pm.common.serialization.json.JSONSerializer;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
@@ -19,16 +18,13 @@ import gov.nist.csd.pm.util.PolicyEquals;
 import gov.nist.csd.pm.util.SamplePolicy;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.common.serialization.pml.PMLSerializer;
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pdp.UserContext;
-import gov.nist.csd.pm.common.graph.nodes.Node;
-import gov.nist.csd.pm.common.graph.nodes.Properties;
-import gov.nist.csd.pm.common.graph.relationships.Association;
-import gov.nist.csd.pm.common.graph.relationships.InvalidAssignmentException;
-import gov.nist.csd.pm.common.graph.relationships.InvalidAssociationException;
-import gov.nist.csd.pm.common.obligation.Obligation;
-import gov.nist.csd.pm.common.obligation.Response;
-import gov.nist.csd.pm.common.obligation.Rule;
+import gov.nist.csd.pm.common.graph.node.Node;
+import gov.nist.csd.pm.common.graph.node.Properties;
+import gov.nist.csd.pm.common.graph.relationship.Association;
+import gov.nist.csd.pm.common.graph.relationship.InvalidAssignmentException;
+import gov.nist.csd.pm.common.graph.relationship.InvalidAssociationException;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
@@ -42,10 +38,10 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.*;
 
-import static gov.nist.csd.pm.pdp.AdminAccessRights.*;
-import static gov.nist.csd.pm.common.graph.nodes.NodeType.*;
-import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
-import static gov.nist.csd.pm.common.graph.nodes.Properties.toProperties;
+import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
+import static gov.nist.csd.pm.common.graph.node.NodeType.*;
+import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.common.graph.node.Properties.toProperties;
 import static gov.nist.csd.pm.util.PolicyEquals.assertPolicyEquals;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -131,19 +127,19 @@ public abstract class PAPTest {
             pap.policy().deserialize(userContext, input, new PMLDeserializer());
 
             String pml = pap.policy().serialize(new PMLSerializer());
-            MemoryPolicyStore policyStore = new MemoryPolicyStore();
+            MemoryPolicyModifier policyStore = new MemoryPolicyModifier();
             MemoryPolicyReviewer reviewer = new MemoryPolicyReviewer(policyStore);
             PAP pmlPAP = new PAP(policyStore, reviewer);
             pmlPAP.policy().deserialize(userContext, pml, new PMLDeserializer());
 
             String json = pmlPAP.policy().serialize(new JSONSerializer());
-            MemoryPolicyStore jsonPS = new MemoryPolicyStore();
+            MemoryPolicyModifier jsonPS = new MemoryPolicyModifier();
             MemoryPolicyReviewer jsonRev = new MemoryPolicyReviewer(policyStore);
             PAP jsonPAP = new PAP(jsonPS, jsonRev);
             jsonPAP.policy().deserialize(userContext, json, new JSONDeserializer());
 
-            assertPolicyEquals(pap.policyStore, pmlPAP.policyStore);
-            assertPolicyEquals(pap.policyStore, jsonPAP.policyStore);
+            assertPolicyEquals(pap.modifier, pmlPAP.modifier);
+            assertPolicyEquals(pap.modifier, jsonPAP.modifier);
 
             assertThrows(PMException.class, () -> {
                 pap.policy().deserialize(new UserContext("unknown user"), input, new PMLDeserializer());
@@ -156,15 +152,15 @@ public abstract class PAPTest {
             String pml = pap.policy().serialize(new PMLSerializer());
             String json = pap.policy().serialize(new JSONSerializer());
 
-            pap.policyStore.reset();
-            PAP pap1 = new PAP(pap.policyStore, pap.policyReview);
+            pap.modifier.reset();
+            PAP pap1 = new PAP(pap.modifier, pap.querier);
             pap1.policy().deserialize(userContext, pml, new PMLDeserializer());
 
-            pap.policyStore.reset();
-            PAP pap2 = new PAP(pap.policyStore, pap.policyReview);
+            pap.modifier.reset();
+            PAP pap2 = new PAP(pap.modifier, pap.querier);
             pap2.policy().deserialize(userContext, json, new JSONDeserializer());
 
-            PolicyEquals.assertPolicyEquals(pap1.policyStore, pap2.policyStore);
+            PolicyEquals.assertPolicyEquals(pap1.modifier, pap2.modifier);
         }
 
         @Test
@@ -176,12 +172,12 @@ public abstract class PAPTest {
             pap.policy().graph().assign(AdminPolicy.policyClassTargetName("pc1"), "test-oa");
             String pml = pap.policy().serialize(new PMLSerializer());
 
-            MemoryPolicyStore ps = new MemoryPolicyStore();
+            MemoryPolicyModifier ps = new MemoryPolicyModifier();
             MemoryPolicyReviewer rev = new MemoryPolicyReviewer(ps);
             PAP pap1 = new PAP(ps, rev);
             pap1.policy().deserialize(userContext, pml, new PMLDeserializer());
 
-            PolicyEquals.assertPolicyEquals(pap.policyStore, pap1.policyStore);
+            PolicyEquals.assertPolicyEquals(pap.modifier, pap1.modifier);
         }
     }
 
@@ -263,7 +259,7 @@ public abstract class PAPTest {
 
 
     @Nested
-    class GraphTests {
+    class GraphModificationTests {
 
         @Nested
         class SetResourceAccessRights {
@@ -294,7 +290,7 @@ public abstract class PAPTest {
         }
 
         @Nested
-        class CreatePolicyClassTest {
+        class CreatePolicyModificationClassTest {
             @Test
             void testNodeNameExistsException() throws PMException {
                 pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
@@ -675,7 +671,7 @@ public abstract class PAPTest {
         }
 
         @Nested
-        class GetPolicyClasses {
+        class GetPolicyModificationClasses {
             @Test
             void testSuccess() throws PMException {
                 pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
@@ -1130,7 +1126,7 @@ public abstract class PAPTest {
     }
 
     @Nested
-    class ProhibitionsTests {
+    class ProhibitionsModificationTests {
         @Nested
         class CreateProhibitionTest {
 
@@ -1829,7 +1825,7 @@ public abstract class PAPTest {
     }*/
 
     @Nested
-    class UserDefinedPMLTests {
+    class PMLModificationTests {
 
         @Nested
         class CreateFunction {
@@ -1857,15 +1853,15 @@ public abstract class PAPTest {
 
             @Test
             void testPMLFunctionAlreadyDefinedException() throws PMException {
-                pap.policy().userDefinedPML().createFunction(testFunc);
-                assertThrows(PMLFunctionAlreadyDefinedException.class, () -> pap.policy().userDefinedPML().createFunction(testFunc));
+                pap.policy().pml().createFunction(testFunc);
+                assertThrows(PMLFunctionAlreadyDefinedException.class, () -> pap.policy().pml().createFunction(testFunc));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.policy().userDefinedPML().createFunction(testFunc);
-                assertTrue(pap.policy().userDefinedPML().getFunctions().containsKey(testFunc.getSignature().getFunctionName()));
-                FunctionDefinitionStatement actual = pap.policy().userDefinedPML().getFunctions().get(testFunc.getSignature().getFunctionName());
+                pap.policy().pml().createFunction(testFunc);
+                assertTrue(pap.policy().pml().getFunctions().containsKey(testFunc.getSignature().getFunctionName()));
+                FunctionDefinitionStatement actual = pap.policy().pml().getFunctions().get(testFunc.getSignature().getFunctionName());
                 assertEquals(testFunc, actual);
             }
         }
@@ -1875,15 +1871,15 @@ public abstract class PAPTest {
 
             @Test
             void testNonExistingFunctionDoesNotThrowException() {
-                assertDoesNotThrow(() -> pap.policy().userDefinedPML().deleteFunction("func"));
+                assertDoesNotThrow(() -> pap.policy().pml().deleteFunction("func"));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.policy().userDefinedPML().createFunction(new FunctionDefinitionStatement.Builder("testFunc").returns(Type.voidType()).build());
-                assertTrue(pap.policy().userDefinedPML().getFunctions().containsKey("testFunc"));
-                pap.policy().userDefinedPML().deleteFunction("testFunc");
-                assertFalse(pap.policy().userDefinedPML().getFunctions().containsKey("testFunc"));
+                pap.policy().pml().createFunction(new FunctionDefinitionStatement.Builder("testFunc").returns(Type.voidType()).build());
+                assertTrue(pap.policy().pml().getFunctions().containsKey("testFunc"));
+                pap.policy().pml().deleteFunction("testFunc");
+                assertFalse(pap.policy().pml().getFunctions().containsKey("testFunc"));
             }
         }
 
@@ -1895,10 +1891,10 @@ public abstract class PAPTest {
                 FunctionDefinitionStatement testFunc1 = new FunctionDefinitionStatement.Builder("testFunc1").returns(Type.voidType()).build();
                 FunctionDefinitionStatement testFunc2 = new FunctionDefinitionStatement.Builder("testFunc2").returns(Type.voidType()).build();
 
-                pap.policy().userDefinedPML().createFunction(testFunc1);
-                pap.policy().userDefinedPML().createFunction(testFunc2);
+                pap.policy().pml().createFunction(testFunc1);
+                pap.policy().pml().createFunction(testFunc2);
 
-                Map<String, FunctionDefinitionStatement> functions = pap.policy().userDefinedPML().getFunctions();
+                Map<String, FunctionDefinitionStatement> functions = pap.policy().pml().getFunctions();
                 assertTrue(functions.containsKey("testFunc1"));
                 FunctionDefinitionStatement actual = functions.get("testFunc1");
                 assertEquals(testFunc1, actual);
@@ -1915,7 +1911,7 @@ public abstract class PAPTest {
 
             @Test
             void testPMLFunctionNotDefinedException() {
-                assertThrows(PMLFunctionNotDefinedException.class, () -> pap.policy().userDefinedPML().getFunction("func1"));
+                assertThrows(PMLFunctionNotDefinedException.class, () -> pap.policy().pml().getFunction("func1"));
             }
 
             @Test
@@ -1923,10 +1919,10 @@ public abstract class PAPTest {
                 FunctionDefinitionStatement testFunc1 = new FunctionDefinitionStatement.Builder("testFunc1").returns(Type.voidType()).build();
                 FunctionDefinitionStatement testFunc2 = new FunctionDefinitionStatement.Builder("testFunc2").returns(Type.voidType()).build();
 
-                pap.policy().userDefinedPML().createFunction(testFunc1);
-                pap.policy().userDefinedPML().createFunction(testFunc2);
+                pap.policy().pml().createFunction(testFunc1);
+                pap.policy().pml().createFunction(testFunc2);
 
-                Map<String, FunctionDefinitionStatement> functions = pap.policy().userDefinedPML().getFunctions();
+                Map<String, FunctionDefinitionStatement> functions = pap.policy().pml().getFunctions();
                 assertTrue(functions.containsKey("testFunc1"));
                 FunctionDefinitionStatement actual = functions.get("testFunc1");
                 assertEquals(testFunc1, actual);
@@ -1943,18 +1939,18 @@ public abstract class PAPTest {
 
             @Test
             void testPMLConstantAlreadyDefinedException() throws PMException {
-                pap.policy().userDefinedPML().createConstant("const1", new StringValue("test"));
+                pap.policy().pml().createConstant("const1", new StringValue("test"));
                 assertThrows(PMLConstantAlreadyDefinedException.class,
-                             () -> pap.policy().userDefinedPML().createConstant("const1", new StringValue("test")));
+                             () -> pap.policy().pml().createConstant("const1", new StringValue("test")));
             }
 
             @Test
             void testSuccess() throws PMException {
                 StringValue expected = new StringValue("test");
 
-                pap.policy().userDefinedPML().createConstant("const1", expected);
-                assertTrue(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
-                Value actual = pap.policy().userDefinedPML().getConstants().get("const1");
+                pap.policy().pml().createConstant("const1", expected);
+                assertTrue(pap.policy().pml().getConstants().containsKey("const1"));
+                Value actual = pap.policy().pml().getConstants().get("const1");
                 assertEquals(expected, actual);
             }
         }
@@ -1964,15 +1960,15 @@ public abstract class PAPTest {
 
             @Test
             void testNonExistingConstantDoesNotThrowException() {
-                assertDoesNotThrow(() -> pap.policy().userDefinedPML().deleteConstant("const1"));
+                assertDoesNotThrow(() -> pap.policy().pml().deleteConstant("const1"));
             }
 
             @Test
             void testSuccess() throws PMException {
-                pap.policy().userDefinedPML().createConstant("const1", new StringValue("test"));
-                assertTrue(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
-                pap.policy().userDefinedPML().deleteConstant("const1");
-                assertFalse(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
+                pap.policy().pml().createConstant("const1", new StringValue("test"));
+                assertTrue(pap.policy().pml().getConstants().containsKey("const1"));
+                pap.policy().pml().deleteConstant("const1");
+                assertFalse(pap.policy().pml().getConstants().containsKey("const1"));
             }
         }
 
@@ -1984,10 +1980,10 @@ public abstract class PAPTest {
                 StringValue const1 = new StringValue("test1");
                 StringValue const2 = new StringValue("test2");
 
-                pap.policy().userDefinedPML().createConstant("const1", const1);
-                pap.policy().userDefinedPML().createConstant("const2", const2);
+                pap.policy().pml().createConstant("const1", const1);
+                pap.policy().pml().createConstant("const2", const2);
 
-                Map<String, Value> constants = pap.policy().userDefinedPML().getConstants();
+                Map<String, Value> constants = pap.policy().pml().getConstants();
                 assertTrue(constants.containsKey("const1"));
                 Value actual = constants.get("const1");
                 assertEquals(const1, actual);
@@ -2004,7 +2000,7 @@ public abstract class PAPTest {
 
             @Test
             void testPMLConstantNotDefinedException() {
-                assertThrows(PMLConstantNotDefinedException.class, () -> pap.policy().userDefinedPML().getConstant("const1"));
+                assertThrows(PMLConstantNotDefinedException.class, () -> pap.policy().pml().getConstant("const1"));
             }
 
             @Test
@@ -2012,10 +2008,10 @@ public abstract class PAPTest {
                 StringValue const1 = new StringValue("test1");
                 StringValue const2 = new StringValue("test2");
 
-                pap.policy().userDefinedPML().createConstant("const1", const1);
-                pap.policy().userDefinedPML().createConstant("const2", const2);
+                pap.policy().pml().createConstant("const1", const1);
+                pap.policy().pml().createConstant("const2", const2);
 
-                Map<String, Value> constants = pap.policy().userDefinedPML().getConstants();
+                Map<String, Value> constants = pap.policy().pml().getConstants();
                 assertTrue(constants.containsKey("const1"));
                 Value actual = constants.get("const1");
                 assertEquals(const1, actual);
@@ -2059,7 +2055,7 @@ public abstract class PAPTest {
 
                     pap.policy().obligations().create(new UserContext("u1"), "obl1");
 
-                    pap.policy().userDefinedPML().createConstant("const1", new StringValue("value"));
+                    pap.policy().pml().createConstant("const1", new StringValue("value"));
                 });
 
                 assertEquals(new AccessRightSet("read"), pap.policy().graph().getResourceAccessRights());
@@ -2073,7 +2069,7 @@ public abstract class PAPTest {
                 );
                 assertTrue(pap.policy().prohibitions().exists("deny-ua1"));
                 assertTrue(pap.policy().obligations().exists("obl1"));
-                assertTrue(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
+                assertTrue(pap.policy().pml().getConstants().containsKey("const1"));
             }
 
             @Test
@@ -2093,7 +2089,7 @@ public abstract class PAPTest {
 
                     pap.policy().obligations().create(new UserContext("u1"), "obl1");
 
-                    pap.policy().userDefinedPML().createConstant("const1", new StringValue("value"));
+                    pap.policy().pml().createConstant("const1", new StringValue("value"));
 
                     pap.policy().graph().createPolicyClass("pc1", new HashMap<>());
                 }));
@@ -2105,7 +2101,7 @@ public abstract class PAPTest {
                 assertFalse(pap.policy().graph().nodeExists("u1"));
                 assertFalse(pap.policy().prohibitions().exists("deny-ua1"));
                 assertFalse(pap.policy().obligations().exists("obl1"));
-                assertFalse(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
+                assertFalse(pap.policy().pml().getConstants().containsKey("const1"));
             }
 
             @Test
@@ -2123,14 +2119,14 @@ public abstract class PAPTest {
                                           new ContainerCondition("oa1", false)
                 );
 
-                pap.policy().userDefinedPML().createConstant("const1", new StringValue("value"));
+                pap.policy().pml().createConstant("const1", new StringValue("value"));
 
                 assertThrows(PMException.class, () -> {
                     pap.runTx((tx) -> {
                         pap.policy().graph().createPolicyClass("pc2", new HashMap<>());
                         pap.policy().prohibitions().delete("deny-ua1");
                         pap.policy().obligations().create(new UserContext("u1"), "obl1");
-                        pap.policy().userDefinedPML().createConstant("const2", new StringValue("value"));
+                        pap.policy().pml().createConstant("const2", new StringValue("value"));
                         pap.policy().prohibitions().create("deny-ua1", new ProhibitionSubject("ua2", ProhibitionSubject.Type.USER_ATTRIBUTE),
                                                   new AccessRightSet("read"), true,
                                                   new ContainerCondition("oa1", false)
@@ -2156,8 +2152,8 @@ public abstract class PAPTest {
                 assertFalse(pap.policy().prohibitions().exists("deny-ua2"));
                 assertEquals("ua1", pap.policy().prohibitions().get("deny-ua1").getSubject().getName());
                 assertFalse(pap.policy().obligations().exists("obl1"));
-                assertTrue(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
-                assertFalse(pap.policy().userDefinedPML().getConstants().containsKey("const2"));
+                assertTrue(pap.policy().pml().getConstants().containsKey("const1"));
+                assertFalse(pap.policy().pml().getConstants().containsKey("const2"));
             }
 
             @Test
@@ -2173,7 +2169,7 @@ public abstract class PAPTest {
 
                 pap.policy().obligations().create(new UserContext("u1"), "obl1");
 
-                pap.policy().userDefinedPML().createConstant("const1", new StringValue("value"));
+                pap.policy().pml().createConstant("const1", new StringValue("value"));
 
                 assertThrows(PMException.class, () -> {
                     pap.runTx((tx) -> {
@@ -2200,7 +2196,7 @@ public abstract class PAPTest {
                 assertTrue(pap.policy().obligations().exists("obl1"));
                 assertFalse(pap.policy().obligations().exists("obl2"));
                 assertEquals("u1", pap.policy().obligations().get("obl1").getAuthor().getUser());
-                assertTrue(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
+                assertTrue(pap.policy().pml().getConstants().containsKey("const1"));
             }
 
             @Test
@@ -2216,7 +2212,7 @@ public abstract class PAPTest {
 
                 pap.policy().obligations().create(new UserContext("u1"), "obl1");
 
-                pap.policy().userDefinedPML().createConstant("const1", new StringValue("value"));
+                pap.policy().pml().createConstant("const1", new StringValue("value"));
 
                 assertThrows(PMException.class, () -> {
                     pap.runTx((tx) -> {
@@ -2228,8 +2224,8 @@ public abstract class PAPTest {
                         pap.policy().obligations().delete("obl1");
                         pap.policy().obligations().create(new UserContext("u2"), "obl1");
 
-                        pap.policy().userDefinedPML().createConstant("const2", new StringValue("value"));
-                        pap.policy().userDefinedPML().createConstant("const1", new StringValue("value"));
+                        pap.policy().pml().createConstant("const2", new StringValue("value"));
+                        pap.policy().pml().createConstant("const1", new StringValue("value"));
                     });
                 });
 
@@ -2243,8 +2239,8 @@ public abstract class PAPTest {
                 assertTrue(pap.policy().obligations().exists("obl1"));
                 assertFalse(pap.policy().obligations().exists("obl2"));
                 assertEquals("u1", pap.policy().obligations().get("obl1").getAuthor().getUser());
-                assertTrue(pap.policy().userDefinedPML().getConstants().containsKey("const1"));
-                assertFalse(pap.policy().userDefinedPML().getConstants().containsKey("const2"));
+                assertTrue(pap.policy().pml().getConstants().containsKey("const1"));
+                assertFalse(pap.policy().pml().getConstants().containsKey("const2"));
             }
         }
 

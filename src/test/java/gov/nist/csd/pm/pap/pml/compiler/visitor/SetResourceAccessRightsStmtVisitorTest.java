@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
@@ -22,7 +22,7 @@ class SetResourceAccessRightsStmtVisitorTest {
                 set resource access rights ["a", "b"]
                 """,
                 PMLParser.SetResourceAccessRightsStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         PMLStatement stmt = new SetResourceAccessRightsStmtVisitor(visitorCtx)
                 .visitSetResourceAccessRightsStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
@@ -39,7 +39,7 @@ class SetResourceAccessRightsStmtVisitorTest {
                 set resource access rights "a"
                 """,
                 PMLParser.SetResourceAccessRightsStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         new SetResourceAccessRightsStmtVisitor(visitorCtx)
                 .visitSetResourceAccessRightsStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());

@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
@@ -19,9 +19,9 @@ class SetResourceAccessRightsStatementTest {
                 buildArrayLiteral("a", "b", "c", "d")
         );
 
-        MemoryPolicyStore store = new MemoryPolicyStore();
+        MemoryPolicyModifier store = new MemoryPolicyModifier();
 
-        stmt.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), store);
+        stmt.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), store);
 
         assertEquals(
                 new AccessRightSet("a", "b", "c", "d"),

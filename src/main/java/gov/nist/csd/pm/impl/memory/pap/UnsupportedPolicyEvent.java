@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.op.Operation;
+import gov.nist.csd.pm.pap.op.Operation;
 
 public class UnsupportedPolicyEvent extends PMException {
     public UnsupportedPolicyEvent(Operation event) {

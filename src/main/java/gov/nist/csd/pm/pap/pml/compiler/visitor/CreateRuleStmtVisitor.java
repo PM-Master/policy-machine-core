@@ -1,12 +1,8 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
-import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
-import gov.nist.csd.pm.pap.pml.expression.FunctionInvokeExpression;
 import gov.nist.csd.pm.pap.pml.scope.VariableAlreadyDefinedInScopeException;
 import gov.nist.csd.pm.pap.pml.statement.CreateRuleStatement;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;

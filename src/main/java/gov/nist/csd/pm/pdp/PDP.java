@@ -4,6 +4,7 @@ import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.epp.EventProcessor;
 import gov.nist.csd.pm.pap.*;
+import gov.nist.csd.pm.pap.modification.*;
 import gov.nist.csd.pm.pdp.adjudicator.Adjudicator;
 import gov.nist.csd.pm.pap.exception.BootstrapExistingPolicyException;
 import gov.nist.csd.pm.common.exception.PMException;
@@ -11,7 +12,6 @@ import gov.nist.csd.pm.pap.pml.PMLExecutable;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
-import gov.nist.csd.pm.pap.PolicyReview;
 import gov.nist.csd.pm.common.tx.TxRunner;
 import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.common.serialization.PolicySerializer;
@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Set;
 
 import static gov.nist.csd.pm.pap.AdminPolicy.ALL_NODE_NAMES;
-import static gov.nist.csd.pm.common.graph.nodes.NodeType.ANY;
-import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.common.graph.node.NodeType.ANY;
+import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
 
 public class PDP implements EventEmitter {
 
@@ -82,16 +82,16 @@ public class PDP implements EventEmitter {
         void run(PDPTx policy) throws PMException;
     }
 
-    public static class PDPTx implements Policy, PMLExecutable, EventEmitter, EventProcessor {
+    public static class PDPTx implements PolicyModification, PMLExecutable, EventEmitter, EventProcessor {
 
         private final Adjudicator adjudicator;
         private final PAP pap;
         private final List<EventProcessor> epps;
 
-        private final PDPGraph pdpGraph;
-        private final PDPProhibitions pdpProhibitions;
-        private final PDPObligations pdpObligations;
-        private final PDPUserDefinedPML pdpUserDefinedPML;
+        private final PDPGraphModification pdpGraph;
+        private final PDPProhibitionsModification pdpProhibitions;
+        private final PDPObligationsModification pdpObligations;
+        private final PDPPMLModification pdpUserDefinedPML;
 
         private final PDPReviewer pdpReviewer;
 
@@ -100,10 +100,10 @@ public class PDP implements EventEmitter {
             this.pap = pap;
             this.epps = epps;
 
-            this.pdpGraph = new PDPGraph(userCtx, adjudicator.graph(), pap, this);
-            this.pdpProhibitions = new PDPProhibitions(userCtx, adjudicator.prohibitions(), pap, this);
-            this.pdpObligations = new PDPObligations(userCtx, adjudicator.obligations(), pap, this);
-            this.pdpUserDefinedPML = new PDPUserDefinedPML(userCtx, adjudicator.userDefinedPML(), pap, this);
+            this.pdpGraph = new PDPGraphModification(userCtx, adjudicator.graph(), pap, this);
+            this.pdpProhibitions = new PDPProhibitionsModification(userCtx, adjudicator.prohibitions(), pap, this);
+            this.pdpObligations = new PDPObligationsModification(userCtx, adjudicator.obligations(), pap, this);
+            this.pdpUserDefinedPML = new PDPPMLModification(userCtx, adjudicator.pml(), pap, this);
 
             this.pdpReviewer = new PDPReviewer(userCtx, pap, this.adjudicator.getAccessRightChecker());
         }
@@ -146,22 +146,22 @@ public class PDP implements EventEmitter {
         }
 
         @Override
-        public Graph graph() {
+        public GraphModification graph() {
             return pdpGraph;
         }
 
         @Override
-        public Prohibitions prohibitions() {
+        public ProhibitionsModification prohibitions() {
             return pdpProhibitions;
         }
 
         @Override
-        public Obligations obligations() {
+        public ObligationsModification obligations() {
             return pdpObligations;
         }
 
         @Override
-        public UserDefinedPML userDefinedPML() {
+        public PMLModification pml() {
             return pdpUserDefinedPML;
         }
 

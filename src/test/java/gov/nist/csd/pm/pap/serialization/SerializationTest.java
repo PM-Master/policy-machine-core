@@ -1,17 +1,15 @@
 package gov.nist.csd.pm.pap.serialization;
 
-import gov.nist.csd.pm.impl.memory.pdp.MemoryAccessReviewer;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.common.serialization.json.JSONDeserializer;
 import gov.nist.csd.pm.common.serialization.json.JSONSerializer;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.common.serialization.pml.PMLSerializer;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.AccessReviewerTest;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.util.SamplePolicy;
 import org.junit.jupiter.api.Test;
@@ -25,7 +23,7 @@ public class SerializationTest {
 
     @Test
     void testJSONAndPML() throws PMException, IOException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         SamplePolicy.loadSamplePolicyFromPML(pap);
@@ -33,12 +31,12 @@ public class SerializationTest {
         String json = pap.policy().serialize(new JSONSerializer());
         String pml = pap.policy().serialize(new PMLSerializer());
 
-        MemoryPolicyStore jsonPS = new MemoryPolicyStore();
+        MemoryPolicyModifier jsonPS = new MemoryPolicyModifier();
         MemoryPolicyReviewer jsonPR = new MemoryPolicyReviewer(jsonPS);
         PAP jsonPAP = new PAP(jsonPS, jsonPR);
         jsonPAP.policy().deserialize(new UserContext("u1"), json, new JSONDeserializer());
 
-        MemoryPolicyStore pmlPS = new MemoryPolicyStore();
+        MemoryPolicyModifier pmlPS = new MemoryPolicyModifier();
         MemoryPolicyReviewer pmlPR = new MemoryPolicyReviewer(pmlPS);
         PAP pmlPAP = new PAP(pmlPS, pmlPR);
         pmlPAP.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
@@ -50,7 +48,7 @@ public class SerializationTest {
 
     @Test
     void testPolicyClassTargets() throws PMException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
 
@@ -62,12 +60,12 @@ public class SerializationTest {
         String json = pap.policy().serialize(new JSONSerializer());
         String pml = pap.policy().serialize(new PMLSerializer());
 
-        MemoryPolicyStore jsonPS = new MemoryPolicyStore();
+        MemoryPolicyModifier jsonPS = new MemoryPolicyModifier();
         MemoryPolicyReviewer jsonPR = new MemoryPolicyReviewer(jsonPS);
         PAP jsonPAP = new PAP(jsonPS, jsonPR);
         jsonPAP.policy().deserialize(new UserContext("u1"), json, new JSONDeserializer());
 
-        MemoryPolicyStore pmlPS = new MemoryPolicyStore();
+        MemoryPolicyModifier pmlPS = new MemoryPolicyModifier();
         MemoryPolicyReviewer pmlPR = new MemoryPolicyReviewer(pmlPS);
         PAP pmlPAP = new PAP(pmlPS, pmlPR);
         pmlPAP.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
@@ -90,18 +88,18 @@ public class SerializationTest {
                 
                 const a = "a"
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext("u1"), pml);
 
         pml = memoryPolicyStore.serialize(new PMLSerializer());
         String json = memoryPolicyStore.serialize(new JSONSerializer());
 
-        MemoryPolicyStore jsonPS = new MemoryPolicyStore();
+        MemoryPolicyModifier jsonPS = new MemoryPolicyModifier();
         MemoryPolicyReviewer jsonPR = new MemoryPolicyReviewer(jsonPS);
         PAP jsonPAP = new PAP(jsonPS, jsonPR);
         jsonPAP.policy().deserialize(new UserContext("u1"), json, new JSONDeserializer());
 
-        MemoryPolicyStore pmlPS = new MemoryPolicyStore();
+        MemoryPolicyModifier pmlPS = new MemoryPolicyModifier();
         MemoryPolicyReviewer pmlPR = new MemoryPolicyReviewer(pmlPS);
         PAP pmlPAP = new PAP(pmlPS, pmlPR);
         pmlPAP.policy().deserialize(new UserContext("u1"), pml, new PMLDeserializer());

@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.audit;
 
-import gov.nist.csd.pm.common.graph.relationships.Association;
+import gov.nist.csd.pm.common.graph.relationship.Association;
 
 import java.util.ArrayList;
 import java.util.List;

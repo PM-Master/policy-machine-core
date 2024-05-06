@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression.reference;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
@@ -28,7 +28,7 @@ public class ReferenceByID extends VariableReference{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
         try {
             return ctx.scope().getVariable(id);
         } catch (UnknownVariableInScopeException e) {

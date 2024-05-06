@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.op.graph.CreateObjectAttributeOp;
+import gov.nist.csd.pm.pap.op.graph.CreateObjectAttributeOp;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.pap.pml.type.Type;
@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static gov.nist.csd.pm.pdp.AdminAccessRights.CREATE_OBJECT_ATTRIBUTE;
-import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.pap.op.AdminAccessRights.CREATE_OBJECT_ATTRIBUTE;
+import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

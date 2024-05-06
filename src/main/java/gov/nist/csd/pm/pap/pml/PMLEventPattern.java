@@ -2,8 +2,8 @@ package gov.nist.csd.pm.pap.pml;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.obligation.EventPattern;
-import gov.nist.csd.pm.common.op.Operation;
-import gov.nist.csd.pm.common.op.pattern.Pattern;
+import gov.nist.csd.pm.pap.op.Operation;
+import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;

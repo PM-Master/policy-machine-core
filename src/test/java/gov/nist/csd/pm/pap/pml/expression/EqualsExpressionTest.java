@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
@@ -27,7 +27,7 @@ class EqualsExpressionTest {
                 "a" == "a"
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Expression expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -37,7 +37,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(true),
                 value
@@ -51,7 +51,7 @@ class EqualsExpressionTest {
                 "a" != "a"
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Expression expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -61,7 +61,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(false),
                 value
@@ -75,7 +75,7 @@ class EqualsExpressionTest {
                 ["a", "b"] == ["a", "b"]
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Expression expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -85,7 +85,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(true),
                 value
@@ -96,7 +96,7 @@ class EqualsExpressionTest {
                 ["a", "b"] == ["b", "a"]
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -106,7 +106,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(false),
                 value
@@ -120,7 +120,7 @@ class EqualsExpressionTest {
                 ["a", "b"] != ["a", "b"]
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Expression expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -130,7 +130,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(false),
                 value
@@ -144,7 +144,7 @@ class EqualsExpressionTest {
                 true == true
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Expression expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -154,7 +154,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(true),
                 value
@@ -165,7 +165,7 @@ class EqualsExpressionTest {
                 true == false
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -175,7 +175,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(false),
                 value
@@ -189,7 +189,7 @@ class EqualsExpressionTest {
                 true != true
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Expression expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -199,7 +199,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(false),
                 value
@@ -213,7 +213,7 @@ class EqualsExpressionTest {
                 {"a": "a", "b": "b"} == {"a": "a", "b": "b"}
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Expression expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -223,7 +223,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(true),
                 value
@@ -234,7 +234,7 @@ class EqualsExpressionTest {
                 {"a": "a", "b": "b"} == {"a": "a", "b": "c"}
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -244,7 +244,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(false),
                 value
@@ -258,7 +258,7 @@ class EqualsExpressionTest {
                 {"a": "a", "b": "b"} != {"a": "a", "b": "b"}
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Expression expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -268,7 +268,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(false),
                 value
@@ -282,7 +282,7 @@ class EqualsExpressionTest {
                 ("a" + "b") == ("a" + "b")
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Expression expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -300,7 +300,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(true),
                 value
@@ -311,7 +311,7 @@ class EqualsExpressionTest {
                 ("a" + "b") == ("a" + "c")
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -329,7 +329,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(false),
                 value
@@ -343,7 +343,7 @@ class EqualsExpressionTest {
                 ("a" + "b") == (true)
                 """,
                 PMLParser.EqualsExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Expression expression = EqualsExpression.compileEqualsExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -361,7 +361,7 @@ class EqualsExpressionTest {
                 equalsExpression
         );
 
-        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore())), new MemoryPolicyStore());
+        Value value = equalsExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
         assertEquals(
                 new BoolValue(false),
                 value

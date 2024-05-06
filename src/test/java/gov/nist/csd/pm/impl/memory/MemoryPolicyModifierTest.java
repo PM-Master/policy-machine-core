@@ -1,0 +1,251 @@
+package gov.nist.csd.pm.impl.memory;
+
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+import gov.nist.csd.pm.pap.PolicyModifier;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
+import gov.nist.csd.pm.common.graph.node.Node;
+import gov.nist.csd.pm.common.graph.relationship.Association;
+import gov.nist.csd.pm.common.obligation.Obligation;
+import gov.nist.csd.pm.common.prohibition.ContainerCondition;
+import gov.nist.csd.pm.common.prohibition.Prohibition;
+import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
+import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.common.tx.TxRunner.runTx;
+import static org.junit.jupiter.api.Assertions.*;
+
+class MemoryPolicyModifierTest {
+
+    MemoryPolicyModifier policyStore = new MemoryPolicyModifier();
+
+    MemoryPolicyModifierTest() throws PMException {
+    }
+
+    @Test
+    void getResourceAccessRights() throws PMException {
+        policyStore.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+        AccessRightSet resourceAccessRights = policyStore.graph().getResourceAccessRights();
+        assertThrows(UnsupportedOperationException.class, () -> resourceAccessRights.add("test"));
+
+        assertFalse(policyStore.graph().getResourceAccessRights().contains("test"));
+    }
+
+    @Test
+    void getNode() throws PMException {
+        policyStore.graph().createPolicyClass("pc1", NO_PROPERTIES);
+        Node pc1 = policyStore.graph().getNode("pc1");
+        assertThrows(UnsupportedOperationException.class, () -> pc1.getProperties().put("test", "test"));
+    }
+
+    @Test
+    void getPolicyClasses() throws PMException {
+        policyStore.graph().createPolicyClass("pc1", null);
+        policyStore.graph().createPolicyClass("pc2", null);
+        List<String> policyClasses = policyStore.graph().getPolicyClasses();
+        policyClasses.add("test");
+        assertFalse(policyStore.graph().getPolicyClasses().contains("test"));
+    }
+
+    @Test
+    void getChildren() throws PMException {
+        policyStore.graph().createPolicyClass("pc1", new HashMap<>());
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
+        List<String> children = policyStore.graph().getChildren("pc1");
+        assertThrows(UnsupportedOperationException.class, () -> children.add("test"));
+        assertFalse(policyStore.graph().getChildren("pc1").contains("test"));
+    }
+
+    @Test
+    void getParents() throws PMException {
+        policyStore.graph().createPolicyClass("pc1", null);
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObject("o1", new HashMap<>(), List.of("oa1", "oa2", "oa3"));
+        List<String> parents = policyStore.graph().getParents("o1");
+        assertThrows(UnsupportedOperationException.class, () -> parents.add("test"));
+        assertFalse(policyStore.graph().getParents("o1").contains("test"));
+    }
+
+    @Test
+    void getAssociationsWithSource() throws PMException {
+        policyStore.graph().createPolicyClass("pc1", null);
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().associate("ua1", "oa1", new AccessRightSet());
+        List<Association> assocs = policyStore.graph().getAssociationsWithSource("ua1");
+        assertThrows(UnsupportedOperationException.class, () -> assocs.clear());
+        assertThrows(UnsupportedOperationException.class, () -> assocs.get(0).getAccessRightSet().clear());
+        assertThrows(UnsupportedOperationException.class, () -> assocs.get(0).setAccessRightSet(new AccessRightSet()));
+    }
+
+    @Test
+    void getAssociationsWithTarget() throws PMException {
+        policyStore.graph().createPolicyClass("pc1", null);
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().associate("ua1", "oa1", new AccessRightSet());
+        List<Association> assocs = policyStore.graph().getAssociationsWithTarget("oa1");
+        assertThrows(UnsupportedOperationException.class, () -> assocs.clear());
+    }
+
+    @Test
+    void getProhibitions() throws PMException {
+        policyStore.graph().createPolicyClass("pc1", null);
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        policyStore.prohibitions().create("pro1", ProhibitionSubject.userAttribute("ua1"), new AccessRightSet(), true, new ContainerCondition("oa1", false));
+        Map<String, List<Prohibition>> prohibitions = policyStore.prohibitions().getAll();
+        prohibitions.clear();
+        assertEquals(1, policyStore.prohibitions().getAll().size());
+        prohibitions = policyStore.prohibitions().getAll();
+        Prohibition p = prohibitions.get("ua1").get(0);
+        p = new Prohibition("test", ProhibitionSubject.userAttribute("ua2"), new AccessRightSet("read"), false, Collections.singletonList(new ContainerCondition("oa2", true)));
+        Prohibition actual = policyStore.prohibitions().getWithSubject("ua1").get(0);
+        assertEquals("pro1", actual.getName());
+        assertEquals("ua1", actual.getSubject().getName());
+        assertEquals(ProhibitionSubject.Type.USER_ATTRIBUTE, actual.getSubject().getType());
+        assertEquals(new AccessRightSet(), actual.getAccessRightSet());
+        assertTrue(actual.isIntersection());
+        assertEquals(1, actual.getContainers().size());
+        assertEquals(new ContainerCondition("oa1", false), actual.getContainers().get(0));
+    }
+
+    @Test
+    void getProhibitionsFor() throws PMException {
+        policyStore.graph().createPolicyClass("pc1", null);
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        policyStore.prohibitions().create("pro1", ProhibitionSubject.userAttribute("ua1"), new AccessRightSet(), true, new ContainerCondition("oa1", false));
+        List<Prohibition> prohibitions = policyStore.prohibitions().getWithSubject("ua1");
+        assertThrows(UnsupportedOperationException.class, () -> prohibitions.clear());
+        assertEquals(1, policyStore.prohibitions().getAll().size());
+        List<Prohibition> prohibitions2 = policyStore.prohibitions().getWithSubject("ua1");
+        Prohibition p = prohibitions2.get(0);
+        assertThrows(UnsupportedOperationException.class, () -> p.getContainers().add(new ContainerCondition("test", false)));
+        Prohibition actual = policyStore.prohibitions().getWithSubject("ua1").get(0);
+        assertEquals("pro1", actual.getName());
+        assertEquals("ua1", actual.getSubject().getName());
+        assertEquals(ProhibitionSubject.Type.USER_ATTRIBUTE, actual.getSubject().getType());
+        assertEquals(new AccessRightSet(), actual.getAccessRightSet());
+        assertTrue(actual.isIntersection());
+        assertEquals(1, actual.getContainers().size());
+        assertEquals(new ContainerCondition("oa1", false), actual.getContainers().get(0));
+    }
+
+    @Test
+    void getProhibition() throws PMException {
+        policyStore.graph().createPolicyClass("pc1", null);
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        policyStore.prohibitions().create("pro1", ProhibitionSubject.userAttribute("ua1"), new AccessRightSet(), true, new ContainerCondition("oa1", false));
+        Prohibition p = policyStore.prohibitions().get("pro1");
+        Prohibition actual = policyStore.prohibitions().get("pro1");
+        assertEquals("pro1", actual.getName());
+        assertEquals("ua1", actual.getSubject().getName());
+        assertEquals(ProhibitionSubject.Type.USER_ATTRIBUTE, actual.getSubject().getType());
+        assertEquals(new AccessRightSet(), actual.getAccessRightSet());
+        assertTrue(actual.isIntersection());
+        assertEquals(1, actual.getContainers().size());
+        assertEquals(new ContainerCondition("oa1", false), actual.getContainers().get(0));
+        assertThrows(UnsupportedOperationException.class, () -> p.getContainers().add(new ContainerCondition("test", false)));
+        assertThrows(UnsupportedOperationException.class, () -> p.getAccessRightSet().add("test"));
+    }
+
+    @Test
+    void getObligations() throws PMException {
+        policyStore.graph().createPolicyClass("pc1", new HashMap<>());
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        /*TODO policyStore.obligations().create(
+                new UserContext("u1"),
+                "obl1",
+                new Rule(
+                        "rule1",
+                        new EventPattern(
+                                new AnyUserSubject(),
+                                Performs.events("test_event")
+                        ),
+                        new Response("evtCtx", List.of())
+                )
+        );*/
+        List<Obligation> obligations = policyStore.obligations().getAll();
+        assertThrows(UnsupportedOperationException.class, () -> obligations.clear());
+        assertEquals(1, policyStore.obligations().getAll().size());
+    }
+
+    @Test
+    void getObligation() throws PMException {
+        /* TODO Rule rule1 = new Rule(
+                "rule1",
+                new EventPattern(
+                        new AnyUserSubject(),
+                        Performs.events("test_event")
+                ),
+                new Response("evtCtx", List.of())
+        );
+
+        policyStore.graph().createPolicyClass("pc1", new HashMap<>());
+        policyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        policyStore.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        policyStore.obligations().create(
+                new UserContext("u1"),
+                "obl1",
+                rule1
+        );
+
+        Obligation obligation = policyStore.obligations().get("obl1");
+        assertThrows(UnsupportedOperationException.class, () -> obligation.setRules(List.of()));
+        assertThrows(UnsupportedOperationException.class, () -> obligation.getRules().clear());
+        assertEquals("obl1", obligation.getName());
+        assertEquals(new UserContext("u1"), obligation.getAuthor());
+        assertEquals(1, obligation.getRules().size());
+        assertEquals(rule1, obligation.getRules().get(0));*/
+    }
+
+    @Test
+    void testTx() throws PMException {
+        PolicyModifier store = new MemoryPolicyModifier();
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        try {
+            runTx(store, () -> {
+                store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+                throw new PMException("test");
+            });
+        } catch (PMException e) { }
+        assertFalse(store.graph().nodeExists("oa1"));
+    }
+
+    @Test
+    void testTx2() throws PMException {
+        PolicyModifier store = new MemoryPolicyModifier();
+        store.graph().createPolicyClass("pc1", new HashMap<>());
+        store.beginTx();
+        store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        assertTrue(store.graph().nodeExists("oa1"));
+        store.rollback();
+        assertFalse(store.graph().nodeExists("oa1"));
+        store.commit();
+        assertFalse(store.graph().nodeExists("oa1"));
+    }
+
+    @Test
+    void testSetGraph() throws PMException {
+        MemoryPolicyModifier policyStore = new MemoryPolicyModifier();
+
+        MemoryPolicyModifier policyStore1 = new MemoryPolicyModifier();
+        policyStore1.graph().createPolicyClass("pc1", new HashMap<>());
+
+        policyStore.setGraph(policyStore1.graph());
+        assertTrue(policyStore.graph().nodeExists("pc1"));
+    }
+}

@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
@@ -38,7 +38,7 @@ class PMLVisitorTest {
                 }
                 
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext("u1"), pml);
 
         assertTrue(memoryPolicyStore.graph().nodeExists("a"));
@@ -57,7 +57,7 @@ class PMLVisitorTest {
                 }
                 
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         PMLCompilationException e = assertThrows(
                 PMLCompilationException.class, () -> PMLExecutor.compileAndExecutePML(memoryPolicyStore,
                                                                                       new UserContext("u1"), pml
@@ -73,7 +73,7 @@ class PMLVisitorTest {
                     create policy class a
                 }
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         PMLCompilationException e = assertThrows(
                 PMLCompilationException.class, () -> PMLExecutor.compileAndExecutePML(memoryPolicyStore,
                                                                                       new UserContext("u1"), pml
@@ -89,7 +89,7 @@ class PMLVisitorTest {
                 const a = "a"
                 
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         PMLCompilationException e = assertThrows(
                 PMLCompilationException.class, () -> PMLExecutor.compileAndExecutePML(memoryPolicyStore,
                                                                                       new UserContext("u1"), pml
@@ -106,7 +106,7 @@ class PMLVisitorTest {
                 function f1(string a) {}
                 
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         PMLCompilationException e = assertThrows(
                 PMLCompilationException.class,
                 () -> PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext("u1"), pml)
@@ -122,8 +122,8 @@ class PMLVisitorTest {
                     return ""
                 }
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
-        memoryPolicyStore.userDefinedPML().createFunction(new FunctionDefinitionStatement.Builder("f1")
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
+        memoryPolicyStore.pml().createFunction(new FunctionDefinitionStatement.Builder("f1")
                                                                   .returns(Type.voidType())
                                                                   .build());
         PMLCompilationException e = assertThrows(
@@ -140,9 +140,9 @@ class PMLVisitorTest {
         String pml = """
                 const x = ["x"]
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         ArrayValue expected = new ArrayValue(List.of(new StringValue("x2")), Type.string());
-        memoryPolicyStore.userDefinedPML().createConstant("x", expected);
+        memoryPolicyStore.pml().createConstant("x", expected);
         PMLCompilationException e = assertThrows(
                 PMLCompilationException.class,
                 () -> PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext("u1"), pml)

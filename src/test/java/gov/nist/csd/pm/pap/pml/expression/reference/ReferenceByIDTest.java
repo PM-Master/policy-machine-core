@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression.reference;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
@@ -19,7 +19,7 @@ class ReferenceByIDTest {
     @Test
     void testGetType() throws PMException {
         ReferenceByID a = new ReferenceByID("a");
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         visitorContext.scope().addVariable("a", new Variable("a", Type.string(), false));
 
         assertEquals(
@@ -31,11 +31,11 @@ class ReferenceByIDTest {
     @Test
     void testExecute() throws PMException {
         ReferenceByID a = new ReferenceByID("a");
-        ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore()));
+        ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier()));
         Value expected = new StringValue("test");
         executionContext.scope().addVariable("a", expected);
 
-        Value actual = a.execute(executionContext, new MemoryPolicyStore());
+        Value actual = a.execute(executionContext, new MemoryPolicyModifier());
         assertEquals(expected, actual);
     }
 

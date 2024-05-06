@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
@@ -24,7 +24,7 @@ class StatementBlockVisitorTest {
 
     @BeforeAll
     static void setup() throws PMException {
-        testGlobalScope = GlobalScope.forCompile(new MemoryPolicyStore())
+        testGlobalScope = GlobalScope.forCompile(new MemoryPolicyModifier())
                    .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
     }
 

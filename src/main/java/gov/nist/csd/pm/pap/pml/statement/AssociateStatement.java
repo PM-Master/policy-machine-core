@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
@@ -36,17 +36,17 @@ public class AssociateStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-        Value uaValue = ua.execute(ctx, policy);
-        Value targetValue = target.execute(ctx, policy);
-        Value permissionsValue = accessRights.execute(ctx, policy);
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+        Value uaValue = ua.execute(ctx, policyModification);
+        Value targetValue = target.execute(ctx, policyModification);
+        Value permissionsValue = accessRights.execute(ctx, policyModification);
 
         AccessRightSet accessRightSet = new AccessRightSet();
         for (Value v : permissionsValue.getArrayValue()) {
             accessRightSet.add(v.getStringValue());
         }
 
-        policy.graph().associate(
+        policyModification.graph().associate(
                 uaValue.getStringValue(),
                 targetValue.getStringValue(),
                 accessRightSet

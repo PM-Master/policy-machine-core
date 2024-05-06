@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
@@ -17,52 +17,53 @@ import java.util.Map;
 
 public class PMLExecutor {
 
-    public static void compileAndExecutePML(Policy policy, UserContext author, String input,
+    public static void compileAndExecutePML(PolicyModification policyModification, UserContext author, String input,
                                             FunctionDefinitionStatement ... customFunctions) throws PMException {
         // compile the PML into statements
-        CompiledPML compiledPML = PMLCompiler.compilePML(policy, input, customFunctions);
+        CompiledPML compiledPML = PMLCompiler.compilePML(policyModification, input, customFunctions);
 
         // evaluate the constants and functions from the compiled PML
-        Map<String, Value> persistedConstants = evaluateConstantStmts(policy, compiledPML.constants());
+        Map<String, Value> persistedConstants = evaluateConstantStmts(policyModification, compiledPML.constants());
 
         // add constants and functions to policy
         for (Map.Entry<String, Value> c : persistedConstants.entrySet()) {
-            policy.userDefinedPML().createConstant(c.getKey(), c.getValue());
+            policyModification.pml().createConstant(c.getKey(), c.getValue());
         }
 
         for (Map.Entry<String, FunctionDefinitionStatement> f : compiledPML.functions().entrySet()) {
-            policy.userDefinedPML().createFunction(f.getValue());
+            policyModification.pml().createFunction(f.getValue());
         }
 
         // add the constants and functions to the persisted scope
         // build a global scope from the policy
-        GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(policy, customFunctions);
+        GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(policyModification, customFunctions);
 
         // execute other statements
         ExecutionContext ctx = new ExecutionContext(author, new Scope<>(globalScope));
 
         for (PMLStatement pmlStatement : compiledPML.stmts()) {
-            pmlStatement.execute(ctx, policy);
+            pmlStatement.execute(ctx, policyModification);
         }
     }
 
-    private static Map<String, Value> evaluateConstantStmts(Policy policy, Map<String, Expression> constants)
+    private static Map<String, Value> evaluateConstantStmts(PolicyModification policyModification, Map<String, Expression> constants)
             throws PMException {
         Map<String, Value> constantsMap = new HashMap<>();
 
         // create empty exec ctx for constant value evaluation as all constants are literals
-        ExecutionContext ctx = new ExecutionContext(new UserContext(), new Scope<>(GlobalScope.forExecute(policy)));
+        ExecutionContext ctx = new ExecutionContext(new UserContext(), new Scope<>(GlobalScope.forExecute(
+                policyModification)));
 
         for (Map.Entry<String, Expression> e : constants.entrySet()) {
-            constantsMap.put(e.getKey(), e.getValue().execute(ctx, policy));
+            constantsMap.put(e.getKey(), e.getValue().execute(ctx, policyModification));
         }
 
         return constantsMap;
     }
 
-    public static Value executeStatementBlock(ExecutionContext executionCtx, Policy policy, List<PMLStatement> statements) throws PMException {
+    public static Value executeStatementBlock(ExecutionContext executionCtx, PolicyModification policyModification, List<PMLStatement> statements) throws PMException {
         for (PMLStatement statement : statements) {
-            Value value = statement.execute(executionCtx, policy);
+            Value value = statement.execute(executionCtx, policyModification);
             if (value instanceof ReturnValue || value instanceof BreakValue || value instanceof ContinueValue) {
                 return value;
             }

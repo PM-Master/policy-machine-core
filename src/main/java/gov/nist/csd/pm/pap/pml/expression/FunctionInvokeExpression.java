@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
@@ -110,23 +110,23 @@ public class FunctionInvokeExpression extends Expression {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
         FunctionDefinitionStatement funcDef = ctx.scope().getFunction(functionName);
 
-        ExecutionContext invokeCtx = prepareFunctionInvoke(ctx, policy, funcDef);
+        ExecutionContext invokeCtx = prepareFunctionInvoke(ctx, policyModification, funcDef);
 
         Value value = new VoidValue();
         if (funcDef.isFunctionExecutor()) {
             FunctionExecutor functionExecutor = funcDef.getFunctionExecutor();
             try {
-                value = functionExecutor.exec(invokeCtx, policy);
+                value = functionExecutor.exec(invokeCtx, policyModification);
             } catch (PMLScopeException e) {
                 throw new PMLExecutionException(e);
             }
         } else {
             List<PMLStatement> statements = funcDef.getStatements();
             for (PMLStatement stmt : statements) {
-                value = stmt.execute(invokeCtx, policy);
+                value = stmt.execute(invokeCtx, policyModification);
                 if (value instanceof ReturnValue) {
                     break;
                 }
@@ -138,7 +138,7 @@ public class FunctionInvokeExpression extends Expression {
         return value;
     }
 
-    private ExecutionContext prepareFunctionInvoke(ExecutionContext ctx, Policy policy, FunctionDefinitionStatement funcDef)
+    private ExecutionContext prepareFunctionInvoke(ExecutionContext ctx, PolicyModification policyModification, FunctionDefinitionStatement funcDef)
             throws PMException {
         String funcName = funcDef.getSignature().getFunctionName();
         List<FormalArgument> formalArgs = funcDef.getSignature().getArgs();
@@ -152,7 +152,7 @@ public class FunctionInvokeExpression extends Expression {
 
         for (int i = 0; i < actualArgs.size(); i++) {
             Expression argExpr = actualArgs.get(i);
-            Value argValue = argExpr.execute(funcInvokeExecCtx, policy);
+            Value argValue = argExpr.execute(funcInvokeExecCtx, policyModification);
             FormalArgument formalArg = formalArgs.get(i);
 
             if (!argValue.getType().equals(formalArg.type())) {

@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression.reference;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
@@ -26,7 +26,7 @@ class ReferenceByDotIndexTest {
     @Test
     void testGetType() throws PMException {
         ReferenceByDotIndex a = new ReferenceByDotIndex(new ReferenceByID("a"), "b");
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         Type expected =  Type.array(Type.string());
         visitorContext.scope().addVariable("a", new Variable("a", Type.map(Type.string(), expected), false));
 
@@ -39,13 +39,13 @@ class ReferenceByDotIndexTest {
     @Test
     void testExecute() throws PMException {
         ReferenceByDotIndex a = new ReferenceByDotIndex(new ReferenceByID("a"), "b");
-        ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyStore()));
+        ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier()));
         ArrayValue expected = new ArrayValue(List.of(new StringValue("1"), new StringValue("2")), Type.string());
         MapValue mapValue = new MapValue(
                 Map.of(new StringValue("b"), expected), Type.string(), Type.array(Type.string()));
         executionContext.scope().addVariable("a", mapValue);
 
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         Value actual = a.execute(executionContext, memoryPolicyStore);
         assertEquals(expected, actual);
     }
@@ -63,7 +63,7 @@ class ReferenceByDotIndexTest {
                 
                 create policy class a.b.c.d
                 """;
-        MemoryPolicyStore memoryPolicyStore = new MemoryPolicyStore();
+        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
         memoryPolicyStore.graph().createPolicyClass("pc1", new HashMap<>());
         memoryPolicyStore.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
         memoryPolicyStore.graph().createUserAttribute("u1", new HashMap<>(), List.of("ua1"));

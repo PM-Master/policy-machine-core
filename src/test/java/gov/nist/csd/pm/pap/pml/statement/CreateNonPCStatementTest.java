@@ -1,9 +1,9 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
-import gov.nist.csd.pm.common.graph.nodes.NodeType;
+import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
@@ -26,11 +26,11 @@ class CreateNonPCStatementTest {
         CreateNonPCStatement stmt3 = new CreateNonPCStatement(new StringLiteral("u1"), NodeType.U, buildArrayLiteral("ua1"));
         CreateNonPCStatement stmt4 = new CreateNonPCStatement(new StringLiteral("o1"), NodeType.O, buildArrayLiteral("oa1"));
 
-        MemoryPolicyStore store = new MemoryPolicyStore();
+        MemoryPolicyModifier store = new MemoryPolicyModifier();
         store.graph().createPolicyClass("pc1", new HashMap<>());
         store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
         store.graph().createUser("u2", new HashMap<>(), List.of("ua2"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(new MemoryPolicyStore()));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(new MemoryPolicyModifier()));
 
         stmt1.execute(execCtx, store);
         stmt2.execute(execCtx, store);
@@ -53,11 +53,11 @@ class CreateNonPCStatementTest {
         CreateNonPCStatement stmt1 = new CreateNonPCStatement(new StringLiteral("ua1"), NodeType.UA, buildArrayLiteral("pc1"),
                                                               buildMapLiteral("a", "b", "c", "d"));
 
-        MemoryPolicyStore store = new MemoryPolicyStore();
+        MemoryPolicyModifier store = new MemoryPolicyModifier();
         store.graph().createPolicyClass("pc1", new HashMap<>());
         store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
         store.graph().createUser("u1", new HashMap<>(), List.of("ua2"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(new MemoryPolicyStore()));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(new MemoryPolicyModifier()));
 
         stmt1.execute(execCtx, store);
 

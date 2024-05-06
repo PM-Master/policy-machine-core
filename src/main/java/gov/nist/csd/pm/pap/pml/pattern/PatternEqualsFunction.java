@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.pattern;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.op.pattern.Equals;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.pap.op.pattern.Equals;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
@@ -20,7 +20,7 @@ public class PatternEqualsFunction extends PMLPatternFunctionStmt {
         PatternEqualsFunction patternEqualsFunction = new PatternEqualsFunction();
         patternEqualsFunction.setValueToMatch(new StringValue("test"));
 
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         ExecutionContext executionContext = new ExecutionContext(
                 new UserContext(""),
                 GlobalScope.forExecute(ps, patternEqualsFunction)

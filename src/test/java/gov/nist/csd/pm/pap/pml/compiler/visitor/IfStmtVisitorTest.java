@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
@@ -34,7 +34,7 @@ class IfStmtVisitorTest {
                 }
                 """,
                 PMLParser.IfStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         PMLStatement stmt = new IfStmtVisitor(visitorCtx)
                 .visitIfStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
@@ -61,7 +61,7 @@ class IfStmtVisitorTest {
                 }
                 """,
                 PMLParser.IfStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         PMLStatement stmt = new IfStmtVisitor(visitorCtx)
                 .visitIfStatement(ctx);
         assertEquals(2, visitorCtx.errorLog().getErrors().size());
@@ -88,7 +88,7 @@ class IfStmtVisitorTest {
                 
                 f1()
                 """;
-        MemoryPolicyStore store = new MemoryPolicyStore();
+        MemoryPolicyModifier store = new MemoryPolicyModifier();
         PMLExecutor.compileAndExecutePML(store, new UserContext(), pml);
         assertFalse(store.graph().nodeExists("pc1"));
     }

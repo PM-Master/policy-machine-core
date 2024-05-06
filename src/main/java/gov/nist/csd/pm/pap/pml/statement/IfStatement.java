@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
@@ -37,22 +37,22 @@ public class IfStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
-        boolean condition = ifBlock.condition.execute(ctx, policy).getBooleanValue();
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+        boolean condition = ifBlock.condition.execute(ctx, policyModification).getBooleanValue();
 
         if (condition) {
-            return executeBlock(ctx, policy, ifBlock.block);
+            return executeBlock(ctx, policyModification, ifBlock.block);
         }
 
         // check else ifs
         for (ConditionalBlock conditionalBlock : ifElseBlocks) {
-            condition = conditionalBlock.condition.execute(ctx, policy).getBooleanValue();
+            condition = conditionalBlock.condition.execute(ctx, policyModification).getBooleanValue();
             if (condition) {
-                return executeBlock(ctx, policy, conditionalBlock.block);
+                return executeBlock(ctx, policyModification, conditionalBlock.block);
             }
         }
 
-        return executeBlock(ctx, policy, elseBlockStatements);
+        return executeBlock(ctx, policyModification, elseBlockStatements);
     }
 
     @Override
@@ -86,10 +86,10 @@ public class IfStatement extends PMLStatement {
         return String.format("%sif %s %s", indent(indentLevel), ifBlock.condition, new PMLStatementBlock(ifBlock.block).toFormattedString(indentLevel));
     }
 
-    private Value executeBlock(ExecutionContext ctx, Policy policy, List<PMLStatement> block) throws PMException {
+    private Value executeBlock(ExecutionContext ctx, PolicyModification policyModification, List<PMLStatement> block) throws PMException {
         ExecutionContext copy = ctx.copy();
 
-        Value value = PMLExecutor.executeStatementBlock(copy, policy, block);
+        Value value = PMLExecutor.executeStatementBlock(copy, policyModification, block);
 
         ctx.scope().local().overwriteFromLocalScope(copy.scope().local());
 

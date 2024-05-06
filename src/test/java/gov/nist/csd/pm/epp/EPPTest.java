@@ -1,41 +1,27 @@
 package gov.nist.csd.pm.epp;
 
-import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.op.graph.CreateObjectAttributeOp;
-import gov.nist.csd.pm.pdp.AccessRightSet;
 import gov.nist.csd.pm.pdp.UserContext;
-import gov.nist.csd.pm.pap.pml.expression.Expression;
-import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
-import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
-import gov.nist.csd.pm.pap.pml.statement.CreateNonPCStatement;
-import gov.nist.csd.pm.pap.pml.statement.CreatePolicyStatement;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
 import gov.nist.csd.pm.pdp.PDP;
-import gov.nist.csd.pm.common.graph.nodes.NodeType;
-import gov.nist.csd.pm.common.obligation.Response;
-import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.obligation.EventPattern;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import static gov.nist.csd.pm.pdp.AdminAccessRights.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class EPPTest {
 
     @Test
     void test() throws PMException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
         PDP pdp = new PDP(pap);
@@ -170,7 +156,7 @@ class EPPTest {
 
     @Test
     void testCustomFunctionInResponse() throws PMException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
 
@@ -214,7 +200,7 @@ class EPPTest {
 
     @Test
     void testReturnInResponse() throws PMException {
-        MemoryPolicyStore ps = new MemoryPolicyStore();
+        MemoryPolicyModifier ps = new MemoryPolicyModifier();
         MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
         PAP pap = new PAP(ps, pr);
 

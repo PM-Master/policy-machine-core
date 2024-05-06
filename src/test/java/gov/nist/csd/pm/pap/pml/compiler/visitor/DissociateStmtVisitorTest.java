@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
@@ -23,7 +23,7 @@ class DissociateStmtVisitorTest {
                 dissociate "a" and ["b"]
                 """,
                 PMLParser.DissociateStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         PMLStatement stmt = new DissociateStmtVisitor(visitorCtx).visitDissociateStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -39,7 +39,7 @@ class DissociateStmtVisitorTest {
                 dissociate ["a"] and "b"
                 """,
                 PMLParser.DissociateStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         new DissociateStmtVisitor(visitorCtx).visitDissociateStatement(ctx);
         assertEquals(2, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -56,7 +56,7 @@ class DissociateStmtVisitorTest {
                 dissociate "a" and "b"
                 """,
                 PMLParser.DissociateStatementContext.class);
-        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
+        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
         new DissociateStmtVisitor(visitorCtx).visitDissociateStatement(ctx);
         assertEquals(1, visitorCtx.errorLog().getErrors().size());
         assertEquals(

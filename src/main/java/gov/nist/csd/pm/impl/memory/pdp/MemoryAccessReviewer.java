@@ -1,12 +1,12 @@
 package gov.nist.csd.pm.impl.memory.pdp;
 
-import gov.nist.csd.pm.pap.Graph;
+import gov.nist.csd.pm.pap.PolicyModifier;
+import gov.nist.csd.pm.pap.modification.GraphModification;
 import gov.nist.csd.pm.common.graph.dag.BreadthFirstGraphWalker;
 import gov.nist.csd.pm.common.graph.dag.DepthFirstGraphWalker;
-import gov.nist.csd.pm.pap.PolicyStore;
 import gov.nist.csd.pm.pap.exception.NodeDoesNotExistException;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.AccessRightSet;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.audit.EdgePath;
 import gov.nist.csd.pm.pap.audit.Explain;
@@ -17,25 +17,25 @@ import gov.nist.csd.pm.common.graph.dag.UserDagResult;
 import gov.nist.csd.pm.common.graph.dag.Propagator;
 import gov.nist.csd.pm.common.graph.dag.Visitor;
 import gov.nist.csd.pm.common.graph.dag.Direction;
-import gov.nist.csd.pm.common.graph.nodes.Node;
-import gov.nist.csd.pm.common.graph.relationships.Association;
-import gov.nist.csd.pm.common.graph.relationships.Relationship;
+import gov.nist.csd.pm.common.graph.node.Node;
+import gov.nist.csd.pm.common.graph.relationship.Association;
+import gov.nist.csd.pm.common.graph.relationship.Relationship;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
-import gov.nist.csd.pm.pap.AccessReview;
+import gov.nist.csd.pm.pap.query.AccessQuery;
 
 import java.util.*;
 
 import static gov.nist.csd.pm.pdp.AccessRightResolver.*;
 import static gov.nist.csd.pm.pdp.UserContext.NO_PROCESS;
-import static gov.nist.csd.pm.common.graph.nodes.NodeType.U;
-import static gov.nist.csd.pm.common.graph.nodes.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.common.graph.node.NodeType.U;
+import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
 
-public class MemoryAccessReviewer implements AccessReview {
+public class MemoryAccessReviewer implements AccessQuery {
 
-    private final PolicyStore policyStore;
+    private final PolicyModifier policyStore;
 
-    public MemoryAccessReviewer(PolicyStore policyStore) {
+    public MemoryAccessReviewer(PolicyModifier policyStore) {
         this.policyStore = policyStore;
     }
 
@@ -547,7 +547,7 @@ public class MemoryAccessReviewer implements AccessReview {
      * @return the set of paths from a user to a target node (through an association) for each policy class in the system.
      * @throws PMException if there is an exception traversing the graph
      */
-    public static Map<String, PolicyClass> resolvePaths(Graph graph, List<EdgePath> userPaths, List<EdgePath> targetPaths, String target) throws PMException {
+    public static Map<String, PolicyClass> resolvePaths(GraphModification graphModification, List<EdgePath> userPaths, List<EdgePath> targetPaths, String target) throws PMException {
         Map<String, PolicyClass> results = new HashMap<>();
 
         for (EdgePath targetPath : targetPaths) {
@@ -555,7 +555,7 @@ public class MemoryAccessReviewer implements AccessReview {
 
             // if the last element in the target path is a pc, the target belongs to that pc, add the pc to the results
             // skip to the next target path if it is not a policy class
-            if (!isPolicyClass(graph, pcEdge.getTarget())) {
+            if (!isPolicyClass(graphModification, pcEdge.getTarget())) {
                 continue;
             }
 
@@ -580,8 +580,8 @@ public class MemoryAccessReviewer implements AccessReview {
         return results;
     }
 
-    public static boolean isPolicyClass(Graph graph, String node) throws PMException {
-        return graph.getPolicyClasses().contains(node);
+    public static boolean isPolicyClass(GraphModification graphModification, String node) throws PMException {
+        return graphModification.getPolicyClasses().contains(node);
     }
 
     public static Set<Path> computeExplainPaths(List<EdgePath> userEdgePaths, EdgePath targetEdgePath, String target) {

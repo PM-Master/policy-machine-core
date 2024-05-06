@@ -1,19 +1,14 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.common.op.pattern.Pattern;
-import gov.nist.csd.pm.pap.Policy;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
-import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
-import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
-import gov.nist.csd.pm.pap.pml.type.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,18 +34,18 @@ public class CreateObligationStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
+    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
         UserContext author = ctx.author();
-        String nameStr = name.execute(ctx, policy).getStringValue();
+        String nameStr = name.execute(ctx, policyModification).getStringValue();
 
         // execute the create rule statements and add to obligation
         List<Rule> rules = new ArrayList<>();
         for (CreateRuleStatement createRuleStmt : ruleStmts) {
-            Rule rule = createRuleStmt.execute(ctx, policy).getRuleValue();
+            Rule rule = createRuleStmt.execute(ctx, policyModification).getRuleValue();
             rules.add(rule);
         }
 
-        policy.obligations().create(author, nameStr, rules.toArray(rules.toArray(Rule[]::new)));
+        policyModification.obligations().create(author, nameStr, rules.toArray(rules.toArray(Rule[]::new)));
 
         return new VoidValue();
     }

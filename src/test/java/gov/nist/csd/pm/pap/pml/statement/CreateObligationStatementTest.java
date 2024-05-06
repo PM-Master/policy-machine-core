@@ -1,22 +1,5 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyStore;
-import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
-import gov.nist.csd.pm.common.obligation.Obligation;
-import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.obligation.EventPattern;
-import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
-import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
-import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
-import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.List;
-
-import static gov.nist.csd.pm.pap.pml.PMLUtil.buildArrayLiteral;
-import static org.junit.jupiter.api.Assertions.*;
-
 class CreateObligationStatementTest {
 
     /* TODO @Test
