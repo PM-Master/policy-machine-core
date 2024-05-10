@@ -22,7 +22,7 @@ public class Search extends FunctionDefinitionStatement {
                               new FormalArgument("type", Type.string()),
                               new FormalArgument("properties", Type.map(Type.string(), Type.string()))
                       )
-                      .executor((ctx, author) -> {
+                      .executor((ctx, pap) -> {
                           NodeType nodeType = NodeType.toNodeType(ctx.scope().getVariable("type").getStringValue());
 
                           Map<Value, Value> propertiesValue = ctx.scope().getVariable("properties").getMapValue();
@@ -32,7 +32,7 @@ public class Search extends FunctionDefinitionStatement {
                               properties.put(prop.getKey().getStringValue(), prop.getValue().getStringValue());
                           }
 
-                          List<String> search = author.graph().search(nodeType, properties);
+                          List<String> search = pap.query().graph().search(nodeType, properties);
 
                           List<Value> ret = new ArrayList<>(search.size());
                           for (String s : search) {

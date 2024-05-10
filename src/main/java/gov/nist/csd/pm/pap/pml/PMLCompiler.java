@@ -1,12 +1,13 @@
 package gov.nist.csd.pm.pap.pml;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLLexer;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
 import gov.nist.csd.pm.pap.pml.compiler.error.ErrorLog;
 import gov.nist.csd.pm.pap.pml.compiler.visitor.PMLVisitor;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
@@ -18,10 +19,10 @@ import org.antlr.v4.runtime.CommonTokenStream;
 
 public class PMLCompiler {
 
-    public static CompiledPML compilePML(PolicyModification policyModification, String input, FunctionDefinitionStatement... customBuiltinFunctions) throws PMException {
+    public static CompiledPML compilePML(PAP pap, String input, FunctionDefinitionStatement... customBuiltinFunctions) throws PMException {
         ErrorLog errorLog = new ErrorLog();
 
-        GlobalScope<Variable, FunctionSignature> globalScope = GlobalScope.forCompile(policyModification, customBuiltinFunctions);
+        GlobalScope<Variable, FunctionSignature> globalScope = GlobalScope.forCompile(pap, customBuiltinFunctions);
 
         PMLErrorHandler pmlErrorHandler = new PMLErrorHandler();
 
@@ -34,19 +35,17 @@ public class PMLCompiler {
         parser.removeErrorListeners();
         parser.addErrorListener(pmlErrorHandler);
 
-        PMLVisitor pmlVisitor = new PMLVisitor(new VisitorContext(tokens, new Scope<>(globalScope), errorLog));
-        CompiledPML compiled = null;
-        try {
-            compiled = pmlVisitor.visitPml(parser.pml());
-        } catch (Exception e) {
-            errorLog.addError(parser.pml(), e.getMessage());
+        // check for syntax errors
+        PMLVisitor pmlVisitor = new PMLVisitor(new VisitorContext(tokens, new Scope<>(globalScope), errorLog, pmlErrorHandler));
+        PMLParser.PmlContext pmlCtx = parser.pml();
+        if (!pmlErrorHandler.getErrors().isEmpty()) {
+            throw new PMLCompilationException(pmlErrorHandler.getErrors());
         }
 
-        errorLog.addErrors(pmlErrorHandler.getErrors());
-
-        // throw an exception if there are any errors from parsing
+        // check for semantic errors
+        CompiledPML compiled = pmlVisitor.visitPml(pmlCtx);
         if (!errorLog.getErrors().isEmpty()) {
-            throw new PMLCompilationException(errorLog);
+            throw new PMLCompilationException(errorLog.getErrors());
         }
 
         return compiled;

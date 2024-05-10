@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -51,9 +51,9 @@ public class LogicalExpression extends Expression {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        boolean leftValue = left.execute(ctx, policyModification).getBooleanValue();
-        boolean rightValue = right.execute(ctx, policyModification).getBooleanValue();
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        boolean leftValue = left.execute(ctx, pap).getBooleanValue();
+        boolean rightValue = right.execute(ctx, pap).getBooleanValue();
 
         return new BoolValue(isAnd ? leftValue && rightValue : leftValue || rightValue);
     }

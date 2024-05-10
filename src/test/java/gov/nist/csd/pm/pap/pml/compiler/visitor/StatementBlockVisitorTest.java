@@ -1,10 +1,11 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.function.builtin.Equals;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 import static gov.nist.csd.pm.pap.pml.PMLContextVisitor.toCtx;
 import static gov.nist.csd.pm.pap.pml.PMLContextVisitor.toStatementBlockCtx;
+import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StatementBlockVisitorTest {
@@ -24,7 +26,7 @@ class StatementBlockVisitorTest {
 
     @BeforeAll
     static void setup() throws PMException {
-        testGlobalScope = GlobalScope.forCompile(new MemoryPolicyModifier())
+        testGlobalScope = GlobalScope.forCompile(new MemoryPAP())
                    .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
     }
 
@@ -158,15 +160,18 @@ class StatementBlockVisitorTest {
         );
         ctx.parent = toCtx("function f1() {}", PMLParser.FunctionDefinitionStatementContext.class);
         VisitorContext visitorContext = new VisitorContext(testGlobalScope);
-        new StatementBlockVisitor(visitorContext, Type.string())
-                .visitStatementBlock(ctx);
-        assertEquals(1, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().toString());
+        PMLCompilationRuntimeException e = assertThrows(
+                PMLCompilationRuntimeException.class,
+                () -> new StatementBlockVisitor(visitorContext, Type.string())
+                        .visitStatementBlock(ctx)
+        );
+        assertEquals(1, e.getErrors().size(), visitorContext.errorLog().toString());
         assertEquals(
                 "function return should be last statement in block",
-                visitorContext.errorLog().getErrors().get(0).errorMessage()
+               e.getErrors().get(0).errorMessage()
         );
 
-        ctx = toStatementBlockCtx(
+        PMLParser.StatementBlockContext ctx2 = toStatementBlockCtx(
                 """
                 {
                     return "a"
@@ -187,14 +192,17 @@ class StatementBlockVisitorTest {
                 }
                 """
         );
-        ctx.parent = toCtx("function f1() {}", PMLParser.FunctionDefinitionStatementContext.class);
-        visitorContext = new VisitorContext(testGlobalScope);
-        new StatementBlockVisitor(visitorContext, Type.string())
-                .visitStatementBlock(ctx);
-        assertEquals(1, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().toString());
+        ctx2.parent = toCtx("function f1() {}", PMLParser.FunctionDefinitionStatementContext.class);
+        VisitorContext visitorContext2 = new VisitorContext(testGlobalScope);
+        e = assertThrows(
+                PMLCompilationRuntimeException.class,
+                () -> new StatementBlockVisitor(visitorContext2, Type.string())
+                        .visitStatementBlock(ctx2)
+        );
+        assertEquals(1, e.getErrors().size(), visitorContext.errorLog().toString());
         assertEquals(
                 "function return should be last statement in block",
-                visitorContext.errorLog().getErrors().get(0).errorMessage()
+                e.getErrors().get(0).errorMessage()
         );
     }
 
@@ -209,12 +217,15 @@ class StatementBlockVisitorTest {
         );
         ctx.parent = toCtx("function f1() {}", PMLParser.FunctionDefinitionStatementContext.class);
         VisitorContext visitorContext = new VisitorContext(testGlobalScope);
-        new StatementBlockVisitor(visitorContext, Type.string())
-                .visitStatementBlock(ctx);
-        assertEquals(1, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().toString());
+        PMLCompilationRuntimeException e = assertThrows(
+                PMLCompilationRuntimeException.class,
+                () -> new StatementBlockVisitor(visitorContext, Type.string())
+                        .visitStatementBlock(ctx)
+        );
+        assertEquals(1, e.getErrors().size(), visitorContext.errorLog().toString());
         assertEquals(
                 "return statement \"return true\" does not match return type string",
-                visitorContext.errorLog().getErrors().get(0).errorMessage()
+                e.getErrors().get(0).errorMessage()
         );
     }
 
@@ -316,11 +327,14 @@ class StatementBlockVisitorTest {
                 """
         );
         VisitorContext visitorContext = new VisitorContext(testGlobalScope);
-        StatementBlockVisitor.Result result = new StatementBlockVisitor(visitorContext, Type.string())
-                .visitStatementBlock(ctx);
-        assertEquals(1, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().toString());
+        PMLCompilationRuntimeException e = assertThrows(
+                PMLCompilationRuntimeException.class,
+                () -> new StatementBlockVisitor(visitorContext, Type.string())
+                        .visitStatementBlock(ctx)
+        );
+        assertEquals(1, e.getErrors().size(), visitorContext.errorLog().toString());
         assertEquals("functions are not allowed inside statement blocks",
-                     visitorContext.errorLog().getErrors().get(0).errorMessage());
+                     e.getErrors().get(0).errorMessage());
     }
 
 

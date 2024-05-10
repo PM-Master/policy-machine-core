@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
-import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.node.NodeType;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
@@ -20,6 +20,7 @@ import java.util.Map;
 
 import static gov.nist.csd.pm.pap.pml.PMLUtil.buildArrayLiteral;
 import static gov.nist.csd.pm.pap.pml.PMLUtil.buildMapLiteral;
+import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CreateNonPCStmtVisitorTest {
@@ -28,8 +29,8 @@ class CreateNonPCStmtVisitorTest {
 
     @BeforeAll
     static void setup() throws PMException {
-        testGlobalScope = GlobalScope.forCompile(new MemoryPolicyModifier())
-                                     .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
+        testGlobalScope = GlobalScope.forCompile(new MemoryPAP())
+                .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
     }
 
     @Test
@@ -50,43 +51,26 @@ class CreateNonPCStmtVisitorTest {
 
     @Test
     void testInvalidExpressions() {
-        PMLParser.CreateNonPCStatementContext ctx = PMLContextVisitor.toCtx(
+        VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
+        testCompilationError(
                 """
                 create user attribute ["ua1"] with properties {"k": "v"} assign to ["a"]
-                """,
-                PMLParser.CreateNonPCStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
-        new CreateNonPCStmtVisitor(visitorCtx).visitCreateNonPCStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type string, got []string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "expected expression type string, got []string"
         );
 
-        ctx = PMLContextVisitor.toCtx(
+        testCompilationError(
                 """
                 create user attribute "ua1" with properties ["k", "v"] assign to ["a"]
-                """,
-                PMLParser.CreateNonPCStatementContext.class);
-        visitorCtx = new VisitorContext(testGlobalScope);
-        new CreateNonPCStmtVisitor(visitorCtx).visitCreateNonPCStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type map[string]string, got []string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "expected expression type map[string]string, got []string"
         );
 
-        ctx = PMLContextVisitor.toCtx(
+        testCompilationError(
                 """
                 create user attribute "ua1" with properties {"k": "v"} assign to "a"
-                """,
-                PMLParser.CreateNonPCStatementContext.class);
-        visitorCtx = new VisitorContext(testGlobalScope);
-        new CreateNonPCStmtVisitor(visitorCtx).visitCreateNonPCStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type []string, got string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "expected expression type []string, got string"
         );
     }
 

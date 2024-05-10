@@ -6,13 +6,17 @@ public class DeleteConstantOp extends UserDefinedPMLOp {
     private final String name;
 
     public DeleteConstantOp(String name) {
-        super(operands(name));
         this.name = name;
     }
 
     @Override
     public String getOpName() {
         return "delete_constant";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(name);
     }
 
     public String name() {

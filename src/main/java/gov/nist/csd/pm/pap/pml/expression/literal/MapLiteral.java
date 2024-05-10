@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression.literal;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -61,7 +61,7 @@ public class MapLiteral extends Literal {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         Map<Value, Value> values = new HashMap<>();
         Type keyType = null;
         Type valueType = null;
@@ -69,8 +69,8 @@ public class MapLiteral extends Literal {
         for (Expression keyExpr : map.keySet()) {
             Expression valueExpr = map.get(keyExpr);
 
-            Value key = keyExpr.execute(ctx, policyModification);
-            Value value = valueExpr.execute(ctx, policyModification);
+            Value key = keyExpr.execute(ctx, pap);
+            Value value = valueExpr.execute(ctx, pap);
 
             if (keyType == null) {
                 keyType = key.getType();

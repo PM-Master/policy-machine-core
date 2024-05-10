@@ -1,7 +1,8 @@
 package gov.nist.csd.pm.pap.pml.expression.reference;
 
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
-import gov.nist.csd.pm.pap.pml.expression.ErrorExpression;
+
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
 import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
@@ -10,21 +11,14 @@ import gov.nist.csd.pm.pap.pml.type.Type;
 
 public abstract class VariableReference extends Expression {
 
-    public static Expression compileVariableReference(VisitorContext visitorCtx, PMLParser.VariableReferenceContext ctx) {
-        Expression e = null;
+    public static VariableReference compileVariableReference(VisitorContext visitorCtx, PMLParser.VariableReferenceContext ctx) {
         if (ctx instanceof PMLParser.ReferenceByIDContext referenceByIDContext) {
-            e = visitReferenceByID(visitorCtx, referenceByIDContext);
+            return visitReferenceByID(visitorCtx, referenceByIDContext);
         } else if (ctx instanceof PMLParser.ReferenceByIndexContext referenceByIndexContext) {
-            e = visitReferenceByIndex(visitorCtx, referenceByIndexContext);
+            return visitReferenceByIndex(visitorCtx, referenceByIndexContext);
         } else {
-            visitorCtx.errorLog().addError(ctx, "invalid variable reference");
+            throw new PMLCompilationRuntimeException(ctx, "invalid variable reference");
         }
-
-        if (e == null) {
-            return new ErrorExpression(ctx);
-        }
-
-        return e;
     }
 
     private static ReferenceByID visitReferenceByID(VisitorContext visitorCtx, PMLParser.ReferenceByIDContext ctx) {
@@ -34,36 +28,25 @@ public abstract class VariableReference extends Expression {
         try {
             visitorCtx.scope().getVariable(name);
         } catch (UnknownVariableInScopeException e) {
-            visitorCtx.errorLog().addError(ctx, e.getMessage());
-
-            return null;
+            throw new PMLCompilationRuntimeException(ctx, e.getMessage());
         }
 
         return new ReferenceByID(name);
     }
 
     private static ReferenceByIndex visitReferenceByIndex(VisitorContext visitorCtx, PMLParser.ReferenceByIndexContext ctx) {
-        Expression e = compileVariableReference(visitorCtx, ctx.variableReference());
-        if (e instanceof ErrorExpression) {
-            return null;
-        }
-
-        VariableReference mapVarRef = (VariableReference) e;
+        VariableReference mapVarRef = compileVariableReference(visitorCtx, ctx.variableReference());
 
         // check that the varref is a map
         Type t;
         try {
             t = mapVarRef.getType(visitorCtx.scope());
         } catch (PMLScopeException ex) {
-            visitorCtx.errorLog().addError(ctx, ex.getMessage());
-
-            return null;
+            throw new PMLCompilationRuntimeException(ctx, ex.getMessage());
         }
 
         if (!t.isMap()) {
-            visitorCtx.errorLog().addError(ctx, "expected type map but got " + t);
-
-            return null;
+            throw new PMLCompilationRuntimeException(ctx, "expected type map but got " + t);
         }
 
         Type allowedKeyType = t.getMapKeyType();
@@ -85,8 +68,6 @@ public abstract class VariableReference extends Expression {
 
         }
 
-        visitorCtx.errorLog().addError(indexCtx, "invalid index");
-
-        return null;
+        throw new PMLCompilationRuntimeException(indexCtx, "invalid index");
     }
 }

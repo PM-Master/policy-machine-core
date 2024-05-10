@@ -2,7 +2,7 @@ package gov.nist.csd.pm.impl.neo4j.pap;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.modification.ObligationsModification;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.pap.exception.*;

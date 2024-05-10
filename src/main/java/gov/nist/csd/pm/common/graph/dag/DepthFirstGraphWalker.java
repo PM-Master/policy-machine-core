@@ -1,21 +1,22 @@
 package gov.nist.csd.pm.common.graph.dag;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.modification.GraphModification;
+import gov.nist.csd.pm.pap.query.GraphQuery;
+import gov.nist.csd.pm.pap.query.PolicyQuery;
 
 import java.util.List;
 
 public class DepthFirstGraphWalker implements GraphWalker {
 
-    private final GraphModification graphModification;
+    private final GraphQuery graphQuery;
     private Direction direction;
     private Visitor visitor;
     private Propagator propagator;
     private ShortCircuit allPathsShortCircuit;
     private ShortCircuit singlePathShortCircuit;
 
-    public DepthFirstGraphWalker(GraphModification graphModification) {
-        this.graphModification = graphModification;
+    public DepthFirstGraphWalker(GraphQuery graphQuery) {
+        this.graphQuery = graphQuery;
         this.visitor = new NoopVisitor();
         this.propagator = new NoopPropagator();
         this.direction = Direction.PARENTS;
@@ -89,9 +90,9 @@ public class DepthFirstGraphWalker implements GraphWalker {
 
     private List<String> getNextLevel(String node) throws PMException {
         if (direction == Direction.PARENTS) {
-            return graphModification.getParents(node);
+            return graphQuery.getParents(node);
         } else {
-            return graphModification.getChildren(node);
+            return graphQuery.getChildren(node);
         }
     }
 }

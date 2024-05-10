@@ -168,15 +168,15 @@ public interface PMLParserListener extends ParseTreeListener {
 	 */
 	void exitCreateRuleStatement(PMLParser.CreateRuleStatementContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link PMLParser#pattern}.
+	 * Enter a parse tree produced by {@link PMLParser#patternArray}.
 	 * @param ctx the parse tree
 	 */
-	void enterPattern(PMLParser.PatternContext ctx);
+	void enterPatternArray(PMLParser.PatternArrayContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link PMLParser#pattern}.
+	 * Exit a parse tree produced by {@link PMLParser#patternArray}.
 	 * @param ctx the parse tree
 	 */
-	void exitPattern(PMLParser.PatternContext ctx);
+	void exitPatternArray(PMLParser.PatternArrayContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PMLParser#response}.
 	 * @param ctx the parse tree
@@ -718,6 +718,18 @@ public interface PMLParserListener extends ParseTreeListener {
 	 */
 	void exitParenExpression(PMLParser.ParenExpressionContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code PatternExpression}
+	 * labeled alternative in {@link PMLParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterPatternExpression(PMLParser.PatternExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code PatternExpression}
+	 * labeled alternative in {@link PMLParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitPatternExpression(PMLParser.PatternExpressionContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code EqualsExpression}
 	 * labeled alternative in {@link PMLParser#expression}.
 	 * @param ctx the parse tree
@@ -739,6 +751,16 @@ public interface PMLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitExpressionList(PMLParser.ExpressionListContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PMLParser#pattern}.
+	 * @param ctx the parse tree
+	 */
+	void enterPattern(PMLParser.PatternContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PMLParser#pattern}.
+	 * @param ctx the parse tree
+	 */
+	void exitPattern(PMLParser.PatternContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code StringLiteral}
 	 * labeled alternative in {@link PMLParser#literal}.

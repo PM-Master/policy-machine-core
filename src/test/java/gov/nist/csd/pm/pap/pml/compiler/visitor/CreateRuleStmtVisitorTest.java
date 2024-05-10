@@ -1,206 +1,63 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.pml.CompiledPML;
+import gov.nist.csd.pm.pap.pml.PMLCompiler;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
+import gov.nist.csd.pm.pap.pml.pattern.PatternExpression;
+import gov.nist.csd.pm.pap.pml.pattern.*;
+import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
+import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
+import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
+import gov.nist.csd.pm.pap.pml.statement.CreateObligationStatement;
+import gov.nist.csd.pm.pap.pml.statement.CreatePolicyStatement;
+import gov.nist.csd.pm.pap.pml.statement.CreateRuleStatement;
+import gov.nist.csd.pm.pap.pml.type.Type;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class CreateRuleStmtVisitorTest {
 
-    /*TODO @Test
-    void testInvalidExpressionTypes() throws PMException {
-        PMLParser.CreateObligationStatementContext ctx = PMLContextVisitor.toCtx(
-                """
-                create obligation "test" {
-                    create rule ["test"]
-                    when any user
-                    performs ["e1"]
-                    do(ctx) {}
-                }
-                """,
-                PMLParser.CreateObligationStatementContext.class
-        );
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
-        new CreateObligationStmtVisitor(visitorCtx).visitCreateObligationStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type string, got []string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
-        );
-
-        ctx = PMLContextVisitor.toCtx(
-                """
-                create obligation "test" {
-                    create rule "test"
-                    when users "u1"
-                    performs ["e1"]
-                    do(ctx) {}
-                }
-                """,
-                PMLParser.CreateObligationStatementContext.class
-        );
-        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
-        new CreateObligationStmtVisitor(visitorCtx).visitCreateObligationStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type []string, got string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
-        );
-
-        ctx = PMLContextVisitor.toCtx(
-                """
-                create obligation "test" {
-                    create rule "test"
-                    when users in union of "u1"
-                    performs ["e1"]
-                    do(ctx) {}
-                }
-                """,
-                PMLParser.CreateObligationStatementContext.class
-        );
-        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
-        new CreateObligationStmtVisitor(visitorCtx).visitCreateObligationStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type []string, got string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
-        );
-
-        ctx = PMLContextVisitor.toCtx(
-                """
-                create obligation "test" {
-                    create rule "test"
-                    when users in intersection of "u1"
-                    performs ["e1"]
-                    do(ctx) {}
-                }
-                """,
-                PMLParser.CreateObligationStatementContext.class
-        );
-        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
-        new CreateObligationStmtVisitor(visitorCtx).visitCreateObligationStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type []string, got string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
-        );
-
-        ctx = PMLContextVisitor.toCtx(
-                """
-                create obligation "test" {
-                    create rule "test"
-                    when processes "u1"
-                    performs ["e1"]
-                    do(ctx) {}
-                }
-                """,
-                PMLParser.CreateObligationStatementContext.class
-        );
-        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
-        new CreateObligationStmtVisitor(visitorCtx).visitCreateObligationStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type []string, got string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
-        );
-
-        ctx = PMLContextVisitor.toCtx(
-                """
-                create obligation "test" {
-                    create rule "test"
-                    when any user
-                    performs ["e1"]
-                    on union of "oa1"
-                    do(ctx) {}
-                }
-                """,
-                PMLParser.CreateObligationStatementContext.class
-        );
-        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
-        new CreateObligationStmtVisitor(visitorCtx).visitCreateObligationStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type []string, got string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
-        );
-
-        ctx = PMLContextVisitor.toCtx(
-                """
-                create obligation "test" {
-                    create rule "test"
-                    when any user
-                    performs ["e1"]
-                    on intersection of "oa1"
-                    do(ctx) {}
-                }
-                """,
-                PMLParser.CreateObligationStatementContext.class
-        );
-        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
-        new CreateObligationStmtVisitor(visitorCtx).visitCreateObligationStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type []string, got string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
-        );
-
-        ctx = PMLContextVisitor.toCtx(
-                """
-                create obligation "test" {
-                    create rule "test"
-                    when any user
-                    performs ["e1"]
-                    on "oa1"
-                    do(ctx) {}
-                }
-                """,
-                PMLParser.CreateObligationStatementContext.class
-        );
-        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyStore()));
-        new CreateObligationStmtVisitor(visitorCtx).visitCreateObligationStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type []string, got string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
-        );
-
-
-    }
+    private PatternFunctionInvokeExpression pAnyExpr = new PatternFunctionInvokeExpression("pAny", Type.any(), List.of());
+    private PatternFunctionInvokeExpression pEqualsU1Expr = new PatternFunctionInvokeExpression("pEquals", Type.any(), List.of(
+            new StringLiteral("u1")
+    ));
+    private PatternFunctionInvokeExpression pEqualsExprTestEvent = new PatternFunctionInvokeExpression("pEquals", Type.any(), List.of(
+            new StringLiteral("test_event")
+    ));
+    private PatternFunctionInvokeExpression pContainedInExpression = new PatternFunctionInvokeExpression("pContainedIn", Type.any(), List.of(
+            new ArrayLiteral(Type.string(), new StringLiteral("u1"), new StringLiteral("u2"))
+    ));
+    private FunctionSignature pAnySig = new AnyPatternFunction().getSignature();
+    private FunctionSignature pEqualsSig = new EqualsPatternFunction().getSignature();
+    private FunctionSignature pContainedInSig = new ContainedInPatternFunction().getSignature();
 
     @Test
     void testSubjectClause() throws PMException {
         String pml = """
                     create obligation "obligation1" {
                         create rule "any user"
-                        when any user
-                        performs ["test_event"]
-                        on any
+                        when subject => pAny()
+                        performs op => pEquals("test_event")
                         do(ctx) {}
                         
                         create rule "users"
-                        when users ["u1"]
-                        performs ["test_event"]
-                        on any
+                        when subject => pEquals("u1")
+                        performs op => pEquals("test_event")
                         do(ctx) {}
                         
-                        create rule "users union"
-                        when users in union of ["ua1", "ua2"]
-                        performs ["test_event"]
-                        on any
-                        do(ctx) {}
-                        
-                        create rule "users intersection"
-                        when users in intersection of ["ua1", "ua2"]
-                        performs ["test_event"]
-                        on any
-                        do(ctx) {}
-                        
-                        create rule "processes"
-                        when processes ["123"]
-                        performs ["test_event"]
-                        on any
+                        create rule "users list"
+                        when subject => pContainedIn(["u1", "u2"])
+                        performs op => pEquals("test_event")
                         do(ctx) {}
                     }
                     """;
-        CompiledPML compiledPML = PMLCompiler.compilePML(new MemoryPolicyStore(), pml);
+        CompiledPML compiledPML = PMLCompiler.compilePML(new MemoryPAP(), pml);
         assertEquals(1, compiledPML.stmts().size());
 
         CreateObligationStatement stmt = (CreateObligationStatement)compiledPML.stmts().get(0);
@@ -210,41 +67,25 @@ class CreateRuleStmtVisitorTest {
                         List.of(
                                 new CreateRuleStatement(
                                         new StringLiteral("any user"),
-                                        new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.ANY_USER, null),
-                                        new CreateRuleStatement.OperationClause(buildArrayLiteral("test_event")),
-                                        new CreateRuleStatement.OperandsClause(null, CreateRuleStatement.TargetType.ANY_TARGET),
+                                        new PatternExpression("subject", pAnyExpr),
+                                        new PatternExpression("op", pEqualsExprTestEvent),
+                                        new ArrayList<>(),
                                         new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
 
                                 ),
                                 new CreateRuleStatement(
                                         new StringLiteral("users"),
-                                        new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.USERS, buildArrayLiteral("u1")),
-                                        new CreateRuleStatement.OperationClause(buildArrayLiteral("test_event")),
-                                        new CreateRuleStatement.OperandsClause(null, CreateRuleStatement.TargetType.ANY_TARGET),
+                                        new PatternExpression("subject", pEqualsU1Expr),
+                                        new PatternExpression("op", pEqualsExprTestEvent),
+                                        new ArrayList<>(),
                                         new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
 
                                 ),
                                 new CreateRuleStatement(
-                                        new StringLiteral("users union"),
-                                        new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.USERS_IN_UNION, buildArrayLiteral("ua1", "ua2")),
-                                        new CreateRuleStatement.OperationClause(buildArrayLiteral("test_event")),
-                                        new CreateRuleStatement.OperandsClause(null, CreateRuleStatement.TargetType.ANY_TARGET),
-                                        new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
-
-                                ),
-                                new CreateRuleStatement(
-                                        new StringLiteral("users intersection"),
-                                        new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.USERS_IN_INTERSECTION, buildArrayLiteral("ua1", "ua2")),
-                                        new CreateRuleStatement.OperationClause(buildArrayLiteral("test_event")),
-                                        new CreateRuleStatement.OperandsClause(null, CreateRuleStatement.TargetType.ANY_TARGET),
-                                        new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
-
-                                ),
-                                new CreateRuleStatement(
-                                        new StringLiteral("processes"),
-                                        new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.PROCESSES, buildArrayLiteral("123")),
-                                        new CreateRuleStatement.OperationClause(buildArrayLiteral("test_event")),
-                                        new CreateRuleStatement.OperandsClause(null, CreateRuleStatement.TargetType.ANY_TARGET),
+                                        new StringLiteral("users list"),
+                                        new PatternExpression("subject", pContainedInExpression),
+                                        new PatternExpression("op", pEqualsExprTestEvent),
+                                        new ArrayList<>(),
                                         new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
 
                                 )
@@ -255,40 +96,16 @@ class CreateRuleStmtVisitorTest {
     }
 
     @Test
-    void testOnClause() throws PMException {
+    void testPerformsClause() throws PMException {
         String pml = """
                     create obligation "obligation1" {
-                        create rule "any target"
-                        when any user
-                        performs ["test_event"]
-                        on any
-                        do(ctx) {}
-                        
-                        create rule "no target is any"
-                        when any user
-                        performs ["test_event"]
-                        do(ctx) {}
-                        
-                        create rule "any in union"
-                        when any user
-                        performs ["test_event"]
-                        on union of ["oa1", "oa2"]
-                        do(ctx) {}
-                        
-                        create rule "any in intersection"
-                        when any user
-                        performs ["test_event"]
-                        on intersection of ["oa1", "oa2"]
-                        do(ctx) {}
-                        
-                        create rule "on targets"
-                        when any user
-                        performs ["test_event"]
-                        on ["oa1", "oa2"]
+                        create rule "r1"
+                        when subject => pAny()
+                        performs op => pAny()
                         do(ctx) {}
                     }
                     """;
-        CompiledPML compiledPML = PMLCompiler.compilePML(new MemoryPolicyStore(), pml);
+        CompiledPML compiledPML = PMLCompiler.compilePML(new MemoryPAP(), pml);
         assertEquals(1, compiledPML.stmts().size());
 
         CreateObligationStatement stmt = (CreateObligationStatement)compiledPML.stmts().get(0);
@@ -296,87 +113,81 @@ class CreateRuleStmtVisitorTest {
                 new StringLiteral("obligation1"),
                 List.of(
                         new CreateRuleStatement(
-                                new StringLiteral("any target"),
-                                new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.ANY_USER, null),
-                                new CreateRuleStatement.OperationClause(buildArrayLiteral("test_event")),
-                                new CreateRuleStatement.OperandsClause(null, CreateRuleStatement.TargetType.ANY_TARGET),
+                                new StringLiteral("r1"),
+                                new PatternExpression("subject", pAnyExpr),
+                                new PatternExpression("op", pAnyExpr),
+                                new ArrayList<>(),
                                 new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
-
-                        ),
-                        new CreateRuleStatement(
-                                new StringLiteral("no target is any"),
-                                new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.ANY_USER, null),
-                                new CreateRuleStatement.OperationClause(buildArrayLiteral("test_event")),
-                                new CreateRuleStatement.OperandsClause(null, CreateRuleStatement.TargetType.ANY_TARGET),
-                                new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
-
-                        ),
-                        new CreateRuleStatement(
-                                new StringLiteral("any in union"),
-                                new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.ANY_USER, null),
-                                new CreateRuleStatement.OperationClause(buildArrayLiteral("test_event")),
-                                new CreateRuleStatement.OperandsClause(buildArrayLiteral("oa1", "oa2"), CreateRuleStatement.TargetType.ANY_IN_UNION),
-                                new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
-
-                        ),
-                        new CreateRuleStatement(
-                                new StringLiteral("any in intersection"),
-                                new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.ANY_USER, null),
-                                new CreateRuleStatement.OperationClause(buildArrayLiteral("test_event")),
-                                new CreateRuleStatement.OperandsClause(buildArrayLiteral("oa1", "oa2"), CreateRuleStatement.TargetType.ANY_IN_INTERSECTION),
-                                new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
-
-                        ),
-                        new CreateRuleStatement(
-                                new StringLiteral("on targets"),
-                                new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.ANY_USER, null),
-                                new CreateRuleStatement.OperationClause(buildArrayLiteral("test_event")),
-                                new CreateRuleStatement.OperandsClause(buildArrayLiteral("oa1", "oa2"), CreateRuleStatement.TargetType.ON_TARGETS),
-                                new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
-
                         )
                 )
         );
-
         assertEquals(expected, stmt);
+
+        String pml2 = """
+            create obligation "obligation1" {
+                create rule "r1"
+                when subject => pAny()
+                do(ctx) {}
+            }
+            """;
+        PMLCompilationException e = assertThrows(
+                PMLCompilationException.class,
+                () -> PMLCompiler.compilePML(new MemoryPAP(), pml2)
+        );
+        assertEquals(1, e.getErrors().size());
+        assertEquals("mismatched input 'do' expecting 'performs'", e.getErrors().getFirst().errorMessage());
     }
 
     @Test
-    void testPerformsClause() throws PMException {
+    void testOnClause() throws PMException {
         String pml = """
-                    e2 := "e2"
-                    events := ["e1", "e2"]
                     create obligation "obligation1" {
-                        create rule "e1 and e2"
-                        when any user
-                        performs ["e1", e2]
+                        create rule "any operand"
+                        when subject => pAny()
+                        performs op => pAny()
                         do(ctx) {}
                         
-                        create rule "var events"
-                        when any user
-                        performs events
+                        create rule "any operand with on"
+                        when subject => pAny()
+                        performs op => pAny()
+                        on
+                        do(ctx) {}
+                        
+                        create rule "an operand"
+                        when subject => pAny()
+                        performs op => pAny()
+                        on op1 => pAny()
                         do(ctx) {}
                     }
                     """;
-        CompiledPML compiledPML = PMLCompiler.compilePML(new MemoryPolicyStore(), pml);
-        assertEquals(3, compiledPML.stmts().size());
+        CompiledPML compiledPML = PMLCompiler.compilePML(new MemoryPAP(), pml);
+        assertEquals(1, compiledPML.stmts().size());
 
-        CreateObligationStatement stmt = (CreateObligationStatement)compiledPML.stmts().get(2);
+        CreateObligationStatement stmt = (CreateObligationStatement)compiledPML.stmts().get(0);
         CreateObligationStatement expected = new CreateObligationStatement(
                 new StringLiteral("obligation1"),
                 List.of(
                         new CreateRuleStatement(
-                                new StringLiteral("e1 and e2"),
-                                new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.ANY_USER, null),
-                                new CreateRuleStatement.OperationClause(new ArrayLiteral(Type.string(), new StringLiteral("e1"), new ReferenceByID("e2"))),
-                                new CreateRuleStatement.OperandsClause(null, CreateRuleStatement.TargetType.ANY_TARGET),
+                                new StringLiteral("any operand"),
+                                new PatternExpression("subject", pAnyExpr),
+                                new PatternExpression("op", pAnyExpr),
+                                new ArrayList<>(),
                                 new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
                         ),
                         new CreateRuleStatement(
-                                new StringLiteral("var events"),
-                                new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.ANY_USER, null),
-                                new CreateRuleStatement.OperationClause(new ReferenceByID("events")),
-                                new CreateRuleStatement.OperandsClause(null, CreateRuleStatement.TargetType.ANY_TARGET),
+                                new StringLiteral("any operand with on"),
+                                new PatternExpression("subject", pAnyExpr),
+                                new PatternExpression("op", pAnyExpr),
+                                new ArrayList<>(),
+                                new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
+                        ),
+                        new CreateRuleStatement(
+                                new StringLiteral("an operand"),
+                                new PatternExpression("subject", pAnyExpr),
+                                new PatternExpression("op", pAnyExpr),
+                                List.of(
+                                        new PatternExpression("op1", pAnyExpr)
+                                ),
                                 new CreateRuleStatement.ResponseBlock("ctx", new ArrayList<>())
                         )
                 )
@@ -389,27 +200,27 @@ class CreateRuleStmtVisitorTest {
     void testResponse() throws PMException {
         String pml = """
                     create obligation "obligation1" {
-                        create rule "e1 and e2"
-                        when any user
-                        performs ["e1"]
+                        create rule "r1"
+                        when subject => pAny()
+                        performs op => pAny()
                         do(ctx) {
                             create policy class "pc1"
                             create policy class "pc2"
                         }
                     }
                     """;
-        CompiledPML compiledPML = PMLCompiler.compilePML(new MemoryPolicyStore(), pml);
+        CompiledPML compiledPML = PMLCompiler.compilePML(new MemoryPAP(), pml);
         assertEquals(1, compiledPML.stmts().size());
 
-        CreateObligationStatement stmt = (CreateObligationStatement)compiledPML.stmts().get(0);
+        CreateObligationStatement stmt = (CreateObligationStatement)compiledPML.stmts().getFirst();
         CreateObligationStatement expected = new CreateObligationStatement(
                 new StringLiteral("obligation1"),
                 List.of(
                         new CreateRuleStatement(
-                                new StringLiteral("e1 and e2"),
-                                new CreateRuleStatement.SubjectClause(CreateRuleStatement.SubjectType.ANY_USER, null),
-                                new CreateRuleStatement.OperationClause(buildArrayLiteral("e1", "e2")),
-                                new CreateRuleStatement.OperandsClause(null, CreateRuleStatement.TargetType.ANY_TARGET),
+                                new StringLiteral("r1"),
+                                new PatternExpression("subject", pAnyExpr),
+                                new PatternExpression("op", pAnyExpr),
+                                new ArrayList<>(),
                                 new CreateRuleStatement.ResponseBlock("ctx", List.of(
                                         new CreatePolicyStatement(new StringLiteral("pc1")),
                                         new CreatePolicyStatement(new StringLiteral("pc2"))
@@ -417,6 +228,7 @@ class CreateRuleStmtVisitorTest {
                         )
                 )
         );
+        assertEquals(expected, stmt);
     }
 
     @Test
@@ -424,16 +236,21 @@ class CreateRuleStmtVisitorTest {
         String pml = """
                     create obligation "obligation1" {
                         create rule "e1 and e2"
-                        when any user
-                        performs ["e1"]
+                        when subject => pAny()
+                        performs op => pAny()
                         do(ctx) {
                             function f1() {}
                         }
                     }
                     """;
-        PMLCompilationException e =
-                assertThrows(PMLCompilationException.class, () -> PMLCompiler.compilePML(new MemoryPolicyStore(), pml));
-        assertEquals("functions are not allowed inside response blocks", e.getErrors().get(0).errorMessage());
+        PMLCompilationException e = assertThrows(
+                PMLCompilationException.class,
+                () -> PMLCompiler.compilePML(new MemoryPAP(), pml)
+        );
+        assertEquals(
+                "functions are not allowed inside response blocks",
+                e.getErrors().get(0).errorMessage()
+        );
     }
 
     @Test
@@ -441,15 +258,13 @@ class CreateRuleStmtVisitorTest {
         String pml = """
                     create obligation "obligation1" {
                         create rule "any user"
-                        when any user
-                        performs ["test_event"]
-                        on any
+                        when subject => pAny()
+                        performs op => pEquals(op, "test_event")
                         do(ctx) {
                             return "test"
-                        }                        
+                        }
                     }
                     """;
-        assertThrows(PMLCompilationException.class, () -> PMLCompiler.compilePML(new MemoryPolicyStore(), pml));
-    }*/
-
+        assertThrows(PMLCompilationException.class, () -> PMLCompiler.compilePML(new MemoryPAP(), pml));
+    }
 }

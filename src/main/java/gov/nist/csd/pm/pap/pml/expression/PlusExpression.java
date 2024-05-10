@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -52,9 +52,9 @@ public class PlusExpression extends Expression{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        String leftStr = left.execute(ctx, policyModification).getStringValue();
-        String rightStr = right.execute(ctx, policyModification).getStringValue();
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        String leftStr = left.execute(ctx, pap).getStringValue();
+        String rightStr = right.execute(ctx, pap).getStringValue();
 
         return new StringValue(leftStr + rightStr);
     }

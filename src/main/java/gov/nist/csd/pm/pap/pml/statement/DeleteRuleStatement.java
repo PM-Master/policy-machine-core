@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
@@ -8,6 +8,7 @@ import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +17,8 @@ import java.util.Objects;
 
 public class DeleteRuleStatement extends PMLStatement {
 
-    private final Expression ruleExpr;
-    private final Expression oblExpr;
+    private Expression ruleExpr;
+    private Expression oblExpr;
 
     public DeleteRuleStatement(Expression ruleExpr, Expression oblExpr) {
         this.ruleExpr = ruleExpr;
@@ -33,11 +34,11 @@ public class DeleteRuleStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        String ruleName = ruleExpr.execute(ctx, policyModification).getStringValue();
-        String oblName = oblExpr.execute(ctx, policyModification).getStringValue();
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        String ruleName = ruleExpr.execute(ctx, pap).getStringValue();
+        String oblName = oblExpr.execute(ctx, pap).getStringValue();
 
-        Obligation obligation = policyModification.obligations().get(oblName);
+        Obligation obligation = pap.query().obligations().get(oblName);
         List<Rule> rules = new ArrayList<>();
         for (Rule rule : obligation.getRules()) {
             if (rule.getName().equals(ruleName)) {
@@ -47,7 +48,7 @@ public class DeleteRuleStatement extends PMLStatement {
             rules.add(rule);
         }
 
-        policyModification.obligations().update(
+        pap.modify().obligations().update(
                 obligation.getAuthor(),
                 obligation.getName(),
                 rules.toArray(new Rule[]{})

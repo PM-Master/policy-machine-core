@@ -1,9 +1,11 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
 import org.junit.jupiter.api.Test;
@@ -19,13 +21,13 @@ class SetResourceAccessRightsStatementTest {
                 buildArrayLiteral("a", "b", "c", "d")
         );
 
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
+        PAP pap = new MemoryPAP();
 
-        stmt.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), store);
+        stmt.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPAP())), pap);
 
         assertEquals(
                 new AccessRightSet("a", "b", "c", "d"),
-                store.graph().getResourceAccessRights()
+                pap.query().graph().getResourceAccessRights()
         );
     }
 

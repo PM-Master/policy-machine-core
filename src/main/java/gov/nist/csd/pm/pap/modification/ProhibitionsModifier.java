@@ -7,14 +7,53 @@ import gov.nist.csd.pm.pap.exception.ProhibitionContainerDoesNotExistException;
 import gov.nist.csd.pm.pap.exception.ProhibitionDoesNotExistException;
 import gov.nist.csd.pm.pap.exception.ProhibitionExistsException;
 import gov.nist.csd.pm.pap.exception.ProhibitionSubjectDoesNotExistException;
-import gov.nist.csd.pm.pap.query.PolicyQuery;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 
 import static gov.nist.csd.pm.pap.modification.GraphModifier.checkAccessRightsValid;
 
-public abstract class ProhibitionsModifier extends Modifier{
-    public ProhibitionsModifier(PolicyQuery policyQuery) {
-        super(policyQuery);
+public abstract class ProhibitionsModifier extends Modifier implements ProhibitionsModification {
+
+    protected abstract void createInternal(String name,
+                                           ProhibitionSubject subject,
+                                           AccessRightSet accessRightSet,
+                                           boolean intersection,
+                                           ContainerCondition... containerConditions) throws PMException;
+    protected abstract void updateInternal(String name,
+                                           ProhibitionSubject subject,
+                                           AccessRightSet accessRightSet,
+                                           boolean intersection,
+                                           ContainerCondition... containerConditions) throws PMException;
+    protected abstract void deleteInternal(String name) throws PMException;
+
+    @Override
+    public void create(String name,
+                       ProhibitionSubject subject,
+                       AccessRightSet accessRightSet,
+                       boolean intersection,
+                       ContainerCondition... containerConditions) throws PMException {
+        checkCreateInput(name, subject, accessRightSet, intersection, containerConditions);
+
+        createInternal(name, subject, accessRightSet, intersection, containerConditions);
+    }
+
+    @Override
+    public void update(String name,
+                       ProhibitionSubject subject,
+                       AccessRightSet accessRightSet,
+                       boolean intersection,
+                       ContainerCondition... containerConditions) throws PMException {
+        checkUpdateInput(name, subject, accessRightSet, intersection, containerConditions);
+
+        updateInternal(name, subject, accessRightSet, intersection, containerConditions);
+    }
+
+    @Override
+    public void delete(String name) throws PMException {
+        if(!checkDeleteInput(name)) {
+            return;
+        }
+
+        deleteInternal(name);
     }
 
     /**
@@ -28,13 +67,13 @@ public abstract class ProhibitionsModifier extends Modifier{
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected void checkCreateInput(String name, ProhibitionSubject subject, AccessRightSet accessRightSet,
-                                  boolean intersection, ContainerCondition... containerConditions) throws PMException {
-        if (querier.prohibitions().exists(name)) {
+                                    boolean intersection, ContainerCondition... containerConditions) throws PMException {
+        if (query().prohibitions().exists(name)) {
             throw new ProhibitionExistsException(name);
         }
 
         // check the prohibition parameters are valid
-        checkAccessRightsValid(querier.graph().getResourceAccessRights(), accessRightSet);
+        checkAccessRightsValid(query().graph().getResourceAccessRights(), accessRightSet);
         checkProhibitionSubjectExists(subject);
         checkProhibitionContainersExist(containerConditions);
     }
@@ -50,13 +89,13 @@ public abstract class ProhibitionsModifier extends Modifier{
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected void checkUpdateInput(String name, ProhibitionSubject subject, AccessRightSet accessRightSet,
-                                  boolean intersection , ContainerCondition ... containerConditions) throws PMException {
-        if (!querier.prohibitions().exists(name)) {
+                                    boolean intersection , ContainerCondition ... containerConditions) throws PMException {
+        if (!query().prohibitions().exists(name)) {
             throw new ProhibitionDoesNotExistException(name);
         }
 
         // check the prohibition parameters are valid
-        checkAccessRightsValid(querier.graph().getResourceAccessRights(), accessRightSet);
+        checkAccessRightsValid(query().graph().getResourceAccessRights(), accessRightSet);
         checkProhibitionSubjectExists(subject);
         checkProhibitionContainersExist(containerConditions);
     }
@@ -70,28 +109,17 @@ public abstract class ProhibitionsModifier extends Modifier{
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected boolean checkDeleteInput(String name) throws PMException {
-        if (!querier.prohibitions().exists(name)) {
+        if (!query().prohibitions().exists(name)) {
             return false;
         }
 
         return true;
     }
 
-    /**
-     * Check if the prohibition exists.
-     * @param name The prohibition name.
-     * @throws PMException If any PM related exceptions occur in the implementing class.
-     */
-    protected void checkGetInput(String name) throws PMException {
-        if (!querier.prohibitions().exists(name)) {
-            throw new ProhibitionDoesNotExistException(name);
-        }
-    }
-
     protected void checkProhibitionSubjectExists(ProhibitionSubject subject)
             throws PMException {
         if (subject.getType() != ProhibitionSubject.Type.PROCESS) {
-            if (!querier.graph().nodeExists(subject.getName())) {
+            if (!query().graph().nodeExists(subject.getName())) {
                 throw new ProhibitionSubjectDoesNotExistException(subject.getName());
             }
         }
@@ -100,7 +128,7 @@ public abstract class ProhibitionsModifier extends Modifier{
     protected void checkProhibitionContainersExist(ContainerCondition ... containerConditions)
             throws PMException {
         for (ContainerCondition container : containerConditions) {
-            if (!querier.graph().nodeExists(container.getName())) {
+            if (!query().graph().nodeExists(container.getName())) {
                 throw new ProhibitionContainerDoesNotExistException(container.getName());
             }
         }

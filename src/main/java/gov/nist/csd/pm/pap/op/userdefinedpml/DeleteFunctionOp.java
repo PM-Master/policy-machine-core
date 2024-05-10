@@ -6,13 +6,17 @@ public class DeleteFunctionOp extends UserDefinedPMLOp {
     private final String functionName;
 
     public DeleteFunctionOp(String functionName) {
-        super(operands(functionName));
         this.functionName = functionName;
     }
 
     @Override
     public String getOpName() {
         return "delete_function";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(functionName);
     }
 
     public String functionName() {

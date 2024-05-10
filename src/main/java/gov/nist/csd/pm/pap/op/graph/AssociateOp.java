@@ -11,7 +11,6 @@ public class AssociateOp extends GraphOp {
     private final AccessRightSet accessRightSet;
 
     public AssociateOp(String ua, String target, AccessRightSet accessRightSet) {
-        super(Operation.operands(ua, target, accessRightSet));
         this.ua = ua;
         this.target = target;
         this.accessRightSet = accessRightSet;
@@ -20,6 +19,11 @@ public class AssociateOp extends GraphOp {
     @Override
     public String getOpName() {
         return "associate";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(ua, target, accessRightSet);
     }
 
     public String ua() {

@@ -9,13 +9,13 @@ import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 
 import java.util.List;
 
 public class PMLEventPattern extends EventPattern {
 
-    public PMLEventPattern(PMLPattern<String> subjectPattern,
+    /*public PMLEventPattern(PMLPattern<String> subjectPattern,
                            PMLPattern<String> operationPattern,
                            List<Pattern<Object>> operandPatterns) {
         super(subjectPattern, operationPattern, operandPatterns);
@@ -23,38 +23,38 @@ public class PMLEventPattern extends EventPattern {
 
     @Override
     public boolean userMatches(UserContext userCtx, PAP pap) throws PMException {
-        ExecutionContext executionContext = new ExecutionContext(null, GlobalScope.forExecute(pap.policy()));
+        ExecutionContext executionContext = new ExecutionContext(null, GlobalScope.forExecute(pap));
         PMLPattern<String> pmlPattern = (PMLPattern<String>) subjectPattern;
         executionContext.scope().local().addOrOverwriteVariable(
                 pmlPattern.getVarName(),
                 new StringValue(userCtx.getUser())
         );
 
-        return pmlPattern.getPatternExpr().execute(executionContext, pap.policy()).getBooleanValue();
+        return pmlPattern.getPatternExpr().execute(executionContext, pap).getBooleanValue();
     }
 
     @Override
     public boolean processMatches(UserContext userCtx, PAP pap) throws PMException {
-        ExecutionContext executionContext = new ExecutionContext(null, GlobalScope.forExecute(pap.policy()));
+        ExecutionContext executionContext = new ExecutionContext(null, GlobalScope.forExecute(pap));
         PMLPattern<String> pmlPattern = (PMLPattern<String>) subjectPattern;
         executionContext.scope().local().addOrOverwriteVariable(
                 pmlPattern.getVarName(),
                 new StringValue(userCtx.getProcess())
         );
 
-        return pmlPattern.getPatternExpr().execute(executionContext, pap.policy()).getBooleanValue();
+        return pmlPattern.getPatternExpr().execute(executionContext, pap).getBooleanValue();
     }
 
     @Override
     public boolean operationMatches(Operation op, PAP pap) throws PMException {
-        ExecutionContext executionContext = new ExecutionContext(null, GlobalScope.forExecute(pap.policy()));
+        ExecutionContext executionContext = new ExecutionContext(null, GlobalScope.forExecute(pap));
         PMLPattern<String> pmlPattern = (PMLPattern<String>) operationPattern;
         executionContext.scope().local().addOrOverwriteVariable(
                 pmlPattern.getVarName(),
                 new StringValue(op.getOpName())
         );
 
-        return pmlPattern.getPatternExpr().execute(executionContext, pap.policy()).getBooleanValue();
+        return pmlPattern.getPatternExpr().execute(executionContext, pap).getBooleanValue();
     }
 
     @Override
@@ -70,14 +70,14 @@ public class PMLEventPattern extends EventPattern {
             PMLPattern<Object> pmlPattern = (PMLPattern<Object>) pattern;
 
             // create a new PML execution context and add the operand value to the local scope
-            ExecutionContext executionContext = new ExecutionContext(null, GlobalScope.forExecute(pap.policy()));
+            ExecutionContext executionContext = new ExecutionContext(null, GlobalScope.forExecute(pap));
             executionContext.scope().local().addOrOverwriteVariable(pmlPattern.getVarName(), Value.fromObject(operand));
 
-            if (!pmlPattern.getPatternExpr().execute(executionContext, pap.policy()).getBooleanValue()) {
+            if (!pmlPattern.getPatternExpr().execute(executionContext, pap).getBooleanValue()) {
                 return false;
             }
         }
 
         return true;
-    }
+    }*/
 }

@@ -1,9 +1,9 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.obligation.EventContext;
 import gov.nist.csd.pm.pap.op.graph.CreateObjectAttributeOp;
-import gov.nist.csd.pm.pdp.UserContext;
-import gov.nist.csd.pm.epp.EventContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.ArrayValue;
 import gov.nist.csd.pm.pap.pml.value.MapValue;
@@ -69,30 +69,19 @@ class ValueTest {
                 value.getMapValue()
         );
 
-        key = new StringValue("target");
+        key = new StringValue("opName");
         value = objectToValue.getMapValue().get(key);
         assertTrue(value.getType().isString());
-        assertEquals(
-                "target123",
-                value.getStringValue()
-        );
+        assertEquals(CREATE_OBJECT_ATTRIBUTE, value.getStringValue());
 
-        key = new StringValue("eventName");
-        value = objectToValue.getMapValue().get(key);
-        assertTrue(value.getType().isString());
-        assertEquals(
-                CREATE_OBJECT_ATTRIBUTE,
-                value.getStringValue()
-        );
-
-        key = new StringValue("event");
+        key = new StringValue("op");
         value = objectToValue.getMapValue().get(key);
         assertTrue(value.getType().isMap());
         assertEquals(
                 Map.of(new StringValue("name"), new StringValue("testOA"),
-                       new StringValue("type"), new StringValue("OA"),
-                       new StringValue("properties"), new MapValue(new HashMap<>(), Type.string(), Type.string()),
-                       new StringValue("parents"), new ArrayValue(List.of(new StringValue("pc1")), Type.string())
+                        new StringValue("type"), new StringValue("OA"),
+                        new StringValue("properties"), new MapValue(new HashMap<>(), Type.string(), Type.string()),
+                        new StringValue("parents"), new ArrayValue(List.of(new StringValue("pc1")), Type.string())
                 ),
                 value.getMapValue()
         );

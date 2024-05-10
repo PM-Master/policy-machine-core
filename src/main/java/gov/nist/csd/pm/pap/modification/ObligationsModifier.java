@@ -5,17 +5,38 @@ import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.exception.*;
-import gov.nist.csd.pm.pap.query.PolicyQuery;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class ObligationsModifier extends Modifier {
+public abstract class ObligationsModifier extends Modifier implements ObligationsModification {
 
+    protected abstract void createInternal(UserContext author, String name, Rule... rules) throws PMException;
+    protected abstract void updateInternal(UserContext author, String name, Rule... rules) throws PMException;
+    protected abstract void deleteInternal(String name) throws PMException;
 
-    public ObligationsModifier(PolicyQuery policyQuery) {
-        super(policyQuery);
+    @Override
+    public void create(UserContext author, String name, Rule... rules) throws PMException {
+        checkCreateInput(author, name, rules);
+
+        createInternal(author, name, rules);
+    }
+
+    @Override
+    public void update(UserContext author, String name, Rule... rules) throws PMException {
+        checkUpdateInput(author, name, rules);
+
+        updateInternal(author, name, rules);
+    }
+
+    @Override
+    public void delete(String name) throws PMException {
+        if(!checkDeleteInput(name)) {
+            return;
+        }
+
+        deleteInternal(name);
     }
 
     /**
@@ -27,7 +48,7 @@ public abstract class ObligationsModifier extends Modifier {
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected void checkCreateInput(UserContext author, String name, Rule... rules) throws PMException {
-        if (querier.obligations().exists(name)) {
+        if (query().obligations().exists(name)) {
             throw new ObligationNameExistsException(name);
         }
 
@@ -44,7 +65,7 @@ public abstract class ObligationsModifier extends Modifier {
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected void checkUpdateInput(UserContext author, String name, Rule... rules) throws PMException {
-        if (!querier.obligations().exists(name)) {
+        if (!query().obligations().exists(name)) {
             throw new ObligationDoesNotExistException(name);
         }
 
@@ -71,26 +92,15 @@ public abstract class ObligationsModifier extends Modifier {
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected boolean checkDeleteInput(String name) throws PMException {
-        if (!querier.obligations().exists(name)) {
+        if (!query().obligations().exists(name)) {
             return false;
         }
 
         return true;
     }
 
-    /**
-     * Check if the obligation exists.
-     * @param name The obligation name.
-     * @throws PMException If any PM related exceptions occur in the implementing class.
-     */
-    protected void checkGetInput(String name) throws PMException {
-        if (!querier.obligations().exists(name)) {
-            throw new ObligationDoesNotExistException(name);
-        }
-    }
-
     private void checkAuthorExists(UserContext author) throws PMException {
-        if (!querier.graph().nodeExists(author.getUser())) {
+        if (!query().graph().nodeExists(author.getUser())) {
             throw new NodeDoesNotExistException(author.getUser());
         }
     }
@@ -100,19 +110,15 @@ public abstract class ObligationsModifier extends Modifier {
             EventPattern event = rule.getEventPattern();
 
             // check subject pattern
-            Pattern<String> pattern = event.getSubjectPattern();
-            if(!pattern.checkReferencedPolicyEntitiesExist(querier)) {
-                throw new PolicyEntityDoesNotExistException("policy entity in event subject pattern does not exist");
-            }
+            Pattern pattern = event.getSubjectPattern();
+            pattern.checkReferencedPolicyEntitiesExist(query());
 
             // TODO add check for operations - not yet implemented
             // pattern = event.operationPattern();
 
             // check operand patterns
-            for (Pattern<Object> operandPattern : event.getOperandPatterns()) {
-                if(!operandPattern.checkReferencedPolicyEntitiesExist(querier)) {
-                    throw new PolicyEntityDoesNotExistException("policy entity in operand pattern does not exist");
-                }
+            for (Pattern operandPattern : event.getOperandPatterns()) {
+                operandPattern.checkReferencedPolicyEntitiesExist(query());
             }
         }
     }

@@ -48,4 +48,4 @@ create object "o1" assign to ["oa1", "oa2"]
 create prohibition "u2-prohibition" deny user "u2" access rights ["write"] on intersection of ["oa1", "oa2"]
 
 // obligations
-create obligation "o1-obligation" {create rule "o1-assignment-rule" when any user performs ["assign"] on ["o1"] do (evtCtx) {parent := evtCtx["parent"]associate "ua1" and parent with ["read", "write"]associate "ua2" and parent with ["read", "write"] create prohibition "u2-prohibition" deny user "u2" access rights ["write"] on intersection of ["oa1", "oa2"]}}
+create obligation "o1-obligation" {create rule "o1-assignment-rule" when subject => pAny() performs op => pEquals("assign") on operand1 => pEquals("o1") do (evtCtx) {parent := evtCtx["parent"]associate "ua1" and parent with ["read", "write"]associate "ua2" and parent with ["read", "write"] create prohibition "u2-prohibition" deny user "u2" access rights ["write"] on intersection of ["oa1", "oa2"]}}

@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
 import gov.nist.csd.pm.pap.pml.PMLErrorHandler;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
 import gov.nist.csd.pm.pap.pml.antlr.PMLLexer;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
@@ -34,9 +35,8 @@ public abstract class Expression extends PMLStatement {
 
         Expression expression = compile(visitorCtx, exprCtx, expectedType);
 
-        visitorCtx.errorLog().addErrors(pmlErrorHandler.getErrors());
         if (visitorCtx.errorLog().getErrors().size() > 0) {
-            return new ErrorExpression(exprCtx);
+            throw new PMLCompilationRuntimeException(pmlErrorHandler.getErrors());
         }
 
         return expression;
@@ -74,28 +74,20 @@ public abstract class Expression extends PMLStatement {
         }
 
         if (expression == null) {
-            visitorCtx.errorLog().addError(expressionCtx, "unrecognized expression context");
-
-            return new ErrorExpression(expressionCtx);
+            throw new PMLCompilationRuntimeException(expressionCtx, "unrecognized expression context");
         }
 
         Type expressionType;
         try {
             expressionType = expression.getType(visitorCtx.scope());
         } catch (PMLScopeException e) {
-            visitorCtx.errorLog().addError(expressionCtx, e.getMessage());
-            return new ErrorExpression(expressionCtx);
+            throw new PMLCompilationRuntimeException(expressionCtx,e.getMessage());
         }
 
         // check the expression type is part of the given allowed types
         // if no types are given then any type is allowed
         if (!expectedType.equals(expressionType)) {
-            visitorCtx.errorLog().addError(
-                    expressionCtx,
-                    "expected expression type " + expectedType + ", got " + expressionType
-            );
-
-            return new ErrorExpression(expressionCtx);
+            throw new PMLCompilationRuntimeException(expressionCtx, "expected expression type " + expectedType + ", got " + expressionType);
         }
 
         return expression;
@@ -103,10 +95,6 @@ public abstract class Expression extends PMLStatement {
 
     public Expression() {
 
-    }
-
-    public Expression(ParserRuleContext ctx) {
-        super(ctx);
     }
 
     public abstract Type getType(Scope<Variable, FunctionSignature> scope) throws PMLScopeException;

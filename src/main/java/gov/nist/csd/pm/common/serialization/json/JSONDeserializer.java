@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
@@ -12,7 +13,7 @@ import gov.nist.csd.pm.pap.pml.scope.Scope;
 import gov.nist.csd.pm.pap.pml.statement.VariableDeclarationStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
@@ -38,17 +39,17 @@ public class JSONDeserializer implements PolicyDeserializer {
     }
 
     @Override
-    public void deserialize(PolicyModification policyModification, UserContext author, String input) throws PMException {
+    public void deserialize(PAP pap, UserContext author, String input) throws PMException {
         Gson gson = new Gson();
         JSONPolicy jsonPolicy = gson.fromJson(input, new TypeToken<JSONPolicy>() {}.getType());
 
-        createUserDefinedPML(policyModification, author, customPMLFunctions, jsonPolicy.getUserDefinedPML());
-        createGraph(policyModification, jsonPolicy.getGraph());
-        createProhibitions(policyModification, jsonPolicy.getProhibitions());
-        createObligations(policyModification, author, customPMLFunctions, jsonPolicy.getObligations());
+        createUserDefinedPML(pap, author, customPMLFunctions, jsonPolicy.getUserDefinedPML());
+        createGraph(pap, jsonPolicy.getGraph());
+        createProhibitions(pap, jsonPolicy.getProhibitions());
+        createObligations(pap, author, customPMLFunctions, jsonPolicy.getObligations());
     }
 
-    private void createUserDefinedPML(PolicyModification policyModification, UserContext author,
+    private void createUserDefinedPML(PAP pap, UserContext author,
                                       FunctionDefinitionStatement[] customPMLFunctions,
                                       JSONUserDefinedPML userDefinedPML)
             throws PMException {
@@ -56,7 +57,7 @@ public class JSONDeserializer implements PolicyDeserializer {
         // this will allow all function signatures to be compiled before the function bodies in the case of functions
         // calling other functions
         StringBuilder pml = new StringBuilder();
-        VisitorContext visitorCtx = new VisitorContext(new Scope<>(GlobalScope.forCompile(policyModification, customPMLFunctions)));
+        VisitorContext visitorCtx = new VisitorContext(new Scope<>(GlobalScope.forCompile(pap, customPMLFunctions)));
 
         Map<String, String> constants = userDefinedPML.getConstants();
         List<VariableDeclarationStatement.Declaration> constDecs = new ArrayList<>();
@@ -72,22 +73,22 @@ public class JSONDeserializer implements PolicyDeserializer {
         }
 
         PMLDeserializer pmlDeserializer = new PMLDeserializer(customPMLFunctions);
-        pmlDeserializer.deserialize(policyModification, author, pml.toString());
+        pmlDeserializer.deserialize(pap, author, pml.toString());
     }
 
-    private void createObligations(PolicyModification policyModification, UserContext author,
+    private void createObligations(PAP pap, UserContext author,
                                    FunctionDefinitionStatement[] customPMLFunctions, List<String> obligations)
             throws PMException {
         for (String obligationStr : obligations) {
             PMLDeserializer pmlDeserializer = new PMLDeserializer(customPMLFunctions);
-            pmlDeserializer.deserialize(policyModification, author, obligationStr);
+            pmlDeserializer.deserialize(pap, author, obligationStr);
         }
     }
 
-    private void createProhibitions(PolicyModification policyModification, List<Prohibition> prohibitions)
+    private void createProhibitions(PAP pap, List<Prohibition> prohibitions)
             throws PMException {
         for (Prohibition prohibition : prohibitions) {
-            policyModification.prohibitions().create(
+            pap.modify().prohibitions().create(
                     prohibition.getName(),
                     prohibition.getSubject(),
                     prohibition.getAccessRightSet(),
@@ -97,10 +98,10 @@ public class JSONDeserializer implements PolicyDeserializer {
         }
     }
 
-    private void createGraph(PolicyModification policyModification, JSONGraph graph)
+    private void createGraph(PAP pap, JSONGraph graph)
             throws PMException {
         if (graph.resourceAccessRights != null) {
-            policyModification.graph().setResourceAccessRights(graph.resourceAccessRights);
+            pap.modify().graph().setResourceAccessRights(graph.resourceAccessRights);
         }
 
         if (graph.policyClasses == null) {
@@ -109,19 +110,19 @@ public class JSONDeserializer implements PolicyDeserializer {
 
         // create all policy class nodes first
         for (JSONPolicyClass policyClass : graph.policyClasses) {
-            policyModification.graph().createPolicyClass(policyClass.getName(), policyClass.getProperties());
+            pap.modify().graph().createPolicyClass(policyClass.getName(), policyClass.getProperties());
         }
 
         // create policy class attribute hierarchies
         for (JSONPolicyClass policyClass : graph.policyClasses) {
-            createPolicyClass(policyModification, policyClass);
+            createPolicyClass(pap, policyClass);
         }
 
-        createUserOrObjects(policyModification, graph.users, U);
-        createUserOrObjects(policyModification, graph.objects, O);
+        createUserOrObjects(pap, graph.users, U);
+        createUserOrObjects(pap, graph.objects, O);
     }
 
-    private void createUserOrObjects(PolicyModification policyModification, List<JSONUserOrObject> usersOrObjects, NodeType type) throws PMException {
+    private void createUserOrObjects(PAP pap, List<JSONUserOrObject> usersOrObjects, NodeType type) throws PMException {
         for (JSONUserOrObject userOrObject : usersOrObjects) {
             List<String> parents = userOrObject.getParents();
             if (parents.isEmpty()) {
@@ -129,14 +130,14 @@ public class JSONDeserializer implements PolicyDeserializer {
             }
 
             if (type == U) {
-                policyModification.graph().createUser(userOrObject.getName(), userOrObject.getProperties(), parents);
+                pap.modify().graph().createUser(userOrObject.getName(), userOrObject.getProperties(), parents);
             } else {
-                policyModification.graph().createObject(userOrObject.getName(), userOrObject.getProperties(), parents);
+                pap.modify().graph().createObject(userOrObject.getName(), userOrObject.getProperties(), parents);
             }
         }
     }
 
-    private void createPolicyClass(PolicyModification policyModification, JSONPolicyClass policyClass)
+    private void createPolicyClass(PAP pap, JSONPolicyClass policyClass)
             throws PMException {
         String name = policyClass.getName();
         Map<String, String> properties = policyClass.getProperties();
@@ -144,29 +145,29 @@ public class JSONDeserializer implements PolicyDeserializer {
         List<JSONNode> objectAttributes = policyClass.getObjectAttributes();
 
         // create policy class node
-        if (!policyModification.graph().nodeExists(name)) {
-            policyModification.graph().createPolicyClass(name, properties == null ? new HashMap<>() : properties);
+        if (!pap.query().graph().nodeExists(name)) {
+            pap.modify().graph().createPolicyClass(name, properties == null ? new HashMap<>() : properties);
         }
 
         if (userAttributes != null) {
-            createAttributes(policyModification, UA, name, userAttributes);
+            createAttributes(pap, UA, name, userAttributes);
         }
 
         if (objectAttributes != null) {
-            createAttributes(policyModification, OA, name, objectAttributes);
+            createAttributes(pap, OA, name, objectAttributes);
         }
 
         Map<String, List<JSONAssociation>> associations = policyClass.getAssociations();
         if (associations != null) {
             for (Map.Entry<String, List<JSONAssociation>> e : associations.entrySet()) {
                 for (JSONAssociation jsonAssociation : e.getValue()) {
-                    policyModification.graph().associate(e.getKey(), jsonAssociation.getTarget(), jsonAssociation.getArset());
+                    pap.modify().graph().associate(e.getKey(), jsonAssociation.getTarget(), jsonAssociation.getArset());
                 }
             }
         }
     }
 
-    private void createAttributes(PolicyModification policyModification, NodeType type, String parent, List<JSONNode> attrs)
+    private void createAttributes(PAP pap, NodeType type, String parent, List<JSONNode> attrs)
             throws PMException {
         if (attrs == null) {
             return;
@@ -174,18 +175,18 @@ public class JSONDeserializer implements PolicyDeserializer {
 
         for (JSONNode attr : attrs) {
             String name = attr.getName();
-            if (policyModification.graph().nodeExists(name)) {
-                policyModification.graph().assign(attr.getName(), parent);
+            if (pap.query().graph().nodeExists(name)) {
+                pap.modify().graph().assign(attr.getName(), parent);
             } else {
                 Map<String, String> properties = attr.getProperties() == null ? new HashMap<>() : attr.getProperties();
                 if (type == UA) {
-                    policyModification.graph().createUserAttribute(name, properties, List.of(parent));
+                    pap.modify().graph().createUserAttribute(name, properties, List.of(parent));
                 } else {
-                    policyModification.graph().createObjectAttribute(name, properties, List.of(parent));
+                    pap.modify().graph().createObjectAttribute(name, properties, List.of(parent));
                 }
             }
 
-            createAttributes(policyModification, type, name, attr.getChildren());
+            createAttributes(pap, type, name, attr.getChildren());
         }
     }
 }

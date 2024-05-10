@@ -1,6 +1,12 @@
 package gov.nist.csd.pm.pap.op;
 
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.obligation.EventPattern;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.op.pattern.Pattern;
+
 import java.io.Serializable;
+import java.util.List;
 
 public abstract class Operation implements Serializable {
 
@@ -8,48 +14,42 @@ public abstract class Operation implements Serializable {
         return ops;
     }
 
-    private final Object[] operands;
-
-    public Operation(Object[] operands) {
-        this.operands = operands;
-    }
-
     public abstract String getOpName();
 
     // TODO - need capmap and can make it not abstract
     //  public abstract boolean canRespond(UserContext userCtx, PAP pap) throws PMException;
 
-    public Object[] getOperands() {
-        return operands;
-    }
+    public abstract Object[] getOperands();
 
-    /*public boolean matches(EventPattern pattern, GraphReview graphReview) throws PMException {
-        boolean opPatternMatches = operationMatches(pattern.operationPattern(), graphReview);
-        boolean operandPatternsMatch = operandsMatch(graphReview, pattern.operandPatterns());
+    public boolean matches(EventPattern pattern, PAP pap) throws PMException {
+        boolean opPatternMatches = operationMatches(pattern.getOperationPattern(), pap);
+        boolean operandPatternsMatch = operandsMatch(pattern.getOperandPatterns(), pap);
 
         return opPatternMatches && operandPatternsMatch;
     }
 
-    private boolean operationMatches(Pattern<String> operationPattern, GraphReview graphReview) throws PMException {
-        return operationPattern.matches(getOpName(), graphReview);
+    private boolean operationMatches(Pattern operationPattern, PAP pap) throws PMException {
+        return operationPattern.matches(getOpName(), pap);
     }
 
-    private boolean operandsMatch(GraphReview graphReview, List<Pattern<Object>> operandPatterns) throws PMException {
+    private boolean operandsMatch(List<Pattern> operandPatterns, PAP pap) throws PMException {
         // if there are more values provided than patterns, they cannot match
         // if there are more patterns than values than there still might be a match
+        Object[] operands = getOperands();
+
         if (operands.length > operandPatterns.size()) {
             return false;
         }
 
         for (int i = 0; i < operands.length; i++) {
             Object operandValue = operands[i];
-            Pattern<Object> operandPattern = operandPatterns.get(i);
+            Pattern operandPattern = operandPatterns.get(i);
 
-            if (!operandPattern.matches(operandValue, graphReview)) {
+            if (!operandPattern.matches(operandValue, pap)) {
                 return false;
             }
         }
 
         return true;
-    }*/
+    }
 }

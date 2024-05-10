@@ -17,7 +17,7 @@ public class AppendAll extends FunctionDefinitionStatement {
                               new FormalArgument("dst", Type.array(Type.any())),
                               new FormalArgument("src", Type.array(Type.any()))
                       )
-                      .executor((ctx, author) -> {
+                      .executor((ctx, pap) -> {
                           List<Value> dstValueArr = ctx.scope().getVariable("dst").getArrayValue();
                           List<Value> srcValueArr = ctx.scope().getVariable("src").getArrayValue();
 

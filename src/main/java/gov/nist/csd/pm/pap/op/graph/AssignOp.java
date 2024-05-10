@@ -10,7 +10,6 @@ public class AssignOp extends GraphOp {
     private final String parent;
 
     public AssignOp(String child, String parent) {
-        super(Operation.operands(child, parent));
         this.child = child;
         this.parent = parent;
     }
@@ -18,6 +17,11 @@ public class AssignOp extends GraphOp {
     @Override
     public String getOpName() {
         return "assign";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(child, parent);
     }
 
     public String child() {

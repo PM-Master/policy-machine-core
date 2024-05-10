@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -28,10 +28,6 @@ public class VariableDeclarationStatement extends PMLStatement{
         this.declarations = new ArrayList<>(List.of(declarations));
     }
 
-    public VariableDeclarationStatement(ParserRuleContext ctx) {
-        super(ctx);
-    }
-
     public List<Declaration> getDeclarations() {
         return declarations;
     }
@@ -50,14 +46,14 @@ public class VariableDeclarationStatement extends PMLStatement{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         for (Declaration declaration : declarations) {
-            Value value = declaration.expression.execute(ctx, policyModification);
+            Value value = declaration.expression.execute(ctx, pap);
 
             ctx.scope().local().addOrOverwriteVariable(declaration.id, value);
 
             if (isConst) {
-                policyModification.pml().createConstant(declaration.id, value);
+                pap.modify().pml().createConstant(declaration.id, value);
             }
         }
 

@@ -20,7 +20,7 @@ public class Equals extends FunctionDefinitionStatement {
                               new FormalArgument(VALUE1, Type.any()),
                               new FormalArgument(VALUE2, Type.any())
                       )
-                      .executor((ctx, author) -> {
+                      .executor((ctx, pap) -> {
                           Value v1 = ctx.scope().getVariable(VALUE1);
                           Value v2 = ctx.scope().getVariable(VALUE2);
 

@@ -20,7 +20,6 @@ public class CreateProhibitionOp extends ProhibitionsOp {
                                AccessRightSet accessRightSet,
                                boolean intersection,
                                List<ContainerCondition> containers) {
-        super(Operation.operands(name, subject, accessRightSet, intersection, containers));
         this.name = name;
         this.subject = subject;
         this.accessRightSet = accessRightSet;
@@ -31,6 +30,11 @@ public class CreateProhibitionOp extends ProhibitionsOp {
     @Override
     public String getOpName() {
         return "create_prohibition";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return Operation.operands(name, subject, accessRightSet, intersection, containers);
     }
 
     public String name() {

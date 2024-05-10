@@ -1,8 +1,10 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.pap.pml.expression.reference.ReferenceByID;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -27,16 +29,16 @@ class ForeachStatementTest {
                                                      List.of(new CreatePolicyStatement(new ReferenceByID("x")))
         );
 
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
-        store.graph().createPolicyClass("pc1", new HashMap<>());
-        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        PAP pap = new MemoryPAP();
+        pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
 
-        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPolicyModifier())), store);
+        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPAP())), pap);
 
-        assertEquals(5, store.graph().getPolicyClasses().size());
-        assertTrue(store.graph().getPolicyClasses().containsAll(List.of("a", "b", "c")));
+        assertEquals(5, pap.query().graph().getPolicyClasses().size());
+        assertTrue(pap.query().graph().getPolicyClasses().containsAll(List.of("a", "b", "c")));
 
         // map with key and value vars
         stmt = new ForeachStatement("x", "y", buildMapLiteral("a", "b", "c", "d"), List.of(
@@ -44,30 +46,30 @@ class ForeachStatementTest {
                 new CreatePolicyStatement(new ReferenceByID("y"))
         ));
 
-        store = new MemoryPolicyModifier();
-        store.graph().createPolicyClass("pc1", new HashMap<>());
-        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        pap = new MemoryPAP();
+        pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPolicyModifier())), store);
+        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPAP())), pap);
 
-        assertEquals(6, store.graph().getPolicyClasses().size());
-        assertTrue(store.graph().getPolicyClasses().containsAll(List.of("a", "b", "c", "d")));
+        assertEquals(6, pap.query().graph().getPolicyClasses().size());
+        assertTrue(pap.query().graph().getPolicyClasses().containsAll(List.of("a", "b", "c", "d")));
 
         // map with key only
         stmt = new ForeachStatement("x", null, buildMapLiteral("a", "b", "c", "d"), List.of(
                 new CreatePolicyStatement(new ReferenceByID("x"))
         ));
 
-        store = new MemoryPolicyModifier();
-        store.graph().createPolicyClass("pc1", new HashMap<>());
-        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        pap = new MemoryPAP();
+        pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPolicyModifier())), store);
+        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPAP())), pap);
 
-        assertEquals(4, store.graph().getPolicyClasses().size());
-        assertTrue(store.graph().getPolicyClasses().containsAll(List.of("a", "c")));
+        assertEquals(4, pap.query().graph().getPolicyClasses().size());
+        assertTrue(pap.query().graph().getPolicyClasses().containsAll(List.of("a", "c")));
     }
 
     @Test
@@ -76,15 +78,15 @@ class ForeachStatementTest {
                 new VariableAssignmentStatement("test", false, new ReferenceByID("x"))
         ));
 
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
-        store.graph().createPolicyClass("pc1", new HashMap<>());
-        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        PAP pap = new MemoryPAP();
+        pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
 
-        ExecutionContext executionContext = new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPolicyModifier()));
+        ExecutionContext executionContext = new ExecutionContext(userContext, GlobalScope.forExecute(new MemoryPAP()));
         executionContext.scope().addVariable("test", new StringValue("test"));
-        stmt.execute(executionContext, store);
+        stmt.execute(executionContext, pap);
 
         assertEquals(
                 "c",
@@ -151,11 +153,11 @@ class ForeachStatementTest {
                     }
                 }
                 """;
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
-        PMLExecutor.compileAndExecutePML(store, new UserContext(), pml);
+        PAP pap = new MemoryPAP();
+        PMLExecutor.compileAndExecutePML(pap, new UserContext(), pml);
 
-        assertTrue(store.graph().nodeExists("1"));
-        assertFalse(store.graph().nodeExists("2"));
+        assertTrue(pap.query().graph().nodeExists("1"));
+        assertFalse(pap.query().graph().nodeExists("2"));
 
         pml = """
                 f1()
@@ -170,10 +172,10 @@ class ForeachStatementTest {
                     }
                 }
                 """;
-        store = new MemoryPolicyModifier();
-        PMLExecutor.compileAndExecutePML(store, new UserContext(), pml);
+        pap = new MemoryPAP();
+        PMLExecutor.compileAndExecutePML(pap, new UserContext(), pml);
 
-        assertTrue(store.graph().nodeExists("1"));
-        assertFalse(store.graph().nodeExists("2"));
+        assertTrue(pap.query().graph().nodeExists("1"));
+        assertFalse(pap.query().graph().nodeExists("2"));
     }
 }

@@ -6,7 +6,7 @@ import gov.nist.csd.pm.pap.modification.GraphModification;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.graph.relationship.Association;
@@ -91,7 +91,7 @@ public class AdjudicatorGraphModification implements GraphModification {
 
     @Override
     public boolean nodeExists(String name) throws PMException {
-        boolean exists = pap.policy().graph().nodeExists(name);
+        boolean exists = pap.modify().graph().nodeExists(name);
         if (!exists) {
             return false;
         }
@@ -105,7 +105,7 @@ public class AdjudicatorGraphModification implements GraphModification {
     @Override
     public Node getNode(String name) throws PMException {
         // get node
-        Node node = pap.policy().graph().getNode(name);
+        Node node = pap.modify().graph().getNode(name);
 
         // check user has permissions on the node
         privilegeChecker.check(userCtx, name);
@@ -115,7 +115,7 @@ public class AdjudicatorGraphModification implements GraphModification {
 
     @Override
     public List<String> search(NodeType type, Map<String, String> properties) throws PMException {
-        List<String> search = pap.policy().graph().search(type, properties);
+        List<String> search = pap.modify().graph().search(type, properties);
         search.removeIf(node -> {
             try {
                 privilegeChecker.check(userCtx, node);
@@ -130,7 +130,7 @@ public class AdjudicatorGraphModification implements GraphModification {
 
     @Override
     public List<String> getPolicyClasses() throws PMException {
-        List<String> policyClasses = pap.policy().graph().getPolicyClasses();
+        List<String> policyClasses = pap.modify().graph().getPolicyClasses();
         policyClasses.removeIf(pc -> {
             try {
                 privilegeChecker.check(userCtx, AdminPolicy.policyClassTargetName(pc));
@@ -145,7 +145,7 @@ public class AdjudicatorGraphModification implements GraphModification {
 
     @Override
     public void deleteNode(String name) throws PMException {
-        NodeType nodeType = pap.policy().graph().getNode(name).getType();
+        NodeType nodeType = pap.modify().graph().getNode(name).getType();
 
         if (nodeType == PC) {
             privilegeChecker.check(userCtx, AdminPolicy.policyClassTargetName(name), DELETE_POLICY_CLASS);
@@ -164,7 +164,7 @@ public class AdjudicatorGraphModification implements GraphModification {
         privilegeChecker.check(userCtx, name, op);
 
         // check that the user can delete the node from the node's parents
-        List<String> parents = pap.policy().graph().getParents(name);
+        List<String> parents = pap.modify().graph().getParents(name);
 
         for(String parent : parents) {
             privilegeChecker.check(userCtx, parent, op);
@@ -173,8 +173,8 @@ public class AdjudicatorGraphModification implements GraphModification {
 
     @Override
     public void assign(String child, String parent) throws PMException {
-        Node childNode = pap.policy().graph().getNode(child);
-        Node parentNode = pap.policy().graph().getNode(parent);
+        Node childNode = pap.modify().graph().getNode(child);
+        Node parentNode = pap.modify().graph().getNode(parent);
 
         //check the user can assign the child
         privilegeChecker.check(userCtx, child, ASSIGN);
@@ -185,8 +185,8 @@ public class AdjudicatorGraphModification implements GraphModification {
 
     @Override
     public void deassign(String child, String parent) throws PMException {
-        Node childNode = pap.policy().graph().getNode(child);
-        Node parentNode = pap.policy().graph().getNode(parent);
+        Node childNode = pap.modify().graph().getNode(child);
+        Node parentNode = pap.modify().graph().getNode(parent);
 
         //check the user can deassign the child
         privilegeChecker.check(userCtx, child, DEASSIGN);
@@ -197,7 +197,7 @@ public class AdjudicatorGraphModification implements GraphModification {
 
     @Override
     public List<String> getParents(String node) throws PMException {
-        List<String> parents = pap.policy().graph().getParents(node);
+        List<String> parents = pap.modify().graph().getParents(node);
         parents.removeIf(parent -> {
             try {
                 privilegeChecker.check(userCtx, parent);
@@ -212,7 +212,7 @@ public class AdjudicatorGraphModification implements GraphModification {
 
     @Override
     public List<String> getChildren(String node) throws PMException {
-        List<String> children = pap.policy().graph().getChildren(node);
+        List<String> children = pap.modify().graph().getChildren(node);
         children.removeIf(child -> {
             try {
                 privilegeChecker.check(userCtx, child);
@@ -239,12 +239,12 @@ public class AdjudicatorGraphModification implements GraphModification {
 
     @Override
     public List<Association> getAssociationsWithSource(String ua) throws PMException {
-        return getAssociations(pap.policy().graph().getAssociationsWithSource(ua));
+        return getAssociations(pap.modify().graph().getAssociationsWithSource(ua));
     }
 
     @Override
     public List<Association> getAssociationsWithTarget(String target) throws PMException {
-        return getAssociations(pap.policy().graph().getAssociationsWithTarget(target));
+        return getAssociations(pap.modify().graph().getAssociationsWithTarget(target));
     }
 
     private List<Association> getAssociations(List<Association> associations) {

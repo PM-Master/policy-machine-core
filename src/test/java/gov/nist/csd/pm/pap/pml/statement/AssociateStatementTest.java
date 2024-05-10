@@ -1,9 +1,11 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.graph.relationship.Association;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -26,17 +28,17 @@ class AssociateStatementTest {
                 buildArrayLiteral("read")
         );
 
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
-        store.graph().setResourceAccessRights(new AccessRightSet("read"));
-        store.graph().createPolicyClass("pc1", new HashMap<>());
-        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-        store.graph().createUserAttribute("u1", new HashMap<>(), List.of("pc1"));
-        store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(store));
-        stmt.execute(execCtx, store);
+        PAP pap = new MemoryPAP();
+        pap.modify().graph().setResourceAccessRights(new AccessRightSet("read"));
+        pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createUserAttribute("u1", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(pap));
+        stmt.execute(execCtx, pap);
 
-        assertTrue(store.graph().getAssociationsWithSource("ua1").get(0).equals(new Association("ua1", "oa1", new AccessRightSet("read"))));
-        assertTrue(store.graph().getAssociationsWithTarget("oa1").get(0).equals(new Association("ua1", "oa1", new AccessRightSet("read"))));
+        assertTrue(pap.query().graph().getAssociationsWithSource("ua1").get(0).equals(new Association("ua1", "oa1", new AccessRightSet("read"))));
+        assertTrue(pap.query().graph().getAssociationsWithTarget("oa1").get(0).equals(new Association("ua1", "oa1", new AccessRightSet("read"))));
     }
 
     @Test

@@ -21,9 +21,9 @@ public class GetAssociationsWithTarget extends FunctionDefinitionStatement {
                       .args(
                               new FormalArgument("target", Type.string())
                       )
-                      .executor((ctx, author) -> {
+                      .executor((ctx, pap) -> {
                           Value target = ctx.scope().getVariable("target");
-                          List<Association> associations = author.graph().getAssociationsWithTarget(target.getStringValue());
+                          List<Association> associations = pap.query().graph().getAssociationsWithTarget(target.getStringValue());
                           List<Value> associationValues = new ArrayList<>(associations.size());
                           for (Association association : associations) {
                               associationValues.add(Value.fromObject(association));

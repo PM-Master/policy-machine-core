@@ -16,6 +16,7 @@ public class Type implements Serializable {
     private boolean isMap;
     private Type mapKeyType;
     private Type mapValueType;
+    private boolean isPattern;
 
     public static Type any() {
         Type type = new Type();
@@ -53,6 +54,12 @@ public class Type implements Serializable {
     public static Type voidType() {
         Type type = new Type();
         type.isVoid = true;
+        return type;
+    }
+
+    public static Type pattern() {
+        Type type = new Type();
+        type.isPattern = true;
         return type;
     }
 
@@ -100,6 +107,10 @@ public class Type implements Serializable {
         return isVoid;
     }
 
+    public boolean isPattern() {
+        return isPattern || isAny;
+    }
+
     public Type getArrayElementType() {
         if (isAny) {
             return Type.any();
@@ -140,6 +151,8 @@ public class Type implements Serializable {
             } else if (isMap && type.isMap) {
                 return this.mapKeyType.equals(type.mapKeyType) &&
                         this.mapValueType.equals(type.mapValueType);
+            } else if (isPattern && type.isPattern) {
+                return true;
             }
         }
 
@@ -157,6 +170,8 @@ public class Type implements Serializable {
             return "void";
         } else if (isString) {
             return "string";
+        } else if (isPattern) {
+            return "pattern";
         } else if (isBoolean) {
             return "bool";
         } else if (isArray) {

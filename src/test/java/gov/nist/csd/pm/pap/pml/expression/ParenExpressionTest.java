@@ -1,8 +1,10 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
@@ -29,9 +31,9 @@ class ParenExpressionTest {
 
     @BeforeAll
     static void setup() throws PMException {
-        compileGlobalScope = GlobalScope.forCompile(new MemoryPolicyModifier())
+        compileGlobalScope = GlobalScope.forCompile(new MemoryPAP())
                                         .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
-        executeGlobalScope = GlobalScope.forExecute(new MemoryPolicyModifier())
+        executeGlobalScope = GlobalScope.forExecute(new MemoryPAP())
                                         .withPersistedFunctions(Map.of("equals", new Equals()));
     }
 
@@ -44,7 +46,7 @@ class ParenExpressionTest {
         VisitorContext visitorContext = new VisitorContext(compileGlobalScope);
         Expression e = Expression.compile(visitorContext, ctx, Type.bool());
         assertEquals(0, visitorContext.errorLog().getErrors().size());
-        Value actual = e.execute(new ExecutionContext(new UserContext(""), executeGlobalScope), new MemoryPolicyModifier());
+        Value actual = e.execute(new ExecutionContext(new UserContext(""), executeGlobalScope), new MemoryPAP());
         assertEquals(
                 new BoolValue(true),
                 actual
@@ -57,7 +59,7 @@ class ParenExpressionTest {
         visitorContext = new VisitorContext(compileGlobalScope);
         e = Expression.compile(visitorContext, ctx, Type.bool());
         assertEquals(0, visitorContext.errorLog().getErrors().size());
-        actual = e.execute(new ExecutionContext(new UserContext(""), executeGlobalScope), new MemoryPolicyModifier());
+        actual = e.execute(new ExecutionContext(new UserContext(""), executeGlobalScope), new MemoryPAP());
         assertEquals(
                 new BoolValue(false),
                 actual
@@ -70,7 +72,7 @@ class ParenExpressionTest {
         visitorContext = new VisitorContext(compileGlobalScope);
         e = Expression.compile(visitorContext, ctx, Type.bool());
         assertEquals(0, visitorContext.errorLog().getErrors().size());
-        actual = e.execute(new ExecutionContext(new UserContext(""), executeGlobalScope), new MemoryPolicyModifier());
+        actual = e.execute(new ExecutionContext(new UserContext(""), executeGlobalScope), new MemoryPAP());
         assertEquals(
                 new BoolValue(true),
                 actual
@@ -83,7 +85,7 @@ class ParenExpressionTest {
         visitorContext = new VisitorContext(compileGlobalScope);
         e = Expression.compile(visitorContext, ctx, Type.bool());
         assertEquals(0, visitorContext.errorLog().getErrors().size());
-        actual = e.execute(new ExecutionContext(new UserContext(""), executeGlobalScope), new MemoryPolicyModifier());
+        actual = e.execute(new ExecutionContext(new UserContext(""), executeGlobalScope), new MemoryPAP());
         assertEquals(
                 new BoolValue(true),
                 actual
@@ -96,7 +98,7 @@ class ParenExpressionTest {
         visitorContext = new VisitorContext(compileGlobalScope);
         e = Expression.compile(visitorContext, ctx, Type.bool());
         assertEquals(0, visitorContext.errorLog().getErrors().size());
-        actual = e.execute(new ExecutionContext(new UserContext(""), executeGlobalScope), new MemoryPolicyModifier());
+        actual = e.execute(new ExecutionContext(new UserContext(""), executeGlobalScope), new MemoryPAP());
         assertEquals(
                 new BoolValue(true),
                 actual
@@ -109,7 +111,7 @@ class ParenExpressionTest {
         visitorContext = new VisitorContext(compileGlobalScope);
         e = Expression.compile(visitorContext, ctx, Type.bool());
         assertEquals(0, visitorContext.errorLog().getErrors().size());
-        actual = e.execute(new ExecutionContext(new UserContext(""), executeGlobalScope), new MemoryPolicyModifier());
+        actual = e.execute(new ExecutionContext(new UserContext(""), executeGlobalScope), new MemoryPAP());
         assertEquals(
                 new BoolValue(false),
                 actual
@@ -127,9 +129,9 @@ class ParenExpressionTest {
         Expression expression = ParenExpression.compileParenExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
+        PAP pap = new MemoryPAP();
         ExecutionContext executionContext = new ExecutionContext(new UserContext(""), executeGlobalScope);
-        Value actual = expression.execute(executionContext, store);
+        Value actual = expression.execute(executionContext, pap);
         assertEquals(
                 new BoolValue(false),
                 actual

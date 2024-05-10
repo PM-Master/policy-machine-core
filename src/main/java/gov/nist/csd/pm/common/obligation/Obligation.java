@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.common.obligation;
 
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.statement.CreateObligationStatement;
 
 import java.io.Serializable;
@@ -82,6 +83,7 @@ public class Obligation implements Serializable {
         if (this == o) return true;
         if (!(o instanceof Obligation)) return false;
         Obligation that = (Obligation) o;
+
         return Objects.equals(author, that.author) && Objects.equals(name, that.name) && Objects.equals(rules, that.rules);
     }
 

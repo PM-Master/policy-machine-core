@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.value.BreakValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
@@ -15,12 +15,8 @@ public class BreakStatement extends PMLStatement {
     public BreakStatement() {
     }
 
-    public BreakStatement(ParserRuleContext ctx) {
-        super(ctx);
-    }
-
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         return new BreakValue();
     }
 

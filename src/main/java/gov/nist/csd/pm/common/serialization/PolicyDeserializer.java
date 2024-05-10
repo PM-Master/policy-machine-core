@@ -1,11 +1,11 @@
 package gov.nist.csd.pm.common.serialization;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 
 public interface PolicyDeserializer {
 
-    void deserialize(PolicyModification policyModification, UserContext author, String input) throws PMException;
+    void deserialize(PAP pap, UserContext author, String input) throws PMException;
 
 }

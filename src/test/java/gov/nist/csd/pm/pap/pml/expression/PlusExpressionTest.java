@@ -1,8 +1,10 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
@@ -13,7 +15,9 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
 import org.junit.jupiter.api.Test;
 
+import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PlusExpressionTest {
 
@@ -24,7 +28,7 @@ class PlusExpressionTest {
                 "a" + "b"
                 """,
                 PMLParser.PlusExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
         Expression expression = PlusExpression.compilePlusExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -34,7 +38,7 @@ class PlusExpressionTest {
                 plusExpression
         );
 
-        Value value = plusExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
+        Value value = plusExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPAP())), new MemoryPAP());
         assertEquals(
                 new StringValue("ab"),
                 value
@@ -48,7 +52,7 @@ class PlusExpressionTest {
                 "a" + "b" + "c"
                 """,
                 PMLParser.PlusExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
         Expression expression = PlusExpression.compilePlusExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size());
 
@@ -58,7 +62,7 @@ class PlusExpressionTest {
                 plusExpression
         );
 
-        Value value = plusExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPolicyModifier())), new MemoryPolicyModifier());
+        Value value = plusExpression.execute(new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPAP())), new MemoryPAP());
         assertEquals(
                 new StringValue("abc"),
                 value
@@ -72,12 +76,15 @@ class PlusExpressionTest {
                 "a" + "b" + ["c"]
                 """,
                 PMLParser.PlusExpressionContext.class);
-        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
-        PlusExpression.compilePlusExpression(visitorContext, ctx);
-        assertEquals(1, visitorContext.errorLog().getErrors().size());
+        VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
+        PMLCompilationRuntimeException e = assertThrows(
+                PMLCompilationRuntimeException.class,
+                () -> PlusExpression.compilePlusExpression(visitorContext, ctx)
+        );
+        assertEquals(1, e.getErrors().size());
         assertEquals(
                 "expected expression type string, got []string",
-                visitorContext.errorLog().getErrors().get(0).errorMessage()
+                e.getErrors().get(0).errorMessage()
         );
     }
 

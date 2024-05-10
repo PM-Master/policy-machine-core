@@ -42,4 +42,6 @@ public class Rule implements Serializable {
     public int hashCode() {
         return Objects.hash(name, eventPattern, response);
     }
+
+
 }

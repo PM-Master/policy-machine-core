@@ -1,12 +1,13 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.Objects;
 
@@ -19,10 +20,6 @@ public class ShortDeclarationStatement extends PMLStatement{
     public ShortDeclarationStatement(String id, Expression expression) {
         this.id = id;
         this.expression = expression;
-    }
-
-    public ShortDeclarationStatement(PMLParser.ShortDeclarationContext ctx) {
-        super(ctx);
     }
 
     public String getId() {
@@ -42,8 +39,8 @@ public class ShortDeclarationStatement extends PMLStatement{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        ctx.scope().addVariable(id, expression.execute(ctx, policyModification));
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        ctx.scope().addVariable(id, expression.execute(ctx, pap));
 
         return new VoidValue();
     }

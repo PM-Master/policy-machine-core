@@ -1,11 +1,13 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.expression.FunctionInvokeExpression;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
+import gov.nist.csd.pm.pap.pml.pattern.PatternFunctionSignature;
 import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
 import gov.nist.csd.pm.pap.pml.scope.UnknownFunctionInScopeException;
 import gov.nist.csd.pm.pap.pml.type.Type;
@@ -50,42 +52,35 @@ public class FunctionInvokeStmtVisitor extends PMLBaseVisitor<FunctionInvokeExpr
         try {
             functionSignature = visitorCtx.scope().getFunction(funcName);
         } catch (UnknownFunctionInScopeException e) {
-            visitorCtx.errorLog().addError(funcCallCtx, e.getMessage());
-
-            return new FunctionInvokeExpression(funcCallCtx);
+            throw new PMLCompilationRuntimeException(funcCallCtx, e.getMessage());
         }
 
-        // check that the actual args are correct type
+        // check that the actual args are correct type only if the function is not a pattern function
+        // pattern functions are handled differently because we do not want to invoke them now, just
+        // prepare them to be invoked during the event processing flow
         List<FormalArgument> formalArgs = functionSignature.getArgs();
-
         if (formalArgs.size() != actualArgs.size()) {
-            visitorCtx.errorLog().addError(
+            throw new PMLCompilationRuntimeException(
                     funcCallCtx,
                     "wrong number of args for function call " + funcName + ": " +
                             "expected " + formalArgs.size() + ", got " + actualArgs.size()
             );
-
-            return new FunctionInvokeExpression(funcCallCtx);
-        } else {
+        } else if (!(functionSignature instanceof PatternFunctionSignature)){
             for (int i = 0; i < actualArgs.size(); i++) {
                 try {
                     Expression actual = actualArgs.get(i);
                     Type actualType = actual.getType(visitorCtx.scope());
                     FormalArgument formal = formalArgs.get(i);
 
-                    if (!actual.getType(visitorCtx.scope()).equals(formal.type())) {
-                        visitorCtx.errorLog().addError(
+                    if (!actual.getType(visitorCtx.scope()).equals(formal.getType())) {
+                        throw new PMLCompilationRuntimeException(
                                 funcCallCtx,
-                                "invalid argument type: expected " + formal.type() + ", got " +
+                                "invalid argument type: expected " + formal.getType() + ", got " +
                                         actualType + " at arg " + i
                         );
-
-                        return new FunctionInvokeExpression(funcCallCtx);
                     }
                 } catch (PMLScopeException e) {
-                    visitorCtx.errorLog().addError(funcCallCtx, e.getMessage());
-
-                    return new FunctionInvokeExpression(funcCallCtx);
+                    throw new PMLCompilationRuntimeException(funcCallCtx, e.getMessage());
                 }
             }
         }

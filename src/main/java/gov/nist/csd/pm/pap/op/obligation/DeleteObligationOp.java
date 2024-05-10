@@ -6,13 +6,17 @@ public class DeleteObligationOp extends ObligationsOp {
     private final String name;
 
     public DeleteObligationOp(String name) {
-        super(operands(name));
         this.name = name;
     }
 
     @Override
     public String getOpName() {
         return "delete_obligation";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(name);
     }
 
     public String name() {

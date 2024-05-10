@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
@@ -11,6 +11,7 @@ import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.exception.PMLExecutionException;
 import gov.nist.csd.pm.pap.pml.type.Type;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,10 +50,6 @@ public class FunctionDefinitionStatement extends PMLStatement {
         this.signature = new FunctionSignature(functionName, returnType, args);
         this.functionExecutor = executor;
         this.isFuncExec = true;
-    }
-
-    public FunctionDefinitionStatement(PMLParser.FunctionDefinitionStatementContext ctx) {
-        super(ctx);
     }
 
     public FunctionSignature getSignature() {
@@ -96,9 +93,9 @@ public class FunctionDefinitionStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMLExecutionException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMLExecutionException {
         try {
-            policyModification.pml().createFunction(this);
+            pap.modify().pml().createFunction(this);
         } catch (PMException e) {
             throw new PMLExecutionException(e);
         }
@@ -140,7 +137,7 @@ public class FunctionDefinitionStatement extends PMLStatement {
     }
 
     public static class Builder {
-        private final String name;
+        private String name;
         private Type returnType;
         private List<FormalArgument> args;
         private FunctionExecutor functionExecutor;

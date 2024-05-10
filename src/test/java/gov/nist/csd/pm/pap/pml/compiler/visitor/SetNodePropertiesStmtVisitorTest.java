@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
@@ -12,6 +12,7 @@ import gov.nist.csd.pm.pap.pml.statement.SetNodePropertiesStatement;
 import org.junit.jupiter.api.Test;
 
 import static gov.nist.csd.pm.pap.pml.PMLUtil.buildMapLiteral;
+import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SetNodePropertiesStmtVisitorTest {
@@ -23,7 +24,7 @@ class SetNodePropertiesStmtVisitorTest {
                 set properties of "o1" to {"a": "b"}
                 """,
                 PMLParser.SetNodePropertiesStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
         PMLStatement stmt = new SetNodePropertiesStmtVisitor(visitorCtx)
                 .visitSetNodePropertiesStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
@@ -35,32 +36,20 @@ class SetNodePropertiesStmtVisitorTest {
 
     @Test
     void testInvalidExpressions() throws PMException {
-        PMLParser.SetNodePropertiesStatementContext ctx = PMLContextVisitor.toCtx(
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
+
+        testCompilationError(
                 """
                 set properties of ["o1"] to {"a": "b"}
-                """,
-                PMLParser.SetNodePropertiesStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
-        new SetNodePropertiesStmtVisitor(visitorCtx)
-                .visitSetNodePropertiesStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type string, got []string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "expected expression type string, got []string"
         );
 
-        ctx = PMLContextVisitor.toCtx(
+        testCompilationError(
                 """
                 set properties of "o1" to ["a", "b"]
-                """,
-                PMLParser.SetNodePropertiesStatementContext.class);
-        visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
-        new SetNodePropertiesStmtVisitor(visitorCtx)
-                .visitSetNodePropertiesStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type map[string]string, got []string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "expected expression type map[string]string, got []string"
         );
     }
 

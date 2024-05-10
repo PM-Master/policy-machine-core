@@ -3,7 +3,7 @@ package gov.nist.csd.pm.epp;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pdp.PDP;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Response;
 import gov.nist.csd.pm.common.obligation.Rule;
@@ -43,8 +43,9 @@ public class EPP {
 
         @Override
         public void processEvent(EventContext eventCtx) throws PMException {
-            GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(pap.policy(), customFunctions);
-            List<Obligation> obligations = pap.policy().obligations().getAll();
+            GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(pap, customFunctions);
+            List<Obligation> obligations = pap.query().obligations().getAll();
+
             for(Obligation obligation : obligations) {
                 UserContext author = obligation.getAuthor();
                 ExecutionContext executionCtx = new ExecutionContext(author, new Scope<>(globalScope));

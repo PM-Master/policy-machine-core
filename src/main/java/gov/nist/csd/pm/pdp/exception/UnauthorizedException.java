@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pdp.exception;
 
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.exception.PMException;
 
 import java.util.Arrays;

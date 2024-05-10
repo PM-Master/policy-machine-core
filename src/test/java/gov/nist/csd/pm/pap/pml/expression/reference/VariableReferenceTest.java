@@ -1,11 +1,13 @@
 package gov.nist.csd.pm.pap.pml.expression.reference;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
-import gov.nist.csd.pm.pap.pml.expression.ErrorExpression;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
@@ -27,7 +29,7 @@ class VariableReferenceTest {
                     """
                     a
                     """, PMLParser.VariableReferenceExpressionContext.class);
-            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
             visitorContext.scope().addVariable("a", new Variable("a", Type.string(), false));
             Expression actual = compileVariableReference(visitorContext, ctx.variableReference());
             assertEquals(0, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().toString());
@@ -43,13 +45,15 @@ class VariableReferenceTest {
                     """
                     a
                     """, PMLParser.VariableReferenceExpressionContext.class);
-            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
-            Expression e = compileVariableReference(visitorContext, ctx.variableReference());
-            assertTrue(e instanceof ErrorExpression);
-            assertEquals(1, visitorContext.errorLog().getErrors().size());
+            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
+            PMLCompilationRuntimeException e = assertThrows(
+                    PMLCompilationRuntimeException.class,
+                    () -> compileVariableReference(visitorContext, ctx.variableReference())
+            );
+            assertEquals(1, e.getErrors().size());
             assertEquals(
                     "unknown variable 'a' in scope",
-                    visitorContext.errorLog().getErrors().get(0).errorMessage()
+                    e.getErrors().get(0).errorMessage()
             );
         }
     }
@@ -62,7 +66,7 @@ class VariableReferenceTest {
                     """
                     a.b.c
                     """, PMLParser.VariableReferenceExpressionContext.class);
-            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
             visitorContext.scope().addVariable("a", new Variable("a", Type.map(Type.string(), Type.map(Type.string(), Type.string())), false));
             Expression actual = compileVariableReference(visitorContext, ctx.variableReference());
             assertEquals(0, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().toString());
@@ -75,7 +79,7 @@ class VariableReferenceTest {
                     """
                     a["b"]["c"]
                     """, PMLParser.VariableReferenceExpressionContext.class);
-            visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+            visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
             visitorContext.scope().addVariable("a", new Variable("a", Type.map(Type.string(), Type.map(Type.string(), Type.string())), false));
             actual = compileVariableReference(visitorContext, ctx.variableReference());
             assertEquals(0, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().toString());
@@ -91,13 +95,15 @@ class VariableReferenceTest {
                     """
                     a.b.c
                     """, PMLParser.VariableReferenceExpressionContext.class);
-            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
-            Expression e = compileVariableReference(visitorContext, ctx.variableReference());
-            assertTrue(e instanceof ErrorExpression);
-            assertEquals(1, visitorContext.errorLog().getErrors().size());
+            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
+            PMLCompilationRuntimeException e = assertThrows(
+                    PMLCompilationRuntimeException.class,
+                    () -> compileVariableReference(visitorContext, ctx.variableReference())
+            );
+            assertEquals(1, e.getErrors().size());
             assertEquals(
                     "unknown variable 'a' in scope",
-                    visitorContext.errorLog().getErrors().get(0).errorMessage()
+                    e.getErrors().get(0).errorMessage()
             );
         }
 
@@ -107,13 +113,16 @@ class VariableReferenceTest {
                     """
                     a.b.c
                     """, PMLParser.VariableReferenceExpressionContext.class);
-            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+            VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
             visitorContext.scope().addVariable("a", new Variable("a", Type.map(Type.string(), Type.string()), false));
-            Expression actual = compileVariableReference(visitorContext, ctx.variableReference());
-            assertEquals(1, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().toString());
+            PMLCompilationRuntimeException e = assertThrows(
+                    PMLCompilationRuntimeException.class,
+                    () -> compileVariableReference(visitorContext, ctx.variableReference())
+            );
+            assertEquals(1, e.getErrors().size(), visitorContext.errorLog().toString());
             assertEquals(
                     "expected type map but got string",
-                    visitorContext.errorLog().getErrors().get(0).errorMessage()
+                    e.getErrors().get(0).errorMessage()
             );
         }
     }

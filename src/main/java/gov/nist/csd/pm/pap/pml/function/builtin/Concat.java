@@ -19,7 +19,7 @@ public class Concat extends FunctionDefinitionStatement {
                       .args(
                               new FormalArgument(ARR_ARG, Type.array(Type.string()))
                       )
-                      .executor((ctx, author) -> {
+                      .executor((ctx, pap) -> {
                           List<Value> arr = ctx.scope().getVariable(ARR_ARG).getArrayValue();
                           StringBuilder s = new StringBuilder();
                           for (Value v : arr) {

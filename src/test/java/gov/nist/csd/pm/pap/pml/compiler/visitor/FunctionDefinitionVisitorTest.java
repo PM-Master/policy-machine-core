@@ -1,15 +1,13 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.pml.PMLCompiler;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
-import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.statement.FunctionReturnStatement;
@@ -21,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
+import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
 import static gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,6 +31,14 @@ class FunctionDefinitionVisitorTest {
             new FormalArgument("c", Type.array(Type.string()))
     ));
 
+    VisitorContext visitorCtx = new VisitorContext(
+            GlobalScope.forCompile(new MemoryPAP()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
+    );
+
+    FunctionDefinitionVisitorTest() throws PMException {
+    }
+
+
     @Test
     void testSuccess() throws PMException {
         PMLParser.FunctionDefinitionStatementContext ctx = PMLContextVisitor.toCtx(
@@ -41,9 +48,6 @@ class FunctionDefinitionVisitorTest {
                 }
                 """,
                 PMLParser.FunctionDefinitionStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
-        );
         PMLStatement stmt = new FunctionDefinitionVisitor(visitorCtx)
                 .visitFunctionDefinitionStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
@@ -70,7 +74,7 @@ class FunctionDefinitionVisitorTest {
                 """,
                 PMLParser.FunctionDefinitionStatementContext.class);
         visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of("func1", new FunctionSignature("func1", Type.voidType(), List.of(new FormalArgument("a", Type.string())))))
+                GlobalScope.forCompile(new MemoryPAP()).withPersistedFunctions(Map.of("func1", new FunctionSignature("func1", Type.voidType(), List.of(new FormalArgument("a", Type.string())))))
         );
         stmt = new FunctionDefinitionVisitor(visitorCtx)
                 .visitFunctionDefinitionStatement(ctx);
@@ -88,8 +92,8 @@ class FunctionDefinitionVisitorTest {
     }
 
     @Test
-    void testNotAllPathsReturn() throws PMException {
-        PMLParser.FunctionDefinitionStatementContext ctx = PMLContextVisitor.toCtx(
+    void testNotAllPathsReturn() {
+        testCompilationError(
                 """
                 function func1(string a, bool b, []string c) string {
                     if true {
@@ -98,114 +102,67 @@ class FunctionDefinitionVisitorTest {
                     
                     }
                 }
-                """,
-                PMLParser.FunctionDefinitionStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
-        );
-        new FunctionDefinitionVisitor(visitorCtx)
-                .visitFunctionDefinitionStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "not all conditional paths return",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "not all conditional paths return"
         );
 
-        ctx = PMLContextVisitor.toCtx(
+        testCompilationError(
                 """
                 function func1(string a, bool b, []string c) string {
                     foreach x in c {
                         return
                     }
                 }
-                """,
-                PMLParser.FunctionDefinitionStatementContext.class);
-        visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
-        );
-        new FunctionDefinitionVisitor(visitorCtx)
-                .visitFunctionDefinitionStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "not all conditional paths return",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "not all conditional paths return"
         );
 
-        ctx = PMLContextVisitor.toCtx(
+        testCompilationError(
                 """
                 function func1(string a, bool b, []string c) string {
                     
                 }
-                """,
-                PMLParser.FunctionDefinitionStatementContext.class);
-        visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
-        );
-        new FunctionDefinitionVisitor(visitorCtx)
-                .visitFunctionDefinitionStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "not all conditional paths return",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "not all conditional paths return"
         );
     }
 
     @Test
     void testReturnVoidWhenReturnValueIsString() throws PMException {
-        PMLParser.FunctionDefinitionStatementContext ctx = PMLContextVisitor.toCtx(
+        testCompilationError(
                 """
                 function func1(string a, bool b, []string c) string {
                     return
                 }
-                """,
-                PMLParser.FunctionDefinitionStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
-        );
-        new FunctionDefinitionVisitor(visitorCtx)
-                .visitFunctionDefinitionStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "return statement \"return\" does not match return type string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "return statement \"return\" does not match return type string"
         );
     }
 
     @Test
     void testWrongTypeOfReturnValue() throws PMException {
-        PMLParser.FunctionDefinitionStatementContext ctx = PMLContextVisitor.toCtx(
+        testCompilationError(
                 """
                 function func1(string a, bool b, []string c) string {
                     return false
                 }
-                """,
-                PMLParser.FunctionDefinitionStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyModifier()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
-        );
-        new FunctionDefinitionVisitor(visitorCtx)
-                .visitFunctionDefinitionStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "return statement \"return false\" does not match return type string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "return statement \"return false\" does not match return type string"
         );
     }
 
     @Nested
     class FunctionSignatureVisitorTest {
-
         @Test
         void testDuplicateFormalArgNames() throws PMException {
-            String pml = """
+            testCompilationError(
+                    """
                     function func1(string a, bool a) string {
                         return ""
                     }
-                    """;
-            PMLCompilationException e =
-                    assertThrows(PMLCompilationException.class, () -> PMLCompiler.compilePML(new MemoryPolicyModifier(), pml));
-            assertEquals(1, e.getErrors().size());
-            assertEquals("formal arg 'a' already defined in signature", e.getErrors().get(0).errorMessage());
+                    """, visitorCtx, 1,
+                    "formal arg 'a' already defined in signature"
+            );
         }
 
     }

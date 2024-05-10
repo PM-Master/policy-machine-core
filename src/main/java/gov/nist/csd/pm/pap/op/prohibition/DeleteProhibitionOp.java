@@ -6,13 +6,17 @@ public class DeleteProhibitionOp extends ProhibitionsOp {
     private final String name;
 
     public DeleteProhibitionOp(String name) {
-        super(operands(name));
         this.name = name;
     }
 
     @Override
     public String getOpName() {
         return "delete_prohibition";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(name);
     }
 
     public String name() {

@@ -1,15 +1,18 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.exception.PMLExecutionException;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
 import gov.nist.csd.pm.pap.pml.function.FunctionExecutor;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
+import gov.nist.csd.pm.pap.pml.pattern.PatternFunctionInvokeExpression;
+import gov.nist.csd.pm.pap.pml.pattern.PatternFunctionSignature;
 import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
 import gov.nist.csd.pm.pap.pml.scope.Scope;
 import gov.nist.csd.pm.pap.pml.scope.UnknownFunctionInScopeException;
@@ -26,25 +29,29 @@ import java.util.Objects;
 
 public class FunctionInvokeExpression extends Expression {
 
-    public FunctionInvokeExpression(PMLParser.FunctionInvokeContext funcCallCtx) {
-        super(funcCallCtx);
-    }
-
     public static Expression compileFunctionInvokeExpression(VisitorContext visitorCtx,
                                                              PMLParser.FunctionInvokeExpressionContext functionInvokeExpressionContext) {
         PMLParser.FunctionInvokeContext functionInvokeContext = functionInvokeExpressionContext.functionInvoke();
+        return compileFunctionInvoke(visitorCtx, functionInvokeContext);
+    }
+
+    public static Expression compileFunctionInvoke(VisitorContext visitorCtx, PMLParser.FunctionInvokeContext functionInvokeContext) {
         String funcName = functionInvokeContext.ID().getText();
 
         FunctionSignature functionSignature;
         try {
             functionSignature = visitorCtx.scope().getFunction(funcName);
-        } catch (UnknownFunctionInScopeException e) {
-            visitorCtx.errorLog().addError(functionInvokeContext, e.getMessage());
 
-            return new ErrorExpression(functionInvokeExpressionContext);
+            if(functionSignature instanceof PatternFunctionSignature) {
+                return PatternFunctionInvokeExpression.compile(visitorCtx, functionInvokeContext);
+            }
+        } catch (UnknownFunctionInScopeException e) {
+            throw new PMLCompilationRuntimeException(functionInvokeContext, e.getMessage());
         }
 
         List<FormalArgument> formalArgs = functionSignature.getArgs();
+        Type returnType = functionSignature.getReturnType();
+
         PMLParser.FunctionInvokeArgsContext funcCallArgsCtx = functionInvokeContext.functionInvokeArgs();
         List<PMLParser.ExpressionContext> argExpressions =  new ArrayList<>();
         PMLParser.ExpressionListContext expressionListContext = funcCallArgsCtx.expressionList();
@@ -53,30 +60,22 @@ public class FunctionInvokeExpression extends Expression {
         }
 
         if (formalArgs.size() != argExpressions.size()) {
-            visitorCtx.errorLog().addError(
+            throw new PMLCompilationRuntimeException(
                     functionInvokeContext,
                     "wrong number of args for function call " + funcName + ": " +
                             "expected " + formalArgs.size() + ", got " + argExpressions.size()
             );
-
-            return new ErrorExpression(functionInvokeExpressionContext);
         }
 
         List<Expression> actualArgs = new ArrayList<>();
         for (int i = 0; i < argExpressions.size(); i++) {
             PMLParser.ExpressionContext exprCtx = argExpressions.get(i);
-            FormalArgument formalArgument = formalArgs.get(i);
+            Type formArgType = formalArgs.get(i).getType();
 
-            Expression expr = Expression.compile(visitorCtx, exprCtx, formalArgument.type());
-            if (expr instanceof ErrorExpression) {
-                return expr;
-            }
-
+            Expression expr = Expression.compile(visitorCtx, exprCtx, formArgType);
             actualArgs.add(expr);
         }
 
-        // get result types
-        Type returnType = functionSignature.getReturnType();
 
         return new FunctionInvokeExpression(funcName, returnType, actualArgs);
     }
@@ -110,23 +109,23 @@ public class FunctionInvokeExpression extends Expression {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         FunctionDefinitionStatement funcDef = ctx.scope().getFunction(functionName);
 
-        ExecutionContext invokeCtx = prepareFunctionInvoke(ctx, policyModification, funcDef);
+        ExecutionContext invokeCtx = prepareFunctionInvoke(ctx, pap, funcDef);
 
         Value value = new VoidValue();
         if (funcDef.isFunctionExecutor()) {
             FunctionExecutor functionExecutor = funcDef.getFunctionExecutor();
             try {
-                value = functionExecutor.exec(invokeCtx, policyModification);
+                value = functionExecutor.exec(invokeCtx, pap);
             } catch (PMLScopeException e) {
                 throw new PMLExecutionException(e);
             }
         } else {
             List<PMLStatement> statements = funcDef.getStatements();
             for (PMLStatement stmt : statements) {
-                value = stmt.execute(invokeCtx, policyModification);
+                value = stmt.execute(invokeCtx, pap);
                 if (value instanceof ReturnValue) {
                     break;
                 }
@@ -138,29 +137,29 @@ public class FunctionInvokeExpression extends Expression {
         return value;
     }
 
-    private ExecutionContext prepareFunctionInvoke(ExecutionContext ctx, PolicyModification policyModification, FunctionDefinitionStatement funcDef)
+    private ExecutionContext prepareFunctionInvoke(ExecutionContext ctx, PAP pap, FunctionDefinitionStatement funcDef)
             throws PMException {
         String funcName = funcDef.getSignature().getFunctionName();
         List<FormalArgument> formalArgs = funcDef.getSignature().getArgs();
 
         if (formalArgs.size() != actualArgs.size()) {
             throw new PMLExecutionException("expected " + formalArgs.size() + " args for function \""
-                                                    + funcName + "\", got " + actualArgs.size());
+                    + funcName + "\", got " + actualArgs.size());
         }
 
         ExecutionContext funcInvokeExecCtx = ctx.copy();
 
         for (int i = 0; i < actualArgs.size(); i++) {
             Expression argExpr = actualArgs.get(i);
-            Value argValue = argExpr.execute(funcInvokeExecCtx, policyModification);
+            Value argValue = argExpr.execute(funcInvokeExecCtx, pap);
             FormalArgument formalArg = formalArgs.get(i);
 
-            if (!argValue.getType().equals(formalArg.type())) {
-                throw new PMLExecutionException("expected " + formalArg.type() + " for arg " + i + " for function \""
-                                                        + funcName + "\", got " + argValue.getType());
+            if (!argValue.getType().equals(formalArg.getType())) {
+                throw new PMLExecutionException("expected " + formalArg.getType() + " for arg " + i + " for function \""
+                        + funcName + "\", got " + argValue.getType());
             }
 
-            funcInvokeExecCtx.scope().local().addOrOverwriteVariable(formalArg.name(), argValue);
+            funcInvokeExecCtx.scope().local().addOrOverwriteVariable(formalArg.getName(), argValue);
         }
 
         return funcInvokeExecCtx;

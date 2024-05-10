@@ -209,13 +209,13 @@ public class PMLParserBaseListener implements PMLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPattern(PMLParser.PatternContext ctx) { }
+	@Override public void enterPatternArray(PMLParser.PatternArrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPattern(PMLParser.PatternContext ctx) { }
+	@Override public void exitPatternArray(PMLParser.PatternArrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -821,6 +821,18 @@ public class PMLParserBaseListener implements PMLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterPatternExpression(PMLParser.PatternExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPatternExpression(PMLParser.PatternExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterEqualsExpression(PMLParser.EqualsExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -840,6 +852,18 @@ public class PMLParserBaseListener implements PMLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExpressionList(PMLParser.ExpressionListContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPattern(PMLParser.PatternContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPattern(PMLParser.PatternContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

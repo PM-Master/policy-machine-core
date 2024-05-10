@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.pap.pml.context;
 
 import gov.nist.csd.pm.pap.exception.PMLFunctionNotDefinedException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
 import gov.nist.csd.pm.pap.pml.scope.Scope;
 import gov.nist.csd.pm.pap.pml.value.Value;

@@ -2,12 +2,46 @@ package gov.nist.csd.pm.pap.modification;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.exception.*;
-import gov.nist.csd.pm.pap.query.PolicyQuery;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.value.Value;
 
-public abstract class PMLModifier extends Modifier {
+public abstract class PMLModifier extends Modifier implements PMLModification {
 
-    public PMLModifier(PolicyQuery policyQuery) {
-        super(policyQuery);
+    protected abstract void createFunctionInternal(FunctionDefinitionStatement func) throws PMException;
+    protected abstract void deleteFunctionInternal(String name) throws PMException;
+    protected abstract void createConstantInternal(String name, Value value) throws PMException;
+    protected abstract void deleteConstantInternal(String name) throws PMException;
+
+    @Override
+    public void createFunction(FunctionDefinitionStatement functionDefinitionStatement) throws PMException {
+        checkCreateFunctionInput(functionDefinitionStatement.getSignature().getFunctionName());
+
+        createFunctionInternal(functionDefinitionStatement);
+    }
+
+    @Override
+    public void deleteFunction(String functionName) throws PMException {
+        if(!checkDeleteFunctionInput(functionName)) {
+            return;
+        }
+
+        deleteFunctionInternal(functionName);
+    }
+
+    @Override
+    public void createConstant(String constantName, Value constantValue) throws PMException {
+        checkCreateConstantInput(constantName);
+
+        createConstantInternal(constantName, constantValue);
+    }
+
+    @Override
+    public void deleteConstant(String constName) throws PMException {
+        if(!checkDeleteConstantInput(constName)) {
+            return;
+        }
+
+        deleteConstantInternal(constName);
     }
 
     /**
@@ -18,7 +52,7 @@ public abstract class PMLModifier extends Modifier {
      * @throws PMBackendException If there is an error in the backend implementation.
      */
     protected void checkCreateFunctionInput(String name) throws PMException {
-        if (querier.pml().getFunctions().containsKey(name)) {
+        if (query().pml().getFunctions().containsKey(name)) {
             throw new PMLFunctionAlreadyDefinedException(name);
         }
     }
@@ -34,23 +68,10 @@ public abstract class PMLModifier extends Modifier {
     protected boolean checkDeleteFunctionInput(String name) throws PMException {
         // if function does not exist the check returns false
         try {
-            querier.pml().getFunction(name);
+            query().pml().getFunction(name);
             return true;
         } catch (PMLFunctionNotDefinedException e) {
             return false;
-        }
-    }
-
-    /**
-     * Check the function being retrieved.
-     *
-     * @param name The name of the function to get.
-     * @throws PMLFunctionNotDefinedException If a function with the given name is not defined.
-     * @throws PMBackendException If there is an error in the backend implementation.
-     */
-    protected void checkGetFunctionInput(String name) throws PMException {
-        if (!querier.pml().getFunctions().containsKey(name)) {
-            throw new PMLFunctionNotDefinedException(name);
         }
     }
 
@@ -62,7 +83,7 @@ public abstract class PMLModifier extends Modifier {
      * @throws PMBackendException If there is an error in the backend implementation.
      */
     protected void checkCreateConstantInput(String name) throws PMException {
-        if (querier.pml().getConstants().containsKey(name)) {
+        if (query().pml().getConstants().containsKey(name)) {
             throw new PMLConstantAlreadyDefinedException(name);
         }
     }
@@ -78,23 +99,10 @@ public abstract class PMLModifier extends Modifier {
     protected boolean checkDeleteConstantInput(String name) throws PMException {
         // if function does not exist the check returns false
         try {
-            querier.pml().getConstant(name);
+            query().pml().getConstant(name);
             return true;
         } catch (PMLConstantNotDefinedException e) {
             return false;
-        }
-    }
-
-    /**
-     * Check the constant being retrieved.
-     *
-     * @param name The name of the constant.
-     * @throws PMLConstantNotDefinedException If the given constant is not defined.
-     * @throws PMBackendException If there is an error in the backend implementation.
-     */
-    protected void checkGetConstantInput(String name) throws PMException {
-        if (!querier.pml().getConstants().containsKey(name)) {
-            throw new PMLConstantNotDefinedException(name);
         }
     }
 }

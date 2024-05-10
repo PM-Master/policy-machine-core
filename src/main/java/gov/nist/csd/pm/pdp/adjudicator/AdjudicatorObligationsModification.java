@@ -5,7 +5,7 @@ import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.modification.ObligationsModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pdp.exception.UnauthorizedException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
 
@@ -42,7 +42,7 @@ public class AdjudicatorObligationsModification implements ObligationsModificati
 
     @Override
     public List<Obligation> getAll() throws PMException {
-        List<Obligation> obligations = pap.policy().obligations().getAll();
+        List<Obligation> obligations = pap.modify().obligations().getAll();
        /* obligations.removeIf(obligation -> {
             try {
                 for (Rule rule : obligation.getRules()) {
@@ -64,7 +64,7 @@ public class AdjudicatorObligationsModification implements ObligationsModificati
 
     @Override
     public boolean exists(String name) throws PMException {
-        boolean exists = pap.policy().obligations().exists(name);
+        boolean exists = pap.modify().obligations().exists(name);
         if (!exists) {
             return false;
         }
@@ -80,7 +80,7 @@ public class AdjudicatorObligationsModification implements ObligationsModificati
 
     @Override
     public Obligation get(String name) throws PMException {
-        Obligation obligation = pap.policy().obligations().get(name);
+        Obligation obligation = pap.modify().obligations().get(name);
         for (Rule rule : obligation.getRules()) {
             // TODO
             /*Subject subject = rule.getEventPattern().getSubject();

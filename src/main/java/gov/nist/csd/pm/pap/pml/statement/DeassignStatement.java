@@ -1,11 +1,12 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.List;
 import java.util.Objects;
@@ -13,8 +14,8 @@ import java.util.Objects;
 
 public class DeassignStatement extends PMLStatement {
 
-    private final Expression child;
-    private final Expression deassignFrom;
+    private Expression child;
+    private Expression deassignFrom;
 
     public DeassignStatement(Expression child, Expression deassignFrom) {
         this.child = child;
@@ -30,16 +31,16 @@ public class DeassignStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        Value childValue = child.execute(ctx, policyModification);
-        Value deassignFromValue = deassignFrom.execute(ctx, policyModification);
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        Value childValue = child.execute(ctx, pap);
+        Value deassignFromValue = deassignFrom.execute(ctx, pap);
 
         String childStringValue = childValue.getStringValue();
 
         List<Value> valueArr = deassignFromValue.getArrayValue();
         for (Value value : valueArr) {
             String parent = value.getStringValue();
-            policyModification.graph().deassign(childStringValue, parent);
+            pap.modify().graph().deassign(childStringValue, parent);
         }
 
         return new VoidValue();

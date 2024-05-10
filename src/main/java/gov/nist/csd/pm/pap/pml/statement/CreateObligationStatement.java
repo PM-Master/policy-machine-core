@@ -1,8 +1,12 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.common.obligation.EventPattern;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.op.pattern.Pattern;
+import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
+import gov.nist.csd.pm.pap.pml.pattern.PatternExpression;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
@@ -17,8 +21,8 @@ import java.util.Objects;
 
 public class CreateObligationStatement extends PMLStatement {
 
-    private final Expression name;
-    private final List<CreateRuleStatement> ruleStmts;
+    private Expression name;
+    private List<CreateRuleStatement> ruleStmts;
 
     public CreateObligationStatement(Expression name, List<CreateRuleStatement> ruleStmts) {
         this.name = name;
@@ -34,18 +38,18 @@ public class CreateObligationStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         UserContext author = ctx.author();
-        String nameStr = name.execute(ctx, policyModification).getStringValue();
+        String nameStr = name.execute(ctx, pap).getStringValue();
 
         // execute the create rule statements and add to obligation
         List<Rule> rules = new ArrayList<>();
         for (CreateRuleStatement createRuleStmt : ruleStmts) {
-            Rule rule = createRuleStmt.execute(ctx, policyModification).getRuleValue();
+            Rule rule = createRuleStmt.execute(ctx, pap).getRuleValue();
             rules.add(rule);
         }
 
-        policyModification.obligations().create(author, nameStr, rules.toArray(rules.toArray(Rule[]::new)));
+        pap.modify().obligations().create(author, nameStr, rules.toArray(rules.toArray(Rule[]::new)));
 
         return new VoidValue();
     }
@@ -78,24 +82,30 @@ public class CreateObligationStatement extends PMLStatement {
     }
 
     public static CreateObligationStatement fromObligation(Obligation obligation) {
-        /*return new CreateObligationStatement(
+        return new CreateObligationStatement(
                 new StringLiteral(obligation.getName()),
                 createRuleStatementsFromObligation(obligation.getRules())
-        );*/
-        throw new RuntimeException("TODO");
+        );
     }
 
-    /*private static List<CreateRuleStatement> createRuleStatementsFromObligation(List<Rule> rules) {
+    private static List<CreateRuleStatement> createRuleStatementsFromObligation(List<Rule> rules) {
         List<CreateRuleStatement> createRuleStatements = new ArrayList<>();
 
         for (Rule rule : rules) {
             EventPattern event = rule.getEventPattern();
 
+            List<PatternExpression> operandExprs = new ArrayList<>();
+            int i = 0;
+            for (Pattern operandPattern : event.getOperandPatterns()) {
+                operandExprs.add(operandPattern.toPatternExpression());
+                i++;
+            }
+
             CreateRuleStatement createRuleStatement = new CreateRuleStatement(
                     new StringLiteral(rule.getName()),
-                    getSubjectPattern(event.subjectPattern()),
-                    getOperation(event.operation()),
-                    getOnClause(event.operandPatterns()),
+                    event.getSubjectPattern().toPatternExpression(),
+                    event.getOperationPattern().toPatternExpression(),
+                    operandExprs,
                     new CreateRuleStatement.ResponseBlock(
                             rule.getResponse().getEventCtxVariable(),
                             rule.getResponse().getStatements()
@@ -107,65 +117,4 @@ public class CreateObligationStatement extends PMLStatement {
 
         return createRuleStatements;
     }
-
-    private static CreateRuleStatement.OperandsClause getOnClause(Target target) {
-        CreateRuleStatement.TargetType type;
-
-        if (target instanceof AnyTarget) {
-            type = CreateRuleStatement.TargetType.ANY_TARGET;
-
-        } else if (target instanceof AnyInUnionTarget) {
-            type = CreateRuleStatement.TargetType.ANY_IN_UNION;
-
-        } else if (target instanceof AnyInIntersectionTarget) {
-            type = CreateRuleStatement.TargetType.ANY_IN_INTERSECTION;
-
-        } else {
-            type = CreateRuleStatement.TargetType.ON_TARGETS;
-
-        }
-
-        ArrayLiteral arrayLiteral = new ArrayLiteral(Type.string());
-        for (String user : target.getTargets()) {
-            arrayLiteral.add(new StringLiteral(user));
-        }
-
-        return new CreateRuleStatement.OperandsClause(arrayLiteral, type);
-    }
-
-    private static CreateRuleStatement.OperationClause getOperation(List<String> operations) {
-        ArrayLiteral arrayLiteral = new ArrayLiteral(Type.string());
-        for (String op : operations) {
-            arrayLiteral.add(new StringLiteral(op));
-        }
-        return new CreateRuleStatement.OperationClause(arrayLiteral);
-    }
-
-    private static CreateRuleStatement.SubjectClause getSubjectPattern(Pattern<Object> subject) {
-        CreateRuleStatement.SubjectType type;
-
-        if (subject instanceof AnyUserSubject) {
-            type = CreateRuleStatement.SubjectType.ANY_USER;
-
-        } else if (subject instanceof UsersSubject) {
-            type = CreateRuleStatement.SubjectType.USERS;
-
-        } else if (subject instanceof UsersInUnionSubject) {
-            type = CreateRuleStatement.SubjectType.USERS_IN_UNION;
-
-        } else if (subject instanceof UsersInIntersectionSubject) {
-            type = CreateRuleStatement.SubjectType.USERS_IN_INTERSECTION;
-
-        } else {
-            type = CreateRuleStatement.SubjectType.PROCESSES;
-
-        }
-
-        ArrayLiteral arrayLiteral = new ArrayLiteral(Type.string());
-        for (String user : subject.getSubjects()) {
-            arrayLiteral.add(new StringLiteral(user));
-        }
-
-        return new CreateRuleStatement.SubjectClause(type, arrayLiteral);
-    }*/
 }

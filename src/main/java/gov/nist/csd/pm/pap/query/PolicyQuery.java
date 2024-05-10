@@ -10,6 +10,4 @@ public interface PolicyQuery {
     ProhibitionsQuery prohibitions();
     ObligationsQuery obligations();
     PMLQuery pml();
-
-    String serialize(PolicySerializer serializer) throws PMException;
 }

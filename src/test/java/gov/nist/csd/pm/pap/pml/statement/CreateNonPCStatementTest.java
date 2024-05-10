@@ -1,8 +1,10 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -26,26 +28,26 @@ class CreateNonPCStatementTest {
         CreateNonPCStatement stmt3 = new CreateNonPCStatement(new StringLiteral("u1"), NodeType.U, buildArrayLiteral("ua1"));
         CreateNonPCStatement stmt4 = new CreateNonPCStatement(new StringLiteral("o1"), NodeType.O, buildArrayLiteral("oa1"));
 
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
-        store.graph().createPolicyClass("pc1", new HashMap<>());
-        store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
-        store.graph().createUser("u2", new HashMap<>(), List.of("ua2"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(new MemoryPolicyModifier()));
+        PAP pap = new MemoryPAP();
+        pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.modify().graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createUser("u2", new HashMap<>(), List.of("ua2"));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(new MemoryPAP()));
 
-        stmt1.execute(execCtx, store);
-        stmt2.execute(execCtx, store);
-        stmt3.execute(execCtx, store);
-        stmt4.execute(execCtx, store);
+        stmt1.execute(execCtx, pap);
+        stmt2.execute(execCtx, pap);
+        stmt3.execute(execCtx, pap);
+        stmt4.execute(execCtx, pap);
 
-        assertTrue(store.graph().nodeExists("ua1"));
-        assertTrue(store.graph().nodeExists("oa1"));
-        assertTrue(store.graph().nodeExists("u1"));
-        assertTrue(store.graph().nodeExists("o1"));
+        assertTrue(pap.query().graph().nodeExists("ua1"));
+        assertTrue(pap.query().graph().nodeExists("oa1"));
+        assertTrue(pap.query().graph().nodeExists("u1"));
+        assertTrue(pap.query().graph().nodeExists("o1"));
         
-        assertTrue(store.graph().getParents("ua1").contains("pc1"));
-        assertTrue(store.graph().getParents("oa1").contains("pc1"));
-        assertTrue(store.graph().getParents("u1").contains("ua1"));
-        assertTrue(store.graph().getParents("o1").contains("oa1"));
+        assertTrue(pap.query().graph().getParents("ua1").contains("pc1"));
+        assertTrue(pap.query().graph().getParents("oa1").contains("pc1"));
+        assertTrue(pap.query().graph().getParents("u1").contains("ua1"));
+        assertTrue(pap.query().graph().getParents("o1").contains("oa1"));
     }
 
     @Test
@@ -53,15 +55,15 @@ class CreateNonPCStatementTest {
         CreateNonPCStatement stmt1 = new CreateNonPCStatement(new StringLiteral("ua1"), NodeType.UA, buildArrayLiteral("pc1"),
                                                               buildMapLiteral("a", "b", "c", "d"));
 
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
-        store.graph().createPolicyClass("pc1", new HashMap<>());
-        store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
-        store.graph().createUser("u1", new HashMap<>(), List.of("ua2"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(new MemoryPolicyModifier()));
+        PAP pap = new MemoryPAP();
+        pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.modify().graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua2"));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(new MemoryPAP()));
 
-        stmt1.execute(execCtx, store);
+        stmt1.execute(execCtx, pap);
 
-       assertEquals(Map.of("a", "b", "c", "d"), store.graph().getNode("ua1").getProperties());
+       assertEquals(Map.of("a", "b", "c", "d"), pap.query().graph().getNode("ua1").getProperties());
     }
 
     @Test

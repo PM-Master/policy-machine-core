@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -51,9 +51,9 @@ public class EqualsExpression extends Expression {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         return new BoolValue(
-                isEquals == left.execute(ctx, policyModification).equals(right.execute(ctx, policyModification))
+                isEquals == left.execute(ctx, pap).equals(right.execute(ctx, pap))
         );
     }
 

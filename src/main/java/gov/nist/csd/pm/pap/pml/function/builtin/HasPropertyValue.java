@@ -18,11 +18,11 @@ public class HasPropertyValue extends FunctionDefinitionStatement {
                               new FormalArgument("key", Type.string()),
                               new FormalArgument("value", Type.string())
                       )
-                      .executor((ctx, author) -> {
+                      .executor((ctx, pap) -> {
                           String nodeName = ctx.scope().getVariable("nodeName").getStringValue();
                           String key = ctx.scope().getVariable("key").getStringValue();
                           String value = ctx.scope().getVariable("value").getStringValue();
-                          Node node = author.graph().getNode(nodeName);
+                          Node node = pap.query().graph().getNode(nodeName);
                           boolean has = node.getProperties().containsKey(key);
                           if (!has) {
                               return new BoolValue(false);

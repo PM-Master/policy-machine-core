@@ -9,7 +9,6 @@ public class DissociateOp extends GraphOp {
     private final String target;
 
     public DissociateOp(String ua, String target) {
-        super(Operation.operands(ua, target));
         this.ua = ua;
         this.target = target;
     }
@@ -17,6 +16,11 @@ public class DissociateOp extends GraphOp {
     @Override
     public String getOpName() {
         return "dissociate";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(ua, target);
     }
 
     public String ua() {

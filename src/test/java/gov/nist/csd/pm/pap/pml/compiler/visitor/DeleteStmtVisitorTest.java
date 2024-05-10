@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
@@ -11,6 +11,7 @@ import gov.nist.csd.pm.pap.pml.statement.DeleteStatement;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
 import org.junit.jupiter.api.Test;
 
+import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DeleteStmtVisitorTest {
@@ -22,7 +23,7 @@ class DeleteStmtVisitorTest {
                 delete object attribute "oa1"
                 """,
                 PMLParser.DeleteStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
         PMLStatement stmt = new DeleteStmtVisitor(visitorCtx).visitDeleteStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -33,17 +34,13 @@ class DeleteStmtVisitorTest {
 
     @Test
     void testInvalidExpressions() throws PMException {
-        PMLParser.DeleteStatementContext ctx = PMLContextVisitor.toCtx(
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
+
+        testCompilationError(
                 """
                 delete object attribute ["oa1"]
-                """,
-                PMLParser.DeleteStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
-        new DeleteStmtVisitor(visitorCtx).visitDeleteStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type string, got []string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "expected expression type string, got []string"
         );
     }
 
@@ -54,7 +51,7 @@ class DeleteStmtVisitorTest {
                 delete obligation "test"
                 """,
                 PMLParser.DeleteStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
         PMLStatement stmt = new DeleteStmtVisitor(visitorCtx).visitDeleteStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -70,7 +67,7 @@ class DeleteStmtVisitorTest {
                 delete prohibition "test"
                 """,
                 PMLParser.DeleteStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
         PMLStatement stmt = new DeleteStmtVisitor(visitorCtx).visitDeleteStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -86,7 +83,7 @@ class DeleteStmtVisitorTest {
                 delete function "test"
                 """,
                 PMLParser.DeleteStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
         PMLStatement stmt = new DeleteStmtVisitor(visitorCtx).visitDeleteStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(
@@ -102,7 +99,7 @@ class DeleteStmtVisitorTest {
                 delete const "test"
                 """,
                 PMLParser.DeleteStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
         PMLStatement stmt = new DeleteStmtVisitor(visitorCtx).visitDeleteStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
         assertEquals(

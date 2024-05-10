@@ -1,14 +1,14 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
-import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.obligation.Response;
 import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
+import gov.nist.csd.pm.pap.pml.pattern.PatternExpression;
 import gov.nist.csd.pm.pap.pml.value.*;
-import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 
 import java.io.Serializable;
@@ -20,57 +20,53 @@ import java.util.Objects;
 public class CreateRuleStatement extends PMLStatement {
 
     private Expression name;
-    private Expression subjectExpr;
-    private Expression operationExpr;
-    private Expression operandsExpr;
+    private PatternExpression subjectExpr;
+    private PatternExpression operationExpr;
+    private List<PatternExpression> operandExprs;
     private ResponseBlock responseBlock;
 
     public CreateRuleStatement(Expression name,
-                               Expression subjectExpr,
-                               Expression operationExpr,
-                               Expression operandsExpr,
+                               PatternExpression subjectExpr,
+                               PatternExpression operationExpr,
+                               List<PatternExpression> operandExprs,
                                ResponseBlock responseBlock) {
         this.name = name;
         this.subjectExpr = subjectExpr;
         this.operationExpr = operationExpr;
-        this.operandsExpr = operandsExpr;
+        this.operandExprs = operandExprs;
         this.responseBlock = responseBlock;
-    }
-
-    public CreateRuleStatement(PMLParser.CreateRuleStatementContext ctx) {
-        super(ctx);
     }
 
     public Expression getName() {
         return name;
     }
 
-    public Expression getSubjectExpr() {
+    public PatternExpression getSubjectExpr() {
         return subjectExpr;
     }
 
-    public Expression getOperationExpr() {
+    public PatternExpression getOperationExpr() {
         return operationExpr;
     }
 
-    public Expression getOperandsExpr() {
-        return operandsExpr;
+    public List<PatternExpression> getOperandExprs() {
+        return operandExprs;
     }
 
-    public ResponseBlock getResponseBlock() {
+    public ResponseBlock getResponse() {
         return responseBlock;
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        StringValue nameValue = (StringValue) name.execute(ctx, policyModification);
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        StringValue nameValue = (StringValue) name.execute(ctx, pap);
 
-        Pattern subject = subjectExpr.execute(ctx, policyModification).getPatternValue();
-        Pattern operation = operationExpr.execute(ctx, policyModification).getPatternValue();
-        List<Value> operandPatternValues = operandsExpr.execute(ctx, policyModification).getArrayValue();
-        List<Pattern<Object>> operands = new ArrayList<>();
-        for (Value operand : operandPatternValues) {
-            operands.add(operand.getPatternValue());
+        Pattern subject = subjectExpr.execute(ctx, pap).getPatternValue();
+        Pattern operation = operationExpr.execute(ctx, pap).getPatternValue();
+        List<Pattern> operands = new ArrayList<>();
+        for (Expression operandExpr : operandExprs) {
+            Value patternValue = operandExpr.execute(ctx, pap);
+            operands.add(patternValue.getPatternValue());
         }
 
         Rule rule = new Rule(
@@ -92,6 +88,11 @@ public class CreateRuleStatement extends PMLStatement {
 
         String indent = indent(indentLevel);
 
+        String operandsStr = "";
+        for (PatternExpression operandExpr : operandExprs) {
+            operandsStr += operandExpr + "\n";
+        }
+
         return String.format(
                 """
                 %screate rule %s
@@ -102,7 +103,7 @@ public class CreateRuleStatement extends PMLStatement {
                 indent, name,
                 indent, subjectExpr,
                 indent, operationExpr,
-                operandsExpr == null ? "" : indent + " on " + operandsExpr,
+                operandExprs.isEmpty() ? "" : indent + "on " + operandsStr,
                 indent, responseBlock.evtVar, block.toFormattedString(indentLevel)
         );
     }
@@ -119,17 +120,17 @@ public class CreateRuleStatement extends PMLStatement {
         return Objects.equals(name, that.name) && Objects.equals(
                 subjectExpr, that.subjectExpr) && Objects.equals(
                 operationExpr, that.operationExpr) && Objects.equals(
-                operandsExpr, that.operandsExpr) && Objects.equals(responseBlock, that.responseBlock);
+                operandExprs, that.operandExprs) && Objects.equals(responseBlock, that.responseBlock);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, subjectExpr, operationExpr, operandsExpr, responseBlock);
+        return Objects.hash(name, subjectExpr, operationExpr, operandExprs, responseBlock);
     }
 
     public static class ResponseBlock implements Serializable {
-        private final String evtVar;
-        private final List<PMLStatement> statements;
+        private String evtVar;
+        private List<PMLStatement> statements;
 
         public ResponseBlock(String evtVar, List<PMLStatement> statements) {
             this.evtVar = evtVar;

@@ -1,21 +1,22 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.Objects;
 
 
 public class AssociateStatement extends PMLStatement {
 
-    private final Expression ua;
-    private final Expression target;
-    private final Expression accessRights;
+    private Expression ua;
+    private Expression target;
+    private Expression accessRights;
 
     public AssociateStatement(Expression ua, Expression target, Expression accessRights) {
         this.ua = ua;
@@ -36,17 +37,17 @@ public class AssociateStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        Value uaValue = ua.execute(ctx, policyModification);
-        Value targetValue = target.execute(ctx, policyModification);
-        Value permissionsValue = accessRights.execute(ctx, policyModification);
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        Value uaValue = ua.execute(ctx, pap);
+        Value targetValue = target.execute(ctx, pap);
+        Value permissionsValue = accessRights.execute(ctx, pap);
 
         AccessRightSet accessRightSet = new AccessRightSet();
         for (Value v : permissionsValue.getArrayValue()) {
             accessRightSet.add(v.getStringValue());
         }
 
-        policyModification.graph().associate(
+        pap.modify().graph().associate(
                 uaValue.getStringValue(),
                 targetValue.getStringValue(),
                 accessRightSet

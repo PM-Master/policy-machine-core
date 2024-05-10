@@ -33,7 +33,7 @@ class PDPPMLModification implements PMLModification, EventEmitter {
     public void createFunction(FunctionDefinitionStatement functionDefinitionStatement) throws PMException {
         adjudicator.createFunction(functionDefinitionStatement);
 
-        pap.policy().pml().createFunction(functionDefinitionStatement);
+        pap.modify().pml().createFunction(functionDefinitionStatement);
 
         emitEvent(new EventContext(userCtx, new CreateFunctionOp(functionDefinitionStatement)));
     }
@@ -42,7 +42,7 @@ class PDPPMLModification implements PMLModification, EventEmitter {
     public void deleteFunction(String functionName) throws PMException {
         adjudicator.deleteFunction(functionName);
 
-        pap.policy().pml().deleteFunction(functionName);
+        pap.modify().pml().deleteFunction(functionName);
 
         emitEvent(new EventContext(userCtx, new DeleteFunctionOp(functionName)));
 
@@ -50,19 +50,19 @@ class PDPPMLModification implements PMLModification, EventEmitter {
 
     @Override
     public Map<String, FunctionDefinitionStatement> getFunctions() throws PMException {
-        return pap.policy().pml().getFunctions();
+        return pap.modify().pml().getFunctions();
     }
 
     @Override
     public FunctionDefinitionStatement getFunction(String name) throws PMException {
-        return pap.policy().pml().getFunction(name);
+        return pap.modify().pml().getFunction(name);
     }
 
     @Override
     public void createConstant(String constantName, Value constantValue) throws PMException {
         adjudicator.createConstant(constantName, constantValue);
 
-        pap.policy().pml().createConstant(constantName, constantValue);
+        pap.modify().pml().createConstant(constantName, constantValue);
 
         emitEvent(new EventContext(userCtx, new CreateConstantOp(constantName, constantValue)));
 
@@ -72,28 +72,28 @@ class PDPPMLModification implements PMLModification, EventEmitter {
     public void deleteConstant(String constName) throws PMException {
         adjudicator.deleteConstant(constName);
 
-        pap.policy().pml().deleteConstant(constName);
+        pap.modify().pml().deleteConstant(constName);
 
         emitEvent(new EventContext(userCtx, new DeleteConstantOp(constName)));
     }
 
     @Override
     public Map<String, Value> getConstants() throws PMException {
-        return pap.policy().pml().getConstants();
+        return pap.modify().pml().getConstants();
     }
 
     @Override
     public Value getConstant(String name) throws PMException {
-        return pap.policy().pml().getConstant(name);
+        return pap.modify().pml().getConstant(name);
     }
 
     @Override
-    public void addEventListener(EventProcessor listener) {
+    public void addEventListener(EventProcessor processor) {
 
     }
 
     @Override
-    public void removeEventListener(EventProcessor listener) {
+    public void removeEventListener(EventProcessor processor) {
 
     }
 

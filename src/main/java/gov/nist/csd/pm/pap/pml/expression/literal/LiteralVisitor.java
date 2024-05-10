@@ -1,9 +1,10 @@
 package gov.nist.csd.pm.pap.pml.expression.literal;
 
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.visitor.PMLBaseVisitor;
-import gov.nist.csd.pm.pap.pml.expression.ErrorExpression;
+
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
 import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
 import gov.nist.csd.pm.pap.pml.type.Type;
@@ -55,9 +56,7 @@ public class LiteralVisitor extends PMLBaseVisitor<Expression> {
             try {
                 type = expr.getType(visitorCtx.scope());
             } catch (PMLScopeException e) {
-                visitorCtx.errorLog().addError(expressionCtx, e.getMessage());
-
-                return new ErrorExpression(ctx);
+                throw new PMLCompilationRuntimeException(expressionCtx, e.getMessage());
             }
 
             if (elementType == null) {
@@ -83,15 +82,13 @@ public class LiteralVisitor extends PMLBaseVisitor<Expression> {
             Expression keyExpr = Expression.compile(visitorCtx, elementCtx.key, Type.any());
             Expression valueExpr = Expression.compile(visitorCtx, elementCtx.value, Type.any());
 
-            Type keyExprType = Type.any();
-            Type valueExprType = Type.any();
+            Type keyExprType;
+            Type valueExprType;
             try {
                 keyExprType = keyExpr.getType(visitorCtx.scope());
                 valueExprType = valueExpr.getType(visitorCtx.scope());
             } catch (PMLScopeException e) {
-                visitorCtx.errorLog().addError(elementCtx, e.getMessage());
-
-                return new ErrorExpression(ctx);
+                throw new PMLCompilationRuntimeException(elementCtx, e.getMessage());
             }
 
             // check that all map keys are the same type

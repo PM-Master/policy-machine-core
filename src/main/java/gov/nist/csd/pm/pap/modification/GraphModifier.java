@@ -7,33 +7,31 @@ import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.graph.relationship.Assignment;
 import gov.nist.csd.pm.common.graph.relationship.Association;
+import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.common.obligation.Obligation;
+import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
+import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.exception.*;
-import gov.nist.csd.pm.pap.query.PolicyQuery;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
+import gov.nist.csd.pm.pap.op.pattern.Pattern;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static gov.nist.csd.pm.common.graph.node.NodeType.*;
+import static gov.nist.csd.pm.pap.AdminPolicyNode.POLICY_CLASS_TARGETS;
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.wildcardAccessRights;
 
 public abstract class GraphModifier extends Modifier implements GraphModification {
 
-    public GraphModifier(PolicyQuery policyQuery) {
-        super(policyQuery);
-    }
-
-    // implement all GraphModification methods that use the check and internal methods (which are abstract)
-
     protected abstract void setResourceAccessRightsInternal(AccessRightSet accessRightSet) throws PMException;
-    protected abstract void createPolicyClassNodeInternal(String name, Map<String, String> properties) throws PMException;
-    protected abstract void createNonPolicyClassNodeInternal(String name, NodeType type, Map<String, String> properties) throws PMException;
-    protected abstract void deleteNodeInternal(String names) throws PMException;
+    protected abstract void createNodeInternal(String name, NodeType type, Map<String, String> properties) throws PMException;
+    protected abstract void deleteNodeInternal(String name) throws PMException;
     protected abstract void setNodePropertiesInternal(String name, Map<String, String> properties) throws PMException;
     protected abstract void createAssignmentInternal(String start, String end) throws PMException;
     protected abstract void deleteAssignmentInternal(String start, String end) throws PMException;
@@ -49,11 +47,25 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
 
     @Override
     public String createPolicyClass(String name, Map<String, String> properties) throws PMException {
-        checkCreatePolicyClassInput(name);
+        return runTx(() -> {
+            checkCreatePolicyClassInput(name);
 
-        createPolicyClassNodeInternal(name, properties);
+            // create pc node
+            createNodeInternal(name, PC, properties);
 
-        return name;
+            // create pc target oa or verify that its assigned to the POLICY_CLASS_TARGETS node if already created
+            String pcTarget = AdminPolicy.policyClassTargetName(name);
+            if (!query().graph().nodeExists(pcTarget)) {
+                createNodeInternal(pcTarget, OA, new HashMap<>());
+            }
+
+            List<String> parents = query().graph().getParents(pcTarget);
+            if (!parents.contains(POLICY_CLASS_TARGETS.nodeName())) {
+                createAssignmentInternal(pcTarget, POLICY_CLASS_TARGETS.nodeName());
+            }
+
+            return name;
+        });
     }
 
     @Override
@@ -87,11 +99,19 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
 
     @Override
     public void deleteNode(String name) throws PMException {
-        if(!checkDeleteNodeInput(name)) {
-            return;
-        }
+        runTx(() -> {
+            if(!checkDeleteNodeInput(name)) {
+                return;
+            }
 
-        deleteNodeInternal(name);
+            NodeType type = query().graph().getNode(name).getType();
+            if (type == PC) {
+                String rep = AdminPolicy.policyClassTargetName(name);
+                deleteNodeInternal(rep);
+            }
+
+            deleteNodeInternal(name);
+        });
     }
 
     @Override
@@ -138,7 +158,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
     protected void checkAssignmentDoesNotCreateLoop(String child, String parent) throws PMException {
         AtomicBoolean loop = new AtomicBoolean(false);
 
-        new DepthFirstGraphWalker(this)
+        new DepthFirstGraphWalker(this.query().graph())
                 .withVisitor((node -> {
                     if (!node.equals(child)) {
                         return;
@@ -176,7 +196,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected void checkCreatePolicyClassInput(String name) throws PMException {
-        if (querier.graph().nodeExists(name)) {
+        if (query().graph().nodeExists(name)) {
             throw new NodeNameExistsException(name);
         }
     }
@@ -191,7 +211,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * assignment.
      */
     protected void checkCreateNodeInput(String name, NodeType type, List<String> parents) throws PMException {
-        if (querier.graph().nodeExists(name)) {
+        if (query().graph().nodeExists(name)) {
             throw new NodeNameExistsException(name);
         }
 
@@ -211,7 +231,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
                 throw new AssignmentCausesLoopException(name, p);
             }
 
-            Node parentNode = querier.graph().getNode(p);
+            Node parentNode = query().graph().getNode(p);
             Assignment.checkAssignment(type, parentNode.getType());
         }
     }
@@ -223,19 +243,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected void checkSetNodePropertiesInput(String name) throws PMException {
-        if (!querier.graph().nodeExists(name)) {
-            throw new NodeDoesNotExistException(name);
-        }
-    }
-
-    /**
-     * Check if the node exists.
-     *
-     * @param name The node to check.
-     * @throws PMException If any PM related exceptions occur in the implementing class.
-     */
-    protected void checkGetNodeInput(String name) throws PMException {
-        if (!querier.graph().nodeExists(name)) {
+        if (!query().graph().nodeExists(name)) {
             throw new NodeDoesNotExistException(name);
         }
     }
@@ -254,7 +262,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
     protected boolean checkDeleteNodeInput(String name) throws PMException {
         List<String> children;
         try {
-            children = querier.graph().getChildren(name);
+            children = query().graph().getChildren(name);
         } catch (NodeDoesNotExistException e) {
             // quietly return if the nodes already does not exist as this is the desired state
             return false;
@@ -278,7 +286,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected void checkIfNodeInProhibition(String name) throws PMException {
-        Map<String, List<Prohibition>> allProhibitions = querier.prohibitions().getAll();
+        Map<String, List<Prohibition>> allProhibitions = query().prohibitions().getAll();
         for (List<Prohibition> subjPros : allProhibitions.values()) {
             for (Prohibition p : subjPros) {
                 if (nodeInProhibition(name, p)) {
@@ -296,13 +304,37 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected void checkIfNodeInObligation(String name) throws PMException {
-        List<Obligation> obligations = querier.obligations().getAll();
+        List<Obligation> obligations = query().obligations().getAll();
         for (Obligation obligation : obligations) {
             // if the node is the author of the obligation or referenced in any rules throw an exception
             if (obligation.getAuthor().getUser().equals(name)) {
                 throw new NodeReferencedInObligationException(name, obligation.getName());
             }
+
+            // check if node referenced in pattern
+            for (Rule rule : obligation.getRules()) {
+                EventPattern eventPattern = rule.getEventPattern();
+
+                // check subject and operation patterns
+                boolean referenced = checkPatternForEntity(name, eventPattern.getSubjectPattern()) ||
+                        checkPatternForEntity(name, eventPattern.getOperationPattern());
+
+                // check operand patterns
+                for (Pattern pattern : eventPattern.getOperandPatterns()) {
+                    if (checkPatternForEntity(name, pattern)) {
+                        referenced = true;
+                    }
+                }
+
+                if (referenced) {
+                    throw new NodeReferencedInObligationException(name, obligation.getName());
+                }
+            }
         }
+    }
+
+    private boolean checkPatternForEntity(String entity, Pattern pattern) {
+        return pattern.getReferencedPolicyEntities().entities().contains(entity);
     }
 
     /**
@@ -317,13 +349,13 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      */
     protected boolean checkAssignInput(String child, String parent) throws PMException {
         // ignore if assignment already exists
-        if (querier.graph().getParents(child).contains(parent)) {
+        if (query().graph().getParents(child).contains(parent)) {
             return false;
         }
 
         // getting both nodes will check if they exist
-        Node childNode = querier.graph().getNode(child);
-        Node parentNode = querier.graph().getNode(parent);
+        Node childNode = query().graph().getNode(child);
+        Node parentNode = query().graph().getNode(parent);
 
         // check node types make a valid assignment relation
         Assignment.checkAssignment(childNode.getType(), parentNode.getType());
@@ -344,13 +376,13 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected boolean checkDeassignInput(String child, String parent) throws PMException {
-        if (!querier.graph().nodeExists(child)) {
+        if (!query().graph().nodeExists(child)) {
             throw new NodeDoesNotExistException(child);
-        } else if (!querier.graph().nodeExists(parent)) {
+        } else if (!query().graph().nodeExists(parent)) {
             throw new NodeDoesNotExistException(parent);
         }
 
-        List<String> parents = querier.graph().getParents(child);
+        List<String> parents = query().graph().getParents(child);
         if (!parents.contains(parent)) {
             return false;
         }
@@ -360,30 +392,6 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
         }
 
         return true;
-    }
-
-    /**
-     * Check that the provided node exists.
-     *
-     * @param node The node to check.
-     * @throws PMException If any PM related exceptions occur in the implementing class.
-     */
-    protected void checkGetParentsInput(String node) throws PMException {
-        if (!querier.graph().nodeExists(node)) {
-            throw new NodeDoesNotExistException(node);
-        }
-    }
-
-    /**
-     * Check that the provided node exists.
-     *
-     * @param node The node to check.
-     * @throws PMException If any PM related exceptions occur in the implementing class.
-     */
-    protected void checkGetChildrenInput(String node) throws PMException {
-        if (!querier.graph().nodeExists(node)) {
-            throw new NodeDoesNotExistException(node);
-        }
     }
 
     /**
@@ -397,11 +405,11 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * association.
      */
     protected void checkAssociateInput(String ua, String target, AccessRightSet accessRights) throws PMException {
-        Node uaNode = querier.graph().getNode(ua);
-        Node targetNode = querier.graph().getNode(target);
+        Node uaNode = query().graph().getNode(ua);
+        Node targetNode = query().graph().getNode(target);
 
         // check the access rights are valid
-        checkAccessRightsValid(querier.graph().getResourceAccessRights(), accessRights);
+        checkAccessRightsValid(query().graph().getResourceAccessRights(), accessRights);
 
         // check the types of each node make a valid association
         Association.checkAssociation(uaNode.getType(), targetNode.getType());
@@ -417,13 +425,13 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected boolean checkDissociateInput(String ua, String target) throws PMException {
-        if (!querier.graph().nodeExists(ua)) {
+        if (!query().graph().nodeExists(ua)) {
             throw new NodeDoesNotExistException(ua);
-        } else if (!querier.graph().nodeExists(target)) {
+        } else if (!query().graph().nodeExists(target)) {
             throw new NodeDoesNotExistException(target);
         }
 
-        List<Association> associations = querier.graph().getAssociationsWithSource(ua);
+        List<Association> associations = query().graph().getAssociationsWithSource(ua);
         for (Association a : associations) {
             if (a.getSource().equals(ua) && a.getTarget().equals(target)) {
                 return true;
@@ -431,30 +439,6 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
         }
 
         return false;
-    }
-
-    /**
-     * Check the source node to get associations for.
-     *
-     * @param ua The source node.
-     * @throws PMException If any PM related exceptions occur in the implementing class.
-     */
-    protected void checkGetAssociationsWithSourceInput(String ua) throws PMException {
-        if (!querier.graph().nodeExists(ua)) {
-            throw new NodeDoesNotExistException(ua);
-        }
-    }
-
-    /**
-     * Check the target node to get associations for.
-     *
-     * @param target The target node.
-     * @throws PMException If any PM related exceptions occur in the implementing class.
-     */
-    protected void checkGetAssociationsWithTargetInput(String target) throws PMException {
-        if (!querier.graph().nodeExists(target)) {
-            throw new NodeDoesNotExistException(target);
-        }
     }
 
     static void checkAccessRightsValid(AccessRightSet resourceAccessRights, AccessRightSet accessRightSet) throws PMException {
@@ -483,14 +467,17 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
 
     private String createNonPolicyClassNode(String name, NodeType type, Map<String, String> properties, List<String> parents)
             throws PMException {
-        checkCreateNodeInput(name, type, parents);
+        return runTx(() -> {
+            checkCreateNodeInput(name, type, parents);
 
-        createNonPolicyClassNodeInternal(name, type, properties);
+            createNodeInternal(name, type, properties);
 
-        for (String parent : parents) {
-            createAssignmentInternal(name, parent);
-        }
+            for (String parent : parents) {
+                createAssignmentInternal(name, parent);
+            }
 
-        return name;
+            return name;
+        });
+
     }
 }

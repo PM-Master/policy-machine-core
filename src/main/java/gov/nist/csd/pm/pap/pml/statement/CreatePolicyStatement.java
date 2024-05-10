@@ -1,5 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.node.NodeType;
@@ -10,6 +11,7 @@ import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.type.Type;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,10 +45,6 @@ public class CreatePolicyStatement extends PMLStatement {
         this.assocs = assocs;
     }
 
-    public CreatePolicyStatement(PMLParser.CreatePolicyStatementContext ctx) {
-        super(ctx);
-    }
-
     public Expression getName() {
         return name;
     }
@@ -68,56 +66,56 @@ public class CreatePolicyStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         Map<String, String> props = new HashMap<>();
 
         if (this.properties != null) {
-            Value propertiesValue = properties.execute(ctx, policyModification);
+            Value propertiesValue = properties.execute(ctx, pap);
             for (Map.Entry<Value, Value> e : propertiesValue.getMapValue().entrySet()) {
                 props.put(e.getKey().getStringValue(), e.getValue().getStringValue());
             }
         }
 
-        policyModification.graph().createPolicyClass(name.execute(ctx, policyModification).getStringValue(), props);
+        pap.modify().graph().createPolicyClass(name.execute(ctx, pap).getStringValue(), props);
 
         // create hierarchy
-        createHierarchy(ctx, policyModification);
+        createHierarchy(ctx, pap);
 
         return new VoidValue();
     }
 
-    private void createHierarchy(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    private void createHierarchy(ExecutionContext ctx, PAP pap) throws PMException {
         // create uas
         if (uas != null) {
-            createUas(ctx, policyModification);
+            createUas(ctx, pap);
         }
 
         // create oas
         if (oas != null) {
-            createOas(ctx, policyModification);
+            createOas(ctx, pap);
         }
 
         // assocs
         if (assocs != null) {
-            createAssocs(ctx, policyModification);
+            createAssocs(ctx, pap);
         }
     }
 
-    private void createUas(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    private void createUas(ExecutionContext ctx, PAP pap) throws PMException {
         for (CreateOrAssignAttributeStatement stmt : uas) {
-            stmt.execute(ctx, policyModification);
+            stmt.execute(ctx, pap);
         }
     }
 
-    private void createOas(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    private void createOas(ExecutionContext ctx, PAP pap) throws PMException {
         for (CreateOrAssignAttributeStatement stmt : oas) {
-            stmt.execute(ctx, policyModification);
+            stmt.execute(ctx, pap);
         }
     }
 
-    private void createAssocs(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    private void createAssocs(ExecutionContext ctx, PAP pap) throws PMException {
         for (AssociateStatement associateStatement : assocs) {
-            associateStatement.execute(ctx, policyModification);
+            associateStatement.execute(ctx, pap);
         }
     }
 
@@ -223,7 +221,7 @@ public class CreatePolicyStatement extends PMLStatement {
 
     public static class CreateOrAssignAttributeStatement extends CreateNonPCStatement {
 
-        private final Expression parent;
+        private Expression parent;
 
         public CreateOrAssignAttributeStatement(Expression name, NodeType type, Expression assignTo) {
             super(name, type, new ArrayLiteral(Type.string(), assignTo));
@@ -238,15 +236,15 @@ public class CreatePolicyStatement extends PMLStatement {
         }
 
         @Override
-        public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-            Value nameValue = getName().execute(ctx, policyModification);
-
-            if (!policyModification.graph().nodeExists(nameValue.getStringValue())) {
-                return super.execute(ctx, policyModification);
+        public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+            Value nameValue = getName().execute(ctx, pap);
+            
+            if (!pap.query().graph().nodeExists(nameValue.getStringValue())) {
+                return super.execute(ctx, pap);
             }
 
             AssignStatement assignStatement = new AssignStatement(getName(), getAssignTo());
-            return assignStatement.execute(ctx, policyModification);
+            return assignStatement.execute(ctx, pap);
         }
 
         @Override

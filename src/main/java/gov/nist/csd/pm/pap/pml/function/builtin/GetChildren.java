@@ -21,8 +21,8 @@ public class GetChildren extends FunctionDefinitionStatement {
                       .args(
                               new FormalArgument("nodeName", Type.string())
                       )
-                      .executor((ctx, author) -> {
-                          List<String> children = author.graph().getChildren(ctx.scope().getVariable("nodeName").getStringValue());
+                      .executor((ctx, pap) -> {
+                          List<String> children = pap.query().graph().getChildren(ctx.scope().getVariable("nodeName").getStringValue());
                           List<Value> childValues = new ArrayList<>(children.size());
                           for (int i = 0; i < children.size(); i++) {
                               childValues.add(new StringValue(children.get(i)));

@@ -6,13 +6,17 @@ public class DeleteNodeOp extends GraphOp {
     private final String name;
 
     public DeleteNodeOp(String name) {
-        super(operands(name));
         this.name = name;
     }
 
     @Override
     public String getOpName() {
         return "delete_node";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(name);
     }
 
     public String name() {

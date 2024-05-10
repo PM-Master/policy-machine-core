@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
@@ -16,6 +16,7 @@ import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.ComplementedValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,12 +27,12 @@ import static gov.nist.csd.pm.pap.op.AdminAccessRights.isAdminAccessRight;
 
 public class CreateProhibitionStatement extends PMLStatement {
 
-    private final Expression name;
-    private final Expression subject;
-    private final ProhibitionSubject.Type subjectType;
-    private final Expression accessRights;
-    private final boolean isIntersection;
-    private final Expression containers;
+    private Expression name;
+    private Expression subject;
+    private ProhibitionSubject.Type subjectType;
+    private Expression accessRights;
+    private boolean isIntersection;
+    private Expression containers;
 
     public CreateProhibitionStatement(Expression name, Expression subject, ProhibitionSubject.Type subjectType, Expression accessRights,
                                       boolean isIntersection, Expression containers) {
@@ -68,10 +69,10 @@ public class CreateProhibitionStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        Value idValue = this.name .execute(ctx, policyModification);
-        Value subjectValue = this.subject.execute(ctx, policyModification);
-        Value permissionsValue = this.accessRights.execute(ctx, policyModification);
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        Value idValue = this.name .execute(ctx, pap);
+        Value subjectValue = this.subject.execute(ctx, pap);
+        Value permissionsValue = this.accessRights.execute(ctx, pap);
 
         List<Value> arrayValue = permissionsValue.getArrayValue();
         AccessRightSet ops = new AccessRightSet();
@@ -80,7 +81,7 @@ public class CreateProhibitionStatement extends PMLStatement {
         }
 
         List<ContainerCondition> containerConditions = new ArrayList<>();
-        for (Value container : containers.execute(ctx, policyModification).getArrayValue()) {
+        for (Value container : containers.execute(ctx, pap).getArrayValue()) {
             boolean isComplement = container instanceof ComplementedValue;
             String containerName = container.getStringValue();
 
@@ -88,7 +89,7 @@ public class CreateProhibitionStatement extends PMLStatement {
         }
 
 
-        policyModification.prohibitions().create(
+        pap.modify().prohibitions().create(
                 idValue.getStringValue(),
                 new ProhibitionSubject(subjectValue.getStringValue(), subjectType),
                 ops,
@@ -138,8 +139,8 @@ public class CreateProhibitionStatement extends PMLStatement {
     }
 
     public static class Container implements Serializable {
-        private final boolean isComplement;
-        private final Expression name;
+        private boolean isComplement;
+        private Expression name;
 
         public Container(boolean isComplement, Expression name) {
             this.isComplement = isComplement;

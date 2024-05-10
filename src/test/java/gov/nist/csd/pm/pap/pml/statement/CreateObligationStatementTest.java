@@ -17,19 +17,19 @@ class CreateObligationStatementTest {
                 )
         ));
 
-        MemoryPolicyStore store = new MemoryPolicyStore();
-        store.graph().createPolicyClass("pc1", new HashMap<>());
-        store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
-        store.graph().createUser("u2", new HashMap<>(), List.of("ua2"));
-        store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-        store.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(store));
+        MemoryPolicyStore pap = new MemoryPolicyStore();
+        pap.graph().createPolicyClass("pc1", new HashMap<>());
+        pap.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+        pap.graph().createUser("u2", new HashMap<>(), List.of("ua2"));
+        pap.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        pap.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(pap));
 
-        stmt.execute(execCtx, store);
+        stmt.execute(execCtx, pap);
 
-        assertTrue(store.obligations().exists("o1"));
+        assertTrue(pap.obligations().exists("o1"));
 
-        Obligation actual = store.obligations().get("o1");
+        Obligation actual = pap.obligations().get("o1");
         assertEquals(1, actual.getRules().size());
         assertEquals("u2", actual.getAuthor().getUser());
         Rule rule = actual.getRules().get(0);
@@ -73,7 +73,7 @@ class CreateObligationStatementTest {
                 """
                         create obligation "obl1" {
                             create rule "rule1"
-                            when any user
+                            when subject => pAny()
                             performs ["e1", "e2"]
                             on union of ["oa1", "oa2"]
                             do (evtCtx) {        
@@ -93,7 +93,7 @@ class CreateObligationStatementTest {
                 """
                             create obligation "obl1" {
                                 create rule "rule1"
-                                when any user
+                                when subject => pAny()
                                 performs ["e1", "e2"]
                                 on union of ["oa1", "oa2"]
                                 do (evtCtx) {        

@@ -1,9 +1,11 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
@@ -21,19 +23,19 @@ class DissociateStatementTest {
     void testSuccess() throws PMException {
         DissociateStatement stmt = new DissociateStatement(new StringLiteral("ua1"), buildArrayLiteral("oa1"));
 
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
-        store.graph().setResourceAccessRights(new AccessRightSet("read"));
-        store.graph().createPolicyClass("pc1", new HashMap<>());
-        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
-        store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-        store.graph().associate("ua1", "oa1", new AccessRightSet("read"));
+        PAP pap = new MemoryPAP();
+        pap.modify().graph().setResourceAccessRights(new AccessRightSet("read"));
+        pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().associate("ua1", "oa1", new AccessRightSet("read"));
         UserContext userContext = new UserContext("u1");
 
-        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(store)), store);
+        stmt.execute(new ExecutionContext(userContext, GlobalScope.forExecute(pap)), pap);
 
-        assertTrue(store.graph().getAssociationsWithSource("ua1").isEmpty());
-        assertTrue(store.graph().getAssociationsWithTarget("oa1").isEmpty());
+        assertTrue(pap.query().graph().getAssociationsWithSource("ua1").isEmpty());
+        assertTrue(pap.query().graph().getAssociationsWithTarget("oa1").isEmpty());
     }
 
     @Test

@@ -2,7 +2,8 @@ package gov.nist.csd.pm.pap;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.exception.*;
-import gov.nist.csd.pm.pap.modification.GraphModification;
+import gov.nist.csd.pm.pap.modification.PolicyModifier;
+import gov.nist.csd.pm.pap.query.PolicyQuery;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,30 +56,30 @@ public class AdminPolicy {
      * Create the {@link AdminPolicyNode#PML_FUNCTIONS_TARGET} in the ADMIN_POLICY policy class.<p>
      * Create the {@link AdminPolicyNode#PROHIBITIONS_TARGET} in the ADMIN_POLICY policy class.<p>
      * Create the {@link AdminPolicyNode#OBLIGATIONS_TARGET} in the ADMIN_POLICY policy class.<p>
-     *
+     * <p>
      * Verify that all AdminPolicy constants are defined as PML constants in the policy. <p>
-     *
+     * <p>
      * Verify that all policy classes have a target attribute in the admin policy.
      *
-     * @param verifier The verifier used to verify the admin policy nodes exist.
-     * @param graphModification The graph store used to verify nodes.
+     * @param modifier The modifier used to verify the admin policy nodes exist.
+     * @param querier  The querier used to verify nodes.
      * @throws PMException If there is an error verifying any element of the admin policy.
      */
-    public static void verify(Verifier verifier, GraphModification graphModification) throws PMException {
-        verifyAdminPolicy(verifier);
+    public static void verify(PolicyModifier modifier, PolicyQuery querier) throws PMException {
+        verifyAdminPolicy(modifier);
 
-        verifyPolicyClasses(graphModification);
+        verifyPolicyClasses(modifier, querier);
     }
 
-    private static void verifyPolicyClasses(GraphModification graphModification) throws PMException {
-        List<String> policyClasses = graphModification.getPolicyClasses();
+    private static void verifyPolicyClasses(PolicyModifier modifier, PolicyQuery querier) throws PMException {
+        List<String> policyClasses = querier.graph().getPolicyClasses();
         for (String pc : policyClasses) {
             String repOA = policyClassTargetName(pc);
-            if (graphModification.nodeExists(repOA)) {
+            if (querier.graph().nodeExists(repOA)) {
                 continue;
             }
 
-            graphModification.createObjectAttribute(repOA, new HashMap<>(), List.of(POLICY_CLASS_TARGETS.nodeName()));
+            modifier.graph().createObjectAttribute(repOA, new HashMap<>(), List.of(POLICY_CLASS_TARGETS.nodeName()));
         }
     }
 
@@ -92,6 +93,14 @@ public class AdminPolicy {
             verifier.verifyAdminPolicyAttribute(PML_CONSTANTS_TARGET, ADMIN_POLICY);
             verifier.verifyAdminPolicyAttribute(OBLIGATIONS_TARGET, ADMIN_POLICY);
             verifier.verifyAdminPolicyAttribute(PROHIBITIONS_TARGET, ADMIN_POLICY);
+
+            verifier.verifyAdminPolicyConstant(ADMIN_POLICY);
+            verifier.verifyAdminPolicyConstant(ADMIN_POLICY_TARGET);
+            verifier.verifyAdminPolicyConstant(POLICY_CLASS_TARGETS);
+            verifier.verifyAdminPolicyConstant(PML_FUNCTIONS_TARGET);
+            verifier.verifyAdminPolicyConstant(PML_CONSTANTS_TARGET);
+            verifier.verifyAdminPolicyConstant(OBLIGATIONS_TARGET);
+            verifier.verifyAdminPolicyConstant(PROHIBITIONS_TARGET);
         } catch (PMException e) {
             throw new AdminPolicyVerificationException(e);
         }

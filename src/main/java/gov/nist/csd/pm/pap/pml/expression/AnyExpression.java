@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -26,8 +26,8 @@ public class AnyExpression extends Expression {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        return e.execute(ctx, policyModification);
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        return e.execute(ctx, pap);
     }
 
     @Override

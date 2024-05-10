@@ -15,6 +15,11 @@ IN: 'in' ;
 DO: 'do' ;
 PATTERN_OP: '=>';
 
+INTERSECTION: 'intersection' | 'inter';
+UNION: 'union' ;
+ANY: 'any';
+PROCESS: 'process' ;
+
 SET_RESOURCE_ACCESS_RIGHTS: 'set resource access rights';
 ASSIGN: 'assign' ;
 ASSIGN_TO: 'assign to' ;

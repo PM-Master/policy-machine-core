@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
@@ -25,10 +26,6 @@ public class FunctionDefinitionVisitor extends PMLBaseVisitor<FunctionDefinition
         FunctionSignature signature = new FunctionSignatureVisitor(visitorCtx).visitFunctionSignature(ctx.functionSignature());
 
         List<PMLStatement> body = parseBody(ctx, signature.getArgs(), signature.getReturnType());
-        if (body == null) {
-            return new FunctionDefinitionStatement(ctx);
-        }
-
 
         return new FunctionDefinitionStatement.Builder(signature.getFunctionName())
                 .returns(signature.getReturnType())
@@ -45,16 +42,14 @@ public class FunctionDefinitionVisitor extends PMLBaseVisitor<FunctionDefinition
 
         // add the args to the local scope, overwriting any variables with the same ID as the formal args
         for (FormalArgument formalArgument : args) {
-            localVisitorCtx.scope().addOrOverwriteVariable(formalArgument.name(), new Variable(formalArgument.name(), formalArgument.type(), false));
+            localVisitorCtx.scope().addOrOverwriteVariable(formalArgument.getName(), new Variable(formalArgument.getName(), formalArgument.getType(), false));
         }
 
         StatementBlockVisitor statementBlockVisitor = new StatementBlockVisitor(localVisitorCtx, returnType);
         StatementBlockVisitor.Result result = statementBlockVisitor.visitStatementBlock(ctx.statementBlock());
 
         if (!result.allPathsReturned() && !returnType.isVoid()) {
-            visitorCtx.errorLog().addError(ctx, "not all conditional paths return");
-
-            return null;
+            throw new PMLCompilationRuntimeException(ctx, "not all conditional paths return");
         }
 
         return result.stmts();
@@ -70,9 +65,6 @@ public class FunctionDefinitionVisitor extends PMLBaseVisitor<FunctionDefinition
         public FunctionSignature visitFunctionSignature(PMLParser.FunctionSignatureContext ctx) {
             String funcName = ctx.ID().getText();
             List<FormalArgument> args = parseFormalArgs(ctx.formalArgList());
-            if (args == null) {
-                return new FunctionSignature(ctx);
-            }
 
             Type returnType = parseReturnType(ctx.returnType);
 
@@ -88,19 +80,15 @@ public class FunctionDefinitionVisitor extends PMLBaseVisitor<FunctionDefinition
 
                 // check that two formal args dont have the same name and that there are no constants with the same name
                 if (argNames.contains(name)) {
-                    visitorCtx.errorLog().addError(
+                    throw new PMLCompilationRuntimeException(
                             formalArgCtx,
                             String.format("formal arg '%s' already defined in signature", name)
                     );
-
-                    return null;
                 } else if (visitorCtx.scope().variableExists(name)) {
-                    visitorCtx.errorLog().addError(
+                    throw new PMLCompilationRuntimeException(
                             formalArgCtx,
                             String.format("formal arg '%s' already defined as a constant in scope", name)
                     );
-
-                    return null;
                 }
 
                 Type type = Type.toType(varTypeContext);

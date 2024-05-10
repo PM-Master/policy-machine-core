@@ -14,7 +14,6 @@ public abstract class CreateNodeOp extends GraphOp {
     protected List<String> parents;
 
     protected CreateNodeOp(String name, NodeType type, Map<String, String> properties, List<String> parents) {
-        super(operands(name, type, properties, parents));
         this.name = name;
         this.type = type;
         this.properties = properties;
@@ -22,7 +21,6 @@ public abstract class CreateNodeOp extends GraphOp {
     }
 
     protected CreateNodeOp(String name, NodeType type, Map<String, String> properties) {
-        super(operands(name, type, properties));
         this.name = name;
         this.type = type;
         this.properties = properties;
@@ -42,6 +40,11 @@ public abstract class CreateNodeOp extends GraphOp {
 
     public List<String> getParents() {
         return parents;
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(name, type, properties, parents);
     }
 
     @Override

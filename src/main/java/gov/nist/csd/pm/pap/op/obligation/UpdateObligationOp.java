@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.op.obligation;
 
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.obligation.Rule;
 
 import java.util.List;
@@ -12,7 +12,6 @@ public class UpdateObligationOp extends ObligationsOp {
     private final List<Rule> rules;
 
     public UpdateObligationOp(UserContext author, String name, List<Rule> rules) {
-        super(operands(author, name, rules));
         this.author = author;
         this.name = name;
         this.rules = rules;
@@ -21,6 +20,11 @@ public class UpdateObligationOp extends ObligationsOp {
     @Override
     public String getOpName() {
         return "update_obligation";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(author, name, rules);
     }
 
     public UserContext author() {

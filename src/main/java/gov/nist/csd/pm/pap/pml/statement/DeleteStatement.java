@@ -1,11 +1,12 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.Objects;
 
@@ -29,18 +30,18 @@ public class DeleteStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        String name = expression.execute(ctx, policyModification).getStringValue();
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        String name = expression.execute(ctx, pap).getStringValue();
         if (type == Type.PROHIBITION) {
-            policyModification.prohibitions().delete(name);
+            pap.modify().prohibitions().delete(name);
         } else if (type == Type.OBLIGATION) {
-            policyModification.obligations().delete(name);
+            pap.modify().obligations().delete(name);
         } else if (type == Type.FUNCTION) {
-            policyModification.pml().deleteFunction(name);
+            pap.modify().pml().deleteFunction(name);
         } else if (type == Type.CONST) {
-            policyModification.pml().deleteConstant(name);
+            pap.modify().pml().deleteConstant(name);
         } else {
-            policyModification.graph().deleteNode(name);
+            pap.modify().graph().deleteNode(name);
         }
 
         return new VoidValue();

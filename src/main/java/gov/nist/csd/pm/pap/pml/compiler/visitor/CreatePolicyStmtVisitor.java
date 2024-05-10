@@ -4,6 +4,9 @@ import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.pap.pml.PMLErrorHandler;
 import gov.nist.csd.pm.pap.pml.antlr.PMLLexer;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
+import gov.nist.csd.pm.pap.pml.compiler.Position;
+import gov.nist.csd.pm.pap.pml.compiler.error.CompileError;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
 import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
@@ -41,16 +44,12 @@ public class CreatePolicyStmtVisitor extends PMLBaseVisitor<CreatePolicyStatemen
         List<CreatePolicyStatement.CreateOrAssignAttributeStatement> uas = new ArrayList<>();
         List<CreatePolicyStatement.CreateOrAssignAttributeStatement> oas = new ArrayList<>();
 
-        try {
-            if (hierarchyCtx.userAttrsHierarchy() != null) {
-                uas = buildUAHierarchyStatement(name, hierarchyCtx.userAttrsHierarchy());
-            }
+        if (hierarchyCtx.userAttrsHierarchy() != null) {
+            uas = buildUAHierarchyStatement(name, hierarchyCtx.userAttrsHierarchy());
+        }
 
-            if (hierarchyCtx.objectAttrsHierarchy() != null) {
-                oas = buildOAHierarchyStatement(name, hierarchyCtx.objectAttrsHierarchy());
-            }
-        } catch (PMLCompilationException e) {
-            return new CreatePolicyStatement(ctx);
+        if (hierarchyCtx.objectAttrsHierarchy() != null) {
+            oas = buildOAHierarchyStatement(name, hierarchyCtx.objectAttrsHierarchy());
         }
 
         List<AssociateStatement> assocs = new ArrayList<>();
@@ -61,8 +60,7 @@ public class CreatePolicyStmtVisitor extends PMLBaseVisitor<CreatePolicyStatemen
         return new CreatePolicyStatement(name, withProperties, uas, oas, assocs);
     }
 
-    private List<CreatePolicyStatement.CreateOrAssignAttributeStatement> buildUAHierarchyStatement(Expression pc, PMLParser.UserAttrsHierarchyContext hierarchyCtx)
-            throws PMLCompilationException {
+    private List<CreatePolicyStatement.CreateOrAssignAttributeStatement> buildUAHierarchyStatement(Expression pc, PMLParser.UserAttrsHierarchyContext hierarchyCtx) {
         PMLParser.HierarchyBlockContext blockCtx = hierarchyCtx.hierarchyBlock();
 
         List<HierarchyLine> hierarchyLines = getHierarchyBlockLinesFromTokens(blockCtx);
@@ -70,8 +68,7 @@ public class CreatePolicyStmtVisitor extends PMLBaseVisitor<CreatePolicyStatemen
         return buildHierarchy(pc, hierarchyLines, NodeType.UA);
     }
 
-    private List<CreatePolicyStatement.CreateOrAssignAttributeStatement> buildOAHierarchyStatement(Expression pc, PMLParser.ObjectAttrsHierarchyContext hierarchyCtx)
-            throws PMLCompilationException {
+    private List<CreatePolicyStatement.CreateOrAssignAttributeStatement> buildOAHierarchyStatement(Expression pc, PMLParser.ObjectAttrsHierarchyContext hierarchyCtx) {
         PMLParser.HierarchyBlockContext blockCtx = hierarchyCtx.hierarchyBlock();
 
         List<HierarchyLine> hierarchyLines = getHierarchyBlockLinesFromTokens(blockCtx);
@@ -98,8 +95,7 @@ public class CreatePolicyStmtVisitor extends PMLBaseVisitor<CreatePolicyStatemen
         return associateStatements;
     }
 
-    private List<CreatePolicyStatement.CreateOrAssignAttributeStatement> buildHierarchy(Expression pc, List<HierarchyLine> hierarchyLines, NodeType type)
-            throws PMLCompilationException {
+    private List<CreatePolicyStatement.CreateOrAssignAttributeStatement> buildHierarchy(Expression pc, List<HierarchyLine> hierarchyLines, NodeType type) {
         List<CreatePolicyStatement.CreateOrAssignAttributeStatement> attrs = new ArrayList<>();
 
         Map<Integer, Expression> currentParentIndexes = new HashMap<>();
@@ -109,7 +105,7 @@ public class CreatePolicyStmtVisitor extends PMLBaseVisitor<CreatePolicyStatemen
             int indent = line.indent();
             int parentIndent = indent-1;
 
-            PMLParser.HierarchyStatementContext hierarchyStatementContext = hierarchyStatementFromString(visitorCtx, line.stmt);
+            PMLParser.HierarchyStatementContext hierarchyStatementContext = hierarchyStatementFromString(line.stmt);
             Expression parentExpr = currentParentIndexes.get(parentIndent);
             CreatePolicyStatement.CreateOrAssignAttributeStatement stmt = buildStatementFromCtx(hierarchyStatementContext, type, parentExpr);
 
@@ -135,8 +131,7 @@ public class CreatePolicyStmtVisitor extends PMLBaseVisitor<CreatePolicyStatemen
         );
     }
 
-    private PMLParser.HierarchyStatementContext hierarchyStatementFromString(VisitorContext visitorCtx, String input)
-            throws PMLCompilationException {
+    private PMLParser.HierarchyStatementContext hierarchyStatementFromString(String input) {
         PMLErrorHandler pmlErrorHandler = new PMLErrorHandler();
 
         PMLLexer lexer = new PMLLexer(CharStreams.fromString(input));
@@ -150,9 +145,8 @@ public class CreatePolicyStmtVisitor extends PMLBaseVisitor<CreatePolicyStatemen
 
         PMLParser.HierarchyStatementContext ctx = parser.hierarchyStatement();
 
-        visitorCtx.errorLog().addErrors(pmlErrorHandler.getErrors());
         if (visitorCtx.errorLog().getErrors().size() > 0) {
-            throw new PMLCompilationException(visitorCtx.errorLog());
+            throw new PMLCompilationRuntimeException(pmlErrorHandler.getErrors());
         }
 
         return ctx;
@@ -187,8 +181,7 @@ public class CreatePolicyStmtVisitor extends PMLBaseVisitor<CreatePolicyStatemen
             Token token = hierarchyTokens.get(i);
             int indentLength = token.getText().replaceAll("\\n", "").length() - zeroIndent;
             if (indentLength == 0 || indentLength % 4 != 0) {
-                visitorCtx.errorLog().addError(token.getLine(), token.getCharPositionInLine(), 0, "invalid indentation");
-                return new ArrayList<>();
+                throw new PMLCompilationRuntimeException(List.of(new CompileError(new Position(token.getLine(), token.getCharPositionInLine(), 0), "invalid indentation")));
             }
 
             int normalizedIndent = indentLength / 4;

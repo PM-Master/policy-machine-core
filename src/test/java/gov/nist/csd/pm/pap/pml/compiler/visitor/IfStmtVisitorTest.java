@@ -1,8 +1,9 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
 import static org.junit.jupiter.api.Assertions.*;
 
 class IfStmtVisitorTest {
@@ -34,7 +36,7 @@ class IfStmtVisitorTest {
                 }
                 """,
                 PMLParser.IfStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
         PMLStatement stmt = new IfStmtVisitor(visitorCtx)
                 .visitIfStatement(ctx);
         assertEquals(0, visitorCtx.errorLog().getErrors().size());
@@ -50,7 +52,9 @@ class IfStmtVisitorTest {
 
     @Test
     void testConditionExpressionsNotBool() throws PMException {
-        PMLParser.IfStatementContext ctx = PMLContextVisitor.toCtx(
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
+
+        testCompilationError(
                 """
                 if "a" {
                     x := "a"
@@ -59,20 +63,9 @@ class IfStmtVisitorTest {
                 } else {
                     x := "c"
                 }
-                """,
-                PMLParser.IfStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
-        PMLStatement stmt = new IfStmtVisitor(visitorCtx)
-                .visitIfStatement(ctx);
-        assertEquals(2, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type bool, got string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
-        );
-        assertEquals(
-                "expected expression type bool, got string",
-                visitorCtx.errorLog().getErrors().get(1).errorMessage()
-        );
+                """, visitorCtx, 1,
+                "expected expression type bool, got string"
+                );
     }
 
     @Test
@@ -88,9 +81,9 @@ class IfStmtVisitorTest {
                 
                 f1()
                 """;
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
-        PMLExecutor.compileAndExecutePML(store, new UserContext(), pml);
-        assertFalse(store.graph().nodeExists("pc1"));
+        PAP pap = new MemoryPAP();
+        PMLExecutor.compileAndExecutePML(pap, new UserContext(), pml);
+        assertFalse(pap.query().graph().nodeExists("pc1"));
     }
 
 }

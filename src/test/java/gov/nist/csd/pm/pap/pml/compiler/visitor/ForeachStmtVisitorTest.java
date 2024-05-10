@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
@@ -21,6 +21,7 @@ import java.util.Map;
 
 import static gov.nist.csd.pm.pap.pml.PMLUtil.buildArrayLiteral;
 import static gov.nist.csd.pm.pap.pml.PMLUtil.buildMapLiteral;
+import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ForeachStmtVisitorTest {
@@ -29,8 +30,8 @@ class ForeachStmtVisitorTest {
 
     @BeforeAll
     static void setup() throws PMException {
-        testGlobalScope = GlobalScope.forCompile(new MemoryPolicyModifier())
-                                     .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
+        testGlobalScope = GlobalScope.forCompile(new MemoryPAP())
+                .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
     }
 
     @Test
@@ -64,125 +65,99 @@ class ForeachStmtVisitorTest {
 
     @Test
     void testInvalidExpressions() {
-        PMLParser.ForeachStatementContext ctx = PMLContextVisitor.toCtx(
+        VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
+
+        testCompilationError(
                 """
                 foreach x in "a" {}
-                """,
-                PMLParser.ForeachStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
-        new ForeachStmtVisitor(visitorCtx).visitForeachStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type []any, got string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "expected expression type []any, got string"
+
         );
 
-        ctx = PMLContextVisitor.toCtx(
+        testCompilationError(
                 """
                 foreach x in {"a": "b"} {}
-                """,
-                PMLParser.ForeachStatementContext.class);
-        visitorCtx = new VisitorContext(testGlobalScope);
-        new ForeachStmtVisitor(visitorCtx).visitForeachStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type []any, got map[string]string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "expected expression type []any, got map[string]string"
+
         );
     }
 
     @Test
     void testKeyValueOnArray() {
-        PMLParser.ForeachStatementContext ctx = PMLContextVisitor.toCtx(
+        VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
+
+        testCompilationError(
                 """
                 foreach x, y in ["a"] {}
-                """,
-                PMLParser.ForeachStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
-        new ForeachStmtVisitor(visitorCtx).visitForeachStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type map[any]any, got []string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "expected expression type map[any]any, got []string"
+
         );
     }
 
     @Test
     void testIterVarDoesNotExists() throws VariableAlreadyDefinedInScopeException {
-        PMLParser.ForeachStatementContext ctx = PMLContextVisitor.toCtx(
+        VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
+
+        testCompilationError(
                 """
                 foreach x in arr {}
-                """,
-                PMLParser.ForeachStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
-        new ForeachStmtVisitor(visitorCtx).visitForeachStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "unknown variable 'arr' in scope",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "unknown variable 'arr' in scope"
+
         );
     }
 
     @Test
     void testKeyValueVarsAlreadyExist() throws VariableAlreadyDefinedInScopeException {
-        PMLParser.ForeachStatementContext ctx = PMLContextVisitor.toCtx(
-                """
-                foreach x in ["a"] {}
-                """,
-                PMLParser.ForeachStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
         visitorCtx.scope().addVariable("x", new Variable("x", Type.string(), false));
-        new ForeachStmtVisitor(visitorCtx).visitForeachStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "variable 'x' already defined in scope",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+
+        testCompilationError(
+                """
+                foreach x in ["a"] {}
+                """, visitorCtx, 1,
+                "variable 'x' already defined in scope"
+
         );
 
-        ctx = PMLContextVisitor.toCtx(
-                """
-                foreach x, y in {"a": "b"} {}
-                """,
-                PMLParser.ForeachStatementContext.class);
         visitorCtx = new VisitorContext(testGlobalScope);
         visitorCtx.scope().addVariable("y", new Variable("y", Type.string(), false));
-        new ForeachStmtVisitor(visitorCtx).visitForeachStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "variable 'y' already defined in scope",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+
+        testCompilationError(
+                """
+                foreach x, y in {"a": "b"} {}
+                """, visitorCtx, 1,
+                "variable 'y' already defined in scope"
+
         );
     }
 
     @Test
     void testKeyOnlyOnMapReturnsError() throws VariableAlreadyDefinedInScopeException {
-        PMLParser.ForeachStatementContext ctx = PMLContextVisitor.toCtx(
+        VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
+
+        testCompilationError(
                 """
                 foreach x in {"a": "b"} {}
-                """,
-                PMLParser.ForeachStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
-        new ForeachStmtVisitor(visitorCtx).visitForeachStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type []any, got map[string]string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "expected expression type []any, got map[string]string"
+
         );
     }
 
     @Test
     void testKeyValueOnArrayReturnsError() throws VariableAlreadyDefinedInScopeException {
-        PMLParser.ForeachStatementContext ctx = PMLContextVisitor.toCtx(
+        VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
+
+        testCompilationError(
                 """
                 foreach x, y in ["a": "b"] {}
-                """,
-                PMLParser.ForeachStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
-        new ForeachStmtVisitor(visitorCtx).visitForeachStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "expected expression type map[any]any, got []string",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "expected expression type map[any]any, got []string"
+
         );
     }
 

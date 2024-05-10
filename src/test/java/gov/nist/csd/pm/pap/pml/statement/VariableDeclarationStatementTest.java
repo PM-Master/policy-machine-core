@@ -1,8 +1,9 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
@@ -33,10 +34,10 @@ class VariableDeclarationStatementTest {
                 )
         );
 
-        ExecutionContext ctx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(new MemoryPolicyModifier()));
+        ExecutionContext ctx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(new MemoryPAP()));
         ctx.scope().addVariable("c", new StringValue("123"));
-        stmt1.execute(ctx, new MemoryPolicyModifier());
-        stmt2.execute(ctx, new MemoryPolicyModifier());
+        stmt1.execute(ctx, new MemoryPAP());
+        stmt2.execute(ctx, new MemoryPAP());
 
         assertEquals(new StringValue("a"), ctx.scope().getVariable("a"));
         assertEquals(new StringValue("b"), ctx.scope().getVariable("b"));

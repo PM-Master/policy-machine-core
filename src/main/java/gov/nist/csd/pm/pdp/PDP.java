@@ -4,7 +4,9 @@ import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.epp.EventProcessor;
 import gov.nist.csd.pm.pap.*;
-import gov.nist.csd.pm.pap.modification.*;
+import gov.nist.csd.pm.pap.modification.PolicyModifier;
+import gov.nist.csd.pm.pap.op.Operation;
+import gov.nist.csd.pm.pap.query.PolicyQuery;
 import gov.nist.csd.pm.pdp.adjudicator.Adjudicator;
 import gov.nist.csd.pm.pap.exception.BootstrapExistingPolicyException;
 import gov.nist.csd.pm.common.exception.PMException;
@@ -13,8 +15,6 @@ import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.common.tx.TxRunner;
-import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
-import gov.nist.csd.pm.common.serialization.PolicySerializer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,7 +25,7 @@ import static gov.nist.csd.pm.pap.AdminPolicy.ALL_NODE_NAMES;
 import static gov.nist.csd.pm.common.graph.node.NodeType.ANY;
 import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
 
-public class PDP implements EventEmitter {
+public class PDP implements AccessAdjudication, EventEmitter {
 
     protected final PAP pap;
     protected final List<EventProcessor> eventProcessors;
@@ -51,10 +51,10 @@ public class PDP implements EventEmitter {
     }
 
     private boolean isPolicyEmpty() throws PMException {
-        Set<String> nodes = new HashSet<>(pap.policy().graph().search(ANY, NO_PROPERTIES));
+        Set<String> nodes = new HashSet<>(pap.query().graph().search(ANY, NO_PROPERTIES));
 
-        boolean prohibitionsEmpty = pap.policy().prohibitions().getAll().isEmpty();
-        boolean obligationsEmpty = pap.policy().obligations().getAll().isEmpty();
+        boolean prohibitionsEmpty = pap.query().prohibitions().getAll().isEmpty();
+        boolean obligationsEmpty = pap.query().obligations().getAll().isEmpty();
 
         return (nodes.isEmpty() || (nodes.size() == ALL_NODE_NAMES.size() && nodes.containsAll(ALL_NODE_NAMES))) &&
                 prohibitionsEmpty &&
@@ -62,13 +62,13 @@ public class PDP implements EventEmitter {
     }
 
     @Override
-    public void addEventListener(EventProcessor listener) {
-        eventProcessors.add(listener);
+    public void addEventListener(EventProcessor processor) {
+        eventProcessors.add(processor);
     }
 
     @Override
-    public void removeEventListener(EventProcessor listener) {
-        eventProcessors.remove(listener);
+    public void removeEventListener(EventProcessor processor) {
+        eventProcessors.remove(processor);
     }
 
     @Override
@@ -78,58 +78,59 @@ public class PDP implements EventEmitter {
         }
     }
 
+    @Override
+    public ResourceAdjudicationResponse adjudicateResourceAccess(UserContext user, Operation... operations)
+            throws PMException {
+        /*runTx(user, (pdpTx) -> {
+            for (Operation operation : operations) {
+                operation.apply(pdpTx);
+            }
+        });*/
+        // TODO
+        return null;
+    }
+
+    @Override
+    public AdminAdjudicationResponse adjudicateAdminAccess(UserContext user, Operation... operations)
+            throws PMException {
+        // TODO
+        return null;
+    }
+
     public interface PDPTxRunner {
         void run(PDPTx policy) throws PMException;
     }
 
-    public static class PDPTx implements PolicyModification, PMLExecutable, EventEmitter, EventProcessor {
+    public static class PDPTx extends PAP {
 
         private final Adjudicator adjudicator;
         private final PAP pap;
-        private final List<EventProcessor> epps;
+        private final PDPEventEmitter eventEmitter;
 
-        private final PDPGraphModification pdpGraph;
-        private final PDPProhibitionsModification pdpProhibitions;
-        private final PDPObligationsModification pdpObligations;
-        private final PDPPMLModification pdpUserDefinedPML;
+        private final PDPPolicyModifier pdpModifier;
+        private final PDPPolicyQuerier pdpQuerier;
 
-        private final PDPReviewer pdpReviewer;
-
-        public PDPTx(UserContext userCtx, PAP pap, List<EventProcessor> epps) {
+        public PDPTx(UserContext userCtx, PAP pap, List<EventProcessor> epps) throws PMException {
+            super(pap.modify(), pap.query());
             this.adjudicator = new Adjudicator(userCtx, pap);
             this.pap = pap;
-            this.epps = epps;
+            this.eventEmitter = new PDPEventEmitter(epps);
 
-            this.pdpGraph = new PDPGraphModification(userCtx, adjudicator.graph(), pap, this);
-            this.pdpProhibitions = new PDPProhibitionsModification(userCtx, adjudicator.prohibitions(), pap, this);
-            this.pdpObligations = new PDPObligationsModification(userCtx, adjudicator.obligations(), pap, this);
-            this.pdpUserDefinedPML = new PDPPMLModification(userCtx, adjudicator.pml(), pap, this);
+            this.pdpModifier = new PDPPolicyModifier(
 
-            this.pdpReviewer = new PDPReviewer(userCtx, pap, this.adjudicator.getAccessRightChecker());
+            );
+            this.pdpQuerier = new PDPPolicyQuerier(userCtx, pap, this.adjudicator.getAccessRightChecker());
+
         }
 
         @Override
-        public void addEventListener(EventProcessor listener) {
-            epps.add(listener);
+        public PolicyModifier modify() {
+            return super.modify();
         }
 
         @Override
-        public void removeEventListener(EventProcessor listener) {
-            epps.remove(listener);
-        }
-
-        @Override
-        public void emitEvent(EventContext event) throws PMException {
-            for (EventProcessor epp : epps) {
-                epp.processEvent(event);
-            }
-        }
-
-        @Override
-        public void processEvent(EventContext eventCtx) throws PMException {
-            for (EventProcessor epp : epps) {
-                epp.processEvent(eventCtx);
-            }
+        public PolicyQuery query() {
+            return super.query();
         }
 
         @Override
@@ -145,7 +146,11 @@ public class PDP implements EventEmitter {
             PMLExecutor.compileAndExecutePML(this, userContext, pml);
         }
 
-        @Override
+
+
+
+
+        /*@Override
         public GraphModification graph() {
             return pdpGraph;
         }
@@ -169,7 +174,7 @@ public class PDP implements EventEmitter {
         public String serialize(PolicySerializer policySerializer) throws PMException {
             adjudicator.serialize(policySerializer);
 
-            return pap.policy().serialize(policySerializer);
+            return pap.modify().serialize(policySerializer);
         }
 
         @Override
@@ -177,14 +182,14 @@ public class PDP implements EventEmitter {
                 throws PMException {
             adjudicator.deserialize(author, input, policyDeserializer);
 
-            pap.policy().deserialize(author, input, policyDeserializer);
+            pap.modify().deserialize(author, input, policyDeserializer);
         }
 
         @Override
         public void reset() throws PMException {
             adjudicator.reset();
 
-            pap.policy().reset();
-        }
+            pap.modify().reset();
+        }*/
     }
 }

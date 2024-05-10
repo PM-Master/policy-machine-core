@@ -10,7 +10,6 @@ public class SetNodePropertiesOp extends GraphOp {
     private final Map<String, String> properties;
 
     public SetNodePropertiesOp(String name, Map<String, String> properties) {
-        super(Operation.operands(name, properties));
         this.name = name;
         this.properties = properties;
     }
@@ -18,6 +17,11 @@ public class SetNodePropertiesOp extends GraphOp {
     @Override
     public String getOpName() {
         return "set_node_properties";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(name, properties);
     }
 
     public String name() {

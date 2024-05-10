@@ -1,11 +1,12 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.value.ContinueValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.Objects;
 
@@ -15,12 +16,8 @@ public class ContinueStatement extends PMLStatement {
     public ContinueStatement() {
     }
 
-    public ContinueStatement(PMLParser.ContinueStatementContext ctx) {
-        super(ctx);
-    }
-
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         return new ContinueValue();
     }
 

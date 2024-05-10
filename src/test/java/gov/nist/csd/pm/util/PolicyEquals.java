@@ -1,6 +1,5 @@
 package gov.nist.csd.pm.util;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.node.NodeType;
@@ -9,6 +8,7 @@ import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
+import gov.nist.csd.pm.pap.query.PolicyQuery;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PolicyEquals {
 
-    public static void assertPolicyEquals(PolicyModification a, PolicyModification b) throws PMException {
+    public static void assertPolicyEquals(PolicyQuery a, PolicyQuery b) throws PMException {
         // check nodes
         // assignments
         // associations

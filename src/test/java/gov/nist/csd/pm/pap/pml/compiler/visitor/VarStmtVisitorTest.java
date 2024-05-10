@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
 import static org.junit.jupiter.api.Assertions.*;
 
 class VarStmtVisitorTest {
@@ -27,7 +28,7 @@ class VarStmtVisitorTest {
 
     @BeforeAll
     static void setup() throws PMException {
-        testGlobalScope = GlobalScope.forCompile(new MemoryPolicyModifier())
+        testGlobalScope = GlobalScope.forCompile(new MemoryPAP())
                                      .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
     }
 
@@ -56,45 +57,40 @@ class VarStmtVisitorTest {
                      """, PMLParser.VariableAssignmentStatementContext.class);
             VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
             visitorCtx.scope().addVariable("x", new Variable("x", Type.string(), true));
-            new VarStmtVisitor(visitorCtx)
-                    .visitVariableAssignmentStatement(ctx);
-            assertEquals(1, visitorCtx.errorLog().getErrors().size());
-            assertEquals(
-                    "cannot reassign const variable",
-                    visitorCtx.errorLog().getErrors().get(0).errorMessage()
+
+            testCompilationError(
+                    """
+                     x = "a"
+                    """, visitorCtx, 1,
+                    "cannot reassign const variable"
             );
 
             PMLParser.ConstDeclarationContext ctx2 = PMLContextVisitor.toCtx(
                     """
                      const x = "a"
                      """, PMLParser.ConstDeclarationContext.class);
-            visitorCtx = new VisitorContext(testGlobalScope);
-            visitorCtx.scope().addVariable("x", new Variable("x", Type.string(), true));
-            new VarStmtVisitor(visitorCtx)
-                    .visitConstDeclaration(ctx2);
-            assertEquals(1, visitorCtx.errorLog().getErrors().size());
-            assertEquals(
-                    "const 'x' already defined in scope",
-                    visitorCtx.errorLog().getErrors().get(0).errorMessage()
+            VisitorContext visitorCtx2 = new VisitorContext(testGlobalScope);
+            visitorCtx2.scope().addVariable("x", new Variable("x", Type.string(), true));
+            testCompilationError(
+                    """
+                     const x = "a"
+                    """, visitorCtx2, 1,
+                    "const 'x' already defined in scope"
             );
         }
 
         @Test
         void testReassignInBlock() {
-            PMLParser.ConstDeclarationContext ctx = PMLContextVisitor.toCtx(
+            VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
+
+            testCompilationError(
                     """
-                     const (
+                    const (
                         x = "a"
                         x = "b"
                      )
-                     """, PMLParser.ConstDeclarationContext.class);
-            VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
-            new VarStmtVisitor(visitorCtx)
-                    .visitConstDeclaration(ctx);
-            assertEquals(1, visitorCtx.errorLog().getErrors().size());
-            assertEquals(
-                    "const 'x' already defined in scope",
-                    visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                    """, visitorCtx, 1,
+                    "const 'x' already defined in scope"
             );
         }
 
@@ -119,18 +115,13 @@ class VarStmtVisitorTest {
 
         @Test
         void testReassign() throws VariableAlreadyDefinedInScopeException {
-            PMLParser.VarDeclarationContext ctx = PMLContextVisitor.toCtx(
-                    """
-                     var x = "a"
-                     """, PMLParser.VarDeclarationContext.class);
             VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
             visitorCtx.scope().addVariable("x", new Variable("x", Type.string(), false));
-            new VarStmtVisitor(visitorCtx)
-                    .visitVarDeclaration(ctx);
-            assertEquals(1, visitorCtx.errorLog().getErrors().size());
-            assertEquals(
-                    "variable 'x' already defined in scope",
-                    visitorCtx.errorLog().getErrors().get(0).errorMessage()
+            testCompilationError(
+                    """
+                     var x = "a"
+                    """, visitorCtx, 1,
+                    "variable 'x' already defined in scope"
             );
         }
 
@@ -142,32 +133,28 @@ class VarStmtVisitorTest {
                      """, PMLParser.VarDeclarationContext.class);
             VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
             visitorCtx.scope().addVariable("x", new Variable("x", Type.string(), true));
-            new VarStmtVisitor(visitorCtx)
-                    .visitVarDeclaration(ctx);
-            assertEquals(1, visitorCtx.errorLog().getErrors().size());
-            assertEquals(
-                    "variable 'x' already defined in scope",
-                    visitorCtx.errorLog().getErrors().get(0).errorMessage()
+
+            testCompilationError(
+                    """
+                     var x = "a"
+                    """, visitorCtx, 1,
+                    "variable 'x' already defined in scope"
             );
         }
 
         @Test
         void testReassignInBlock() throws VariableAlreadyDefinedInScopeException {
-            PMLParser.VarDeclarationContext ctx = PMLContextVisitor.toCtx(
+            VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
+            visitorCtx.scope().addVariable("x", new Variable("x", Type.string(), true));
+
+            testCompilationError(
                     """
-                     var (
+                    var (
                         x = "a"
                         x = "b"
                      )
-                     """, PMLParser.VarDeclarationContext.class);
-            VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
-            visitorCtx.scope().addVariable("x", new Variable("x", Type.string(), true));
-            new VarStmtVisitor(visitorCtx)
-                    .visitVarDeclaration(ctx);
-            assertEquals(1, visitorCtx.errorLog().getErrors().size());
-            assertEquals(
-                    "variable 'x' already defined in scope",
-                    visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                    """, visitorCtx, 1,
+                    "variable 'x' already defined in scope"
             );
         }
 
@@ -191,18 +178,13 @@ class VarStmtVisitorTest {
 
         @Test
         void testReassign() throws VariableAlreadyDefinedInScopeException {
-            PMLParser.ShortDeclarationContext ctx = PMLContextVisitor.toCtx(
-                    """
-                     x := "a"
-                     """, PMLParser.ShortDeclarationContext.class);
             VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
             visitorCtx.scope().addVariable("x", new Variable("x", Type.string(), true));
-            new VarStmtVisitor(visitorCtx)
-                    .visitShortDeclaration(ctx);
-            assertEquals(1, visitorCtx.errorLog().getErrors().size());
-            assertEquals(
-                    "variable x already exists",
-                    visitorCtx.errorLog().getErrors().get(0).errorMessage()
+            testCompilationError(
+                    """
+                     x := "a"
+                    """, visitorCtx, 1,
+                    "variable x already exists"
             );
         }
     }
@@ -241,34 +223,26 @@ class VarStmtVisitorTest {
 
         @Test
         void testVariableDoesNotExist() {
-            PMLParser.VariableAssignmentStatementContext ctx = PMLContextVisitor.toCtx(
+            VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
+
+            testCompilationError(
                     """
                      x = "a"
-                     """, PMLParser.VariableAssignmentStatementContext.class);
-            VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
-            new VarStmtVisitor(visitorCtx)
-                    .visitVariableAssignmentStatement(ctx);
-            assertEquals(1, visitorCtx.errorLog().getErrors().size());
-            assertEquals(
-                    "unknown variable 'x' in scope",
-                    visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                    """, visitorCtx, 1,
+                    "unknown variable 'x' in scope"
             );
         }
 
         @Test
         void testVariableIsConstant() throws VariableAlreadyDefinedInScopeException {
-            PMLParser.VariableAssignmentStatementContext ctx = PMLContextVisitor.toCtx(
-                    """
-                     x = "a"
-                     """, PMLParser.VariableAssignmentStatementContext.class);
             VisitorContext visitorCtx = new VisitorContext(testGlobalScope);
             visitorCtx.scope().addVariable("x", new Variable("x", Type.string(), true));
-            new VarStmtVisitor(visitorCtx)
-                    .visitVariableAssignmentStatement(ctx);
-            assertEquals(1, visitorCtx.errorLog().getErrors().size());
-            assertEquals(
-                    "cannot reassign const variable",
-                    visitorCtx.errorLog().getErrors().get(0).errorMessage()
+
+            testCompilationError(
+                    """
+                     x = "a"
+                    """, visitorCtx, 1,
+                    "cannot reassign const variable"
             );
         }
     }

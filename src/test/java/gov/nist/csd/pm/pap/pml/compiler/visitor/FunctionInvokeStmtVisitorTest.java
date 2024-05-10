@@ -1,9 +1,10 @@
 package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.expression.FunctionInvokeExpression;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
@@ -18,7 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 import static gov.nist.csd.pm.pap.pml.PMLUtil.buildArrayLiteral;
+import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FunctionInvokeStmtVisitorTest {
 
@@ -31,7 +34,7 @@ class FunctionInvokeStmtVisitorTest {
                 PMLParser.FunctionInvokeStatementContext.class);
 
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyModifier())
+                GlobalScope.forCompile(new MemoryPAP())
                            .withPersistedFunctions(
                                    Map.of(
                                            "func1",
@@ -65,30 +68,20 @@ class FunctionInvokeStmtVisitorTest {
 
     @Test
     void testFunctionDoesNotExist() throws PMException {
-        PMLParser.FunctionInvokeStatementContext ctx = PMLContextVisitor.toCtx(
+        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP()));
+
+        testCompilationError(
                 """
                 func1("a", "b", ["c", "d"])
-                """,
-                PMLParser.FunctionInvokeStatementContext.class);
-        VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPolicyModifier()));
-        new FunctionInvokeStmtVisitor(visitorCtx)
-                .visitFunctionInvokeStatement(ctx);
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "unknown function 'func1' in scope",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+                """, visitorCtx, 1,
+                "unknown function 'func1' in scope"
         );
     }
 
     @Test
     void testWrongNumberOfArgs() throws PMException {
-        PMLParser.FunctionInvokeStatementContext ctx = PMLContextVisitor.toCtx(
-                """
-                func1("a", "b")
-                """,
-                PMLParser.FunctionInvokeStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyModifier())
+                GlobalScope.forCompile(new MemoryPAP())
                            .withPersistedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(
@@ -103,25 +96,18 @@ class FunctionInvokeStmtVisitorTest {
                            ))
         );
 
-        new FunctionInvokeStmtVisitor(visitorCtx)
-                .visitFunctionInvokeStatement(ctx);
-
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "wrong number of args for function call func1: expected 3, got 2",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+        testCompilationError(
+                """
+                func1("a", "b")
+                """, visitorCtx, 1,
+                "wrong number of args for function call func1: expected 3, got 2"
         );
     }
 
     @Test
     void testWrongArgType() throws PMException {
-        PMLParser.FunctionInvokeStatementContext ctx = PMLContextVisitor.toCtx(
-                """
-                func1("a", "b")
-                """,
-                PMLParser.FunctionInvokeStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyModifier())
+                GlobalScope.forCompile(new MemoryPAP())
                            .withPersistedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(
@@ -135,13 +121,11 @@ class FunctionInvokeStmtVisitorTest {
                            ))
         );
 
-        new FunctionInvokeStmtVisitor(visitorCtx)
-                .visitFunctionInvokeStatement(ctx);
-
-        assertEquals(1, visitorCtx.errorLog().getErrors().size());
-        assertEquals(
-                "invalid argument type: expected bool, got string at arg 1",
-                visitorCtx.errorLog().getErrors().get(0).errorMessage()
+        testCompilationError(
+                """
+                func1("a", "b")
+                """, visitorCtx, 1,
+                "invalid argument type: expected bool, got string at arg 1"
         );
     }
 
@@ -153,7 +137,7 @@ class FunctionInvokeStmtVisitorTest {
                 """,
                 PMLParser.FunctionInvokeStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPolicyModifier())
+                GlobalScope.forCompile(new MemoryPAP())
                            .withPersistedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(

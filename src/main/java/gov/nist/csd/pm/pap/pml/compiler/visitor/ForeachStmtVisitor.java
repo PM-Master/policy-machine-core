@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
 import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
@@ -33,9 +34,7 @@ public class ForeachStmtVisitor extends PMLBaseVisitor<ForeachStatement> {
         try {
             iterType = iter.getType(visitorCtx.scope());
         } catch (PMLScopeException e) {
-            visitorCtx.errorLog().addError(ctx, e.getMessage());
-
-            return new ForeachStatement(ctx);
+            throw new PMLCompilationRuntimeException(ctx, e.getMessage());
         }
 
         String varName = ctx.key.getText();
@@ -62,9 +61,7 @@ public class ForeachStmtVisitor extends PMLBaseVisitor<ForeachStatement> {
                 localVisitorCtx.scope().addVariable(mapValueVarName, new Variable(mapValueVarName, valueType, false));
             }
         }catch (PMLScopeException e) {
-            visitorCtx.errorLog().addError(ctx, e.getMessage());
-
-            return new ForeachStatement(ctx);
+            throw new PMLCompilationRuntimeException(ctx, e.getMessage());
         }
 
         for (PMLParser.StatementContext stmtCtx : ctx.statementBlock().statement()) {

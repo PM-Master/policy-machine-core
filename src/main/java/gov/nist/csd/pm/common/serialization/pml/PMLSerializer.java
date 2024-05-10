@@ -17,6 +17,7 @@ import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
 import gov.nist.csd.pm.pap.pml.statement.*;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.common.serialization.PolicySerializer;
+import gov.nist.csd.pm.pap.query.PolicyQuery;
 
 import java.util.*;
 
@@ -25,9 +26,9 @@ import static gov.nist.csd.pm.common.graph.node.NodeType.*;
 public class PMLSerializer implements PolicySerializer {
 
     @Override
-    public String serialize(PolicyModification policyModification) throws PMException {
+    public String serialize(PolicyQuery policyQuery) throws PMException {
         JSONSerializer json = new JSONSerializer();
-        JSONPolicy jsonPolicy = json.buildJSONPolicy(policyModification);
+        JSONPolicy jsonPolicy = json.buildJSONPolicy(policyQuery);
 
         return serialize(jsonPolicy);
     }

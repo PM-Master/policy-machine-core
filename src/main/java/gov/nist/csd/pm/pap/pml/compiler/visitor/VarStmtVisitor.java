@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.expression.literal.LiteralVisitor;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
@@ -28,16 +29,12 @@ public class VarStmtVisitor extends PMLBaseVisitor<PMLStatement> {
 
             try {
                 if (visitorCtx.scope().variableExists(varName) && visitorCtx.scope().getVariable(varName).isConst()) {
-                    visitorCtx.errorLog().addError(ctx, "const '" + varName + "' already defined in scope");
-
-                    return new VariableDeclarationStatement(ctx);
+                    throw new PMLCompilationRuntimeException(ctx, "const '" + varName + "' already defined in scope");
                 }
 
                 visitorCtx.scope().addVariable(varName, new Variable(varName, expr.getType(visitorCtx.scope()), true));
             } catch (PMLScopeException e) {
-                visitorCtx.errorLog().addError(ctx, e.getMessage());
-
-                return new VariableDeclarationStatement(ctx);
+                throw new PMLCompilationRuntimeException(ctx, e.getMessage());
             }
 
             decls.add(new VariableDeclarationStatement.Declaration(varName, expr));
@@ -70,9 +67,7 @@ public class VarStmtVisitor extends PMLBaseVisitor<PMLStatement> {
             try {
                 visitorCtx.scope().addVariable(varName, new Variable(varName, expr.getType(visitorCtx.scope()), false));
             } catch (PMLScopeException e) {
-                visitorCtx.errorLog().addError(ctx, e.getMessage());
-
-                return new VariableDeclarationStatement(ctx);
+                throw new PMLCompilationRuntimeException(ctx, e.getMessage());
             }
 
             decls.add(new VariableDeclarationStatement.Declaration(varName, expr));
@@ -90,16 +85,12 @@ public class VarStmtVisitor extends PMLBaseVisitor<PMLStatement> {
 
         try {
             if (visitorCtx.scope().variableExists(varName)) {
-                visitorCtx.errorLog().addError(ctx, "variable " + varName + " already exists");
-
-                return new ShortDeclarationStatement(ctx);
+                throw new PMLCompilationRuntimeException(ctx, "variable " + varName + " already exists");
             }
 
             visitorCtx.scope().addVariable(varName, new Variable(varName, expr.getType(visitorCtx.scope()), false));
         } catch (PMLScopeException e) {
-            visitorCtx.errorLog().addError(ctx, e.getMessage());
-
-            return new ShortDeclarationStatement(ctx);
+            throw new PMLCompilationRuntimeException(ctx, e.getMessage());
         }
 
         return stmt;
@@ -118,16 +109,12 @@ public class VarStmtVisitor extends PMLBaseVisitor<PMLStatement> {
 
         try {
            if (visitorCtx.scope().getVariable(varName).isConst()) {
-                visitorCtx.errorLog().addError(ctx, "cannot reassign const variable");
-
-                return new VariableAssignmentStatement(ctx);
+                throw new PMLCompilationRuntimeException(ctx, "cannot reassign const variable");
             }
 
             // don't need to update variable since the name and type are the only thing that matter during compilation
         } catch (PMLScopeException e) {
-            visitorCtx.errorLog().addError(ctx, e.getMessage());
-
-            return new VariableAssignmentStatement(ctx);
+            throw new PMLCompilationRuntimeException(ctx, e.getMessage());
         }
 
         return stmt;

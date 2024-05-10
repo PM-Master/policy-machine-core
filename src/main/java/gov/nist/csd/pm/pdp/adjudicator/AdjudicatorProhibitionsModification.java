@@ -5,7 +5,7 @@ import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.modification.ProhibitionsModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
@@ -54,7 +54,7 @@ public class AdjudicatorProhibitionsModification implements ProhibitionsModifica
 
     @Override
     public void delete(String name) throws PMException {
-        Prohibition prohibition = pap.policy().prohibitions().get(name);
+        Prohibition prohibition = pap.modify().prohibitions().get(name);
 
         // check that the user can create a prohibition for the subject
         if (prohibition.getSubject().getType() == ProhibitionSubject.Type.PROCESS) {
@@ -76,7 +76,7 @@ public class AdjudicatorProhibitionsModification implements ProhibitionsModifica
 
     @Override
     public Map<String, List<Prohibition>> getAll() throws PMException {
-        Map<String, List<Prohibition>> prohibitions = pap.policy().prohibitions().getAll();
+        Map<String, List<Prohibition>> prohibitions = pap.modify().prohibitions().getAll();
         Map<String, List<Prohibition>> retProhibitions = new HashMap<>();
         for (String subject : prohibitions.keySet()) {
             List<Prohibition> subjectPros = filterProhibitions(prohibitions.get(subject));
@@ -88,7 +88,7 @@ public class AdjudicatorProhibitionsModification implements ProhibitionsModifica
 
     @Override
     public boolean exists(String name) throws PMException {
-        boolean exists = pap.policy().prohibitions().exists(name);
+        boolean exists = pap.modify().prohibitions().exists(name);
         if (!exists) {
             return false;
         }
@@ -101,12 +101,12 @@ public class AdjudicatorProhibitionsModification implements ProhibitionsModifica
 
     @Override
     public List<Prohibition> getWithSubject(String subject) throws PMException {
-        return filterProhibitions(pap.policy().prohibitions().getWithSubject(subject));
+        return filterProhibitions(pap.modify().prohibitions().getWithSubject(subject));
     }
 
     @Override
     public Prohibition get(String name) throws PMException {
-        Prohibition prohibition = pap.policy().prohibitions().get(name);
+        Prohibition prohibition = pap.modify().prohibitions().get(name);
 
         // check user has access to subject
         if (prohibition.getSubject().getType() == ProhibitionSubject.Type.PROCESS) {

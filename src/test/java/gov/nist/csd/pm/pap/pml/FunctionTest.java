@@ -1,10 +1,9 @@
 package gov.nist.csd.pm.pap.pml;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
-import gov.nist.csd.pm.impl.memory.pdp.MemoryPolicyReviewer;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
+import gov.nist.csd.pm.pap.query.UserContext;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,10 +23,8 @@ public class FunctionTest {
                 """;
 
         PMLCompilationException e = assertThrows(PMLCompilationException.class, () -> {
-            MemoryPolicyModifier ps = new MemoryPolicyModifier();
-            MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
-            PAP pap = new PAP(ps, pr);
-            PMLExecutor.compileAndExecutePML(pap.policy(), new UserContext("u1"), pml);
+            PAP pap = new MemoryPAP();
+            PMLExecutor.compileAndExecutePML(pap, new UserContext("u1"), pml);
         });
         assertEquals("not all conditional paths return", e.getErrors().get(0).errorMessage());
     }
@@ -47,10 +44,8 @@ public class FunctionTest {
                 """;
 
         assertDoesNotThrow(() -> {
-            MemoryPolicyModifier ps = new MemoryPolicyModifier();
-            MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
-            PAP pap = new PAP(ps, pr);
-            PMLExecutor.compileAndExecutePML(pap.policy(), new UserContext("u1"), pml2);
+            PAP pap = new MemoryPAP();
+            PMLExecutor.compileAndExecutePML(pap, new UserContext("u1"), pml2);
         });
     }
 
@@ -67,10 +62,8 @@ public class FunctionTest {
                 """;
 
         assertDoesNotThrow(() -> {
-            MemoryPolicyModifier ps = new MemoryPolicyModifier();
-            MemoryPolicyReviewer pr = new MemoryPolicyReviewer(ps);
-            PAP pap = new PAP(ps, pr);
-            PMLExecutor.compileAndExecutePML(pap.policy(), new UserContext("u1"), pml2);
+            PAP pap = new MemoryPAP();
+            PMLExecutor.compileAndExecutePML(pap, new UserContext("u1"), pml2);
         });
     }
 

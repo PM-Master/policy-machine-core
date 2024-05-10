@@ -21,7 +21,7 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 import java.util.List;
 import java.util.Map;
 
-abstract class TxCmd<T extends MemoryStore<?>> {
+abstract class TxCmd implements TxRollbackSupport {
 
     private Type type;
 
@@ -33,8 +33,6 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         return type;
     }
 
-    public abstract void rollback(T store) throws PMException;
-
     enum Type {
         GRAPH,
         PROHIBITIONS,
@@ -43,7 +41,7 @@ abstract class TxCmd<T extends MemoryStore<?>> {
     }
 
 
-    static TxCmd<?> eventToCmd(Operation op) throws UnsupportedPolicyEvent {
+    static TxCmd eventToCmd(Operation op) throws UnsupportedPolicyEvent {
         if (op instanceof CreateConstantOp o) {
             return new TxCmd.AddConstantTxCmd(
                     o.name(),
@@ -180,7 +178,7 @@ abstract class TxCmd<T extends MemoryStore<?>> {
        throw new UnsupportedPolicyEvent(op);
     }
 
-    static class SetResourceAccessRightsTxCmd extends TxCmd<MemoryGraphModification> {
+    static class SetResourceAccessRightsTxCmd extends TxCmd {
 
         private AccessRightSet oldAccessRights;
         private AccessRightSet newAccessRights;
@@ -193,12 +191,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryGraphModification store) throws PMException {
-            store.setResourceAccessRights(oldAccessRights);
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.graph().setResourceAccessRights(oldAccessRights);
         }
     }
 
-    static class CreatePolicyClassTxCmd extends TxCmd<MemoryGraphModification> {
+    static class CreatePolicyClassTxCmd extends TxCmd {
             
         private String name;
         private Map<String, String> properties;
@@ -210,12 +208,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryGraphModification store) throws PMException {
-            store.deleteNode(name);
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.graph().deleteNode(name);
         }
     }
 
-    static class CreateObjectAttributeTxCmd extends TxCmd<MemoryGraphModification> {
+    static class CreateObjectAttributeTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> properties;
         private final List<String> parents;
@@ -228,12 +226,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryGraphModification store) throws PMException {
-            store.deleteNode(name);
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.graph().deleteNode(name);
         }
     }
 
-    static class CreateUserAttributeTxCmd extends TxCmd<MemoryGraphModification> {
+    static class CreateUserAttributeTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> properties;
         private final List<String> parents;
@@ -246,12 +244,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryGraphModification store) throws PMException {
-            store.deleteNode(name);
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.graph().deleteNode(name);
         }
     }
 
-    static class CreateObjectTxCmd extends TxCmd<MemoryGraphModification> {
+    static class CreateObjectTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> properties;
         private final List<String> parents;
@@ -264,12 +262,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryGraphModification store) throws PMException {
-            store.deleteNode(name);
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.graph().deleteNode(name);
         }
     }
 
-    static class CreateUserTxCmd extends TxCmd<MemoryGraphModification> {
+    static class CreateUserTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> properties;
         private final List<String> parents;
@@ -282,12 +280,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryGraphModification store) throws PMException {
-            store.deleteNode(name);
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.graph().deleteNode(name);
         }
     }
 
-    static class SetNodePropertiesTxCmd extends TxCmd<MemoryGraphModification> {
+    static class SetNodePropertiesTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> oldProperties;
         private final Map<String, String> newProperties;
@@ -300,12 +298,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryGraphModification store) throws PMException {
-            store.setNodeProperties(name, oldProperties);
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.graph().setNodeProperties(name, oldProperties);
         }
     }
 
-    static class DeleteNodeTxCmd extends TxCmd<MemoryGraphModification> {
+    static class DeleteNodeTxCmd extends TxCmd {
         private final String name;
         private final Node nodeToDelete;
         private final List<String> parents;
@@ -318,21 +316,21 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryGraphModification store) throws PMException {
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
             NodeType type = nodeToDelete.getType();
             Map<String, String> properties = nodeToDelete.getProperties();
 
             switch (type) {
-                case PC -> store.createPolicyClass(name, properties);
-                case OA -> store.createObjectAttribute(name, properties, parents);
-                case UA -> store.createUserAttribute(name, properties, parents);
-                case O -> store.createObject(name, properties, parents);
-                case U -> store.createUser(name, properties, parents);
+                case PC -> memoryPolicy.graph().createPolicyClass(name, properties);
+                case OA -> memoryPolicy.graph().createObjectAttribute(name, properties, parents);
+                case UA -> memoryPolicy.graph().createUserAttribute(name, properties, parents);
+                case O -> memoryPolicy.graph().createObject(name, properties, parents);
+                case U -> memoryPolicy.graph().createUser(name, properties, parents);
             }
         }
     }
 
-    static final class AssignTxCmd extends TxCmd<MemoryGraphModification> {
+    static final class AssignTxCmd extends TxCmd {
         private final String child;
         private final String parent;
 
@@ -343,12 +341,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryGraphModification store) throws PMException {
-            store.deassign(child, parent);
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.graph().deassign(child, parent);
         }
     }
 
-    static class DeassignTxCmd extends TxCmd<MemoryGraphModification> {
+    static class DeassignTxCmd extends TxCmd {
         private final String child;
         private final String parent;
 
@@ -359,12 +357,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryGraphModification store) throws PMException {
-            store.assign(child, parent);
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.graph().assign(child, parent);
         }
     }
 
-    static class AssociateTxCmd extends TxCmd<MemoryGraphModification> {
+    static class AssociateTxCmd extends TxCmd {
         private final Association association;
 
         public AssociateTxCmd(Association association) {
@@ -373,12 +371,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryGraphModification store) throws PMException {
-            store.dissociate(association.getSource(), association.getTarget());
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.graph().dissociate(association.getSource(), association.getTarget());
         }
     }
 
-    static class DissociateTxCmd extends TxCmd<MemoryGraphModification> {
+    static class DissociateTxCmd extends TxCmd {
         private final Association association;
 
         public DissociateTxCmd(Association association) {
@@ -387,12 +385,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryGraphModification store) throws PMException {
-            store.associate(association.getSource(), association.getTarget(), association.getAccessRightSet());
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.graph().associate(association.getSource(), association.getTarget(), association.getAccessRightSet());
         }
     }
 
-    static class CreateProhibitionTxCmd extends TxCmd<MemoryProhibitionsModification> {
+    static class CreateProhibitionTxCmd extends TxCmd {
         private final Prohibition prohibition;
 
         public CreateProhibitionTxCmd(Prohibition prohibition) {
@@ -401,12 +399,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryProhibitionsModification store) throws PMException {
-            store.delete(prohibition.getName());
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.prohibitions().delete(prohibition.getName());
         }
     }
 
-    static class UpdateProhibitionTxCmd extends TxCmd<MemoryProhibitionsModification> {
+    static class UpdateProhibitionTxCmd extends TxCmd {
         private final Prohibition newProhibition;
         private final Prohibition oldProhibition;
 
@@ -417,8 +415,8 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryProhibitionsModification store) throws PMException {
-            store.update(
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.prohibitions().update(
                     oldProhibition.getName(),
                     oldProhibition.getSubject(),
                     oldProhibition.getAccessRightSet(),
@@ -428,7 +426,7 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
     }
 
-    static class DeleteProhibitionTxCmd extends TxCmd<MemoryProhibitionsModification> {
+    static class DeleteProhibitionTxCmd extends TxCmd {
         private final Prohibition prohibitionToDelete;
 
         public DeleteProhibitionTxCmd(Prohibition prohibitionToDelete) {
@@ -437,8 +435,8 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryProhibitionsModification store) throws PMException {
-            store.create(
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.prohibitions().create(
                     prohibitionToDelete.getName(),
                     prohibitionToDelete.getSubject(),
                     prohibitionToDelete.getAccessRightSet(),
@@ -448,7 +446,7 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
     }
 
-    static class CreateObligationTxCmd extends TxCmd<MemoryObligationsModification> {
+    static class CreateObligationTxCmd extends TxCmd {
         private final Obligation obligation;
 
         public CreateObligationTxCmd(Obligation obligation) {
@@ -457,12 +455,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryObligationsModification store) throws PMException {
-            store.delete(obligation.getName());
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.obligations().delete(obligation.getName());
         }
     }
 
-    static class UpdateObligationTxCmd extends TxCmd<MemoryObligationsModification> {
+    static class UpdateObligationTxCmd extends TxCmd {
         private final Obligation newObligation;
         private final Obligation oldObligation;
 
@@ -473,8 +471,8 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryObligationsModification store) throws PMException {
-            store.update(
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.obligations().update(
                     oldObligation.getAuthor(),
                     oldObligation.getName(),
                     oldObligation.getRules().toArray(new Rule[]{})
@@ -482,7 +480,7 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
     }
 
-    static class DeleteObligationTxCmd extends TxCmd<MemoryObligationsModification> {
+    static class DeleteObligationTxCmd extends TxCmd {
         private final Obligation obligationToDelete;
         public DeleteObligationTxCmd(Obligation obligationToDelete) {
             super(Type.OBLIGATIONS);
@@ -490,8 +488,8 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryObligationsModification store) throws PMException {
-            store.create(
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.obligations().create(
                     obligationToDelete.getAuthor(),
                     obligationToDelete.getName(),
                     obligationToDelete.getRules().toArray(new Rule[]{})
@@ -499,7 +497,7 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
     }
 
-    static class AddFunctionTxCmd extends TxCmd<MemoryPMLModification> {
+    static class AddFunctionTxCmd extends TxCmd {
         private final FunctionDefinitionStatement functionDefinitionStatement;
 
         public AddFunctionTxCmd(FunctionDefinitionStatement functionDefinitionStatement) {
@@ -508,12 +506,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryPMLModification store) throws PMException {
-            store.deleteFunction(functionDefinitionStatement.getSignature().getFunctionName());
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.pml().deleteFunction(functionDefinitionStatement.getSignature().getFunctionName());
         }
     }
 
-    static class RemoveFunctionTxCmd extends TxCmd<MemoryPMLModification> {
+    static class RemoveFunctionTxCmd extends TxCmd {
         private final FunctionDefinitionStatement functionDefinitionStatement;
 
         public RemoveFunctionTxCmd(FunctionDefinitionStatement functionDefinitionStatement) {
@@ -522,13 +520,13 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryPMLModification store) throws PMException {
-            store.createFunction(functionDefinitionStatement);
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.pml().createFunction(functionDefinitionStatement);
         }
         
     }
 
-    static class AddConstantTxCmd extends TxCmd<MemoryPMLModification> {
+    static class AddConstantTxCmd extends TxCmd {
         private final String constantName;
         private final Value value;
 
@@ -539,12 +537,12 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryPMLModification store) throws PMException {
-            store.deleteConstant(constantName);
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.pml().deleteConstant(constantName);
         }
     }
 
-    static class RemoveConstantTxCmd extends TxCmd<MemoryPMLModification> {
+    static class RemoveConstantTxCmd extends TxCmd {
         private final String constantName;
         private final Value oldValue;
 
@@ -555,8 +553,8 @@ abstract class TxCmd<T extends MemoryStore<?>> {
         }
 
         @Override
-        public void rollback(MemoryPMLModification store) throws PMException {
-            store.createConstant(constantName, oldValue);
+        public void rollback(MemoryPolicy memoryPolicy) throws PMException {
+            memoryPolicy.pml().createConstant(constantName, oldValue);
         }
     }
 }

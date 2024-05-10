@@ -17,8 +17,8 @@ public class NodeExists extends FunctionDefinitionStatement {
                       .args(
                               new FormalArgument(NODE_ARG, Type.string())
                       )
-                      .executor((ctx, author) -> {
-                          return new BoolValue(author.graph().nodeExists(ctx.scope().getVariable(NODE_ARG).getStringValue()));
+                      .executor((ctx, pap) -> {
+                          return new BoolValue(pap.query().graph().nodeExists(ctx.scope().getVariable(NODE_ARG).getStringValue()));
                       })
                       .build()
         );

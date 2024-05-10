@@ -1,5 +1,7 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.tx.Transactional;
 import gov.nist.csd.pm.pap.op.Operation;
 
 import java.util.ArrayList;
@@ -22,7 +24,15 @@ class TxOpTracker {
         return copy;
     }
 
-    public void trackOp(Operation op) {
+    public void trackOp(MemoryTx tx, Operation op) {
+        if (!tx.isActive()) {
+            return;
+        }
+
         this.operations.add(op);
+    }
+
+    public void clearOps() {
+        this.operations.clear();
     }
 }

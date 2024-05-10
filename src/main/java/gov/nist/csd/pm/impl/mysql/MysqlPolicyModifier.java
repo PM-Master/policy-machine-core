@@ -2,7 +2,7 @@ package gov.nist.csd.pm.impl.mysql;
 
 import com.google.gson.Gson;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
-import gov.nist.csd.pm.pap.PolicyModifier;
+import gov.nist.csd.pm.pap.modification.PolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.exception.PMLConstantAlreadyDefinedException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;

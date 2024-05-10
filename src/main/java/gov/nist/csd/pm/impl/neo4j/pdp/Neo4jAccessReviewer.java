@@ -6,7 +6,7 @@ import gov.nist.csd.pm.impl.neo4j.pap.Neo4jConnection;
 import gov.nist.csd.pm.pdp.AccessRightResolver;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.audit.EdgePath;
 import gov.nist.csd.pm.pap.audit.Explain;
 import gov.nist.csd.pm.pap.audit.PolicyClass;

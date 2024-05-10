@@ -1,14 +1,9 @@
 package gov.nist.csd.pm.pap.query;
 
-import gov.nist.csd.pm.epp.EventContext;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
-import gov.nist.csd.pm.common.obligation.Response;
-import gov.nist.csd.pm.common.obligation.Rule;
 
 import java.util.List;
-import java.util.Map;
 
 public interface ObligationsQuery {
 
@@ -38,10 +33,12 @@ public interface ObligationsQuery {
      */
     Obligation get(String name) throws PMException;
 
+    /**
+     * Get the obligations created by the given author.
+     * @param userCtx The user context representing the author to search for.
+     * @return A list of Obligation objects.
+     * @throws PMException If any PM related exceptions occur in the implementing class.
+     */
     List<Obligation> getObligationsWithAuthor(UserContext userCtx) throws PMException;
-    Map<String, List<Rule>> getRulesWithEventSubject(String subject) throws PMException;
-    Map<String, List<Rule>> getRulesWithEventOperation(String operation) throws PMException;
-    Map<String, List<Rule>> getRulesWithEventOperand(String target) throws PMException;
-    List<Response> getMatchingEventResponses(EventContext eventCtx) throws PMException;
 
 }

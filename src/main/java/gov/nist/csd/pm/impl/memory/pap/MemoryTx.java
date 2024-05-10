@@ -4,30 +4,21 @@ import gov.nist.csd.pm.common.tx.Transactional;
 
 import java.util.Objects;
 
-/**
- * @param <T> The BaseMemoryTx instance that will run the tx's for this class.
- */
-public class MemoryTx<T extends BaseMemoryTx> implements Transactional {
+public class MemoryTx implements Transactional {
     private boolean active;
     private int counter;
-    private T store;
+    private MemoryPolicyModifier modifier;
 
     public MemoryTx() {
         active = false;
         counter = 0;
-        store = null;
+        modifier = null;
     }
 
-    public MemoryTx(boolean active, int counter, T store) {
+    public MemoryTx(boolean active, int counter, MemoryPolicyModifier modifier) {
         this.active = active;
         this.counter = counter;
-        this.store = store;
-    }
-
-    public void set(boolean active, int counter, T policyStore) {
-        this.active = active;
-        this.counter = counter;
-        this.store = policyStore;
+        this.modifier = modifier;
     }
 
     public boolean isActive() {
@@ -46,12 +37,12 @@ public class MemoryTx<T extends BaseMemoryTx> implements Transactional {
         this.counter = counter;
     }
 
-    public T getStore() {
-        return store;
+    public MemoryPolicyModifier getModifier() {
+        return modifier;
     }
 
-    public void setStore(T store) {
-        this.store = store;
+    public void setModifier(MemoryPolicyModifier modifier) {
+        this.modifier = modifier;
     }
 
     @Override
@@ -68,8 +59,8 @@ public class MemoryTx<T extends BaseMemoryTx> implements Transactional {
 
     @Override
     public void rollback() {
-        counter--;
-        active = counter != 0;
+        counter = 0;
+        active = false;
     }
 
     @Override
@@ -79,12 +70,12 @@ public class MemoryTx<T extends BaseMemoryTx> implements Transactional {
         var that = (MemoryTx) obj;
         return this.active == that.active &&
                 this.counter == that.counter &&
-                Objects.equals(this.store, that.store);
+                Objects.equals(this.modifier, that.modifier);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(active, counter, store);
+        return Objects.hash(active, counter, modifier);
     }
 
     @Override
@@ -92,6 +83,6 @@ public class MemoryTx<T extends BaseMemoryTx> implements Transactional {
         return "MemoryTx[" +
                 "active=" + active + ", " +
                 "counter=" + counter + ", " +
-                "policyStore=" + store + ']';
+                "policyStore=" + modifier + ']';
     }
 }

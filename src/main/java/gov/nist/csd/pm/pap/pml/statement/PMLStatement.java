@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -10,23 +10,9 @@ import java.io.Serializable;
 
 public abstract class PMLStatement implements Serializable {
 
-    private ParserRuleContext ctx;
-
     public PMLStatement() {}
 
-    public PMLStatement(ParserRuleContext ctx) {
-        this.ctx = ctx;
-    }
-
-    public ParserRuleContext getCtx() {
-        return ctx;
-    }
-
-    public boolean hasError() {
-        return ctx != null;
-    }
-
-    public abstract Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException;
+    public abstract Value execute(ExecutionContext ctx, PAP pap) throws PMException;
 
     @Override
     public abstract boolean equals(Object o);

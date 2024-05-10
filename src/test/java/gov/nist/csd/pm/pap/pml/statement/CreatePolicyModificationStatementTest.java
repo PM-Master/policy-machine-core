@@ -1,15 +1,16 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.pdp.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.expression.reference.ReferenceByID;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.util.PolicyEquals;
 import org.junit.jupiter.api.Test;
 
@@ -29,15 +30,15 @@ class CreatePolicyModificationStatementTest {
     @Test
     void testSuccess() throws PMException {
         CreatePolicyStatement stmt = new CreatePolicyStatement(new StringLiteral("pc1"));
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
-        store.graph().createPolicyClass("pc2", new HashMap<>());
-        store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc2"));
-        store.graph().createUser("u2", new HashMap<>(), List.of("ua2"));
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(store));
+        MemoryPAP pap = new MemoryPAP();
+        pap.modify().graph().createPolicyClass("pc2", new HashMap<>());
+        pap.modify().graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc2"));
+        pap.modify().graph().createUser("u2", new HashMap<>(), List.of("ua2"));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(pap));
 
-        stmt.execute(execCtx, store);
+        stmt.execute(execCtx, pap);
 
-        assertTrue(store.graph().nodeExists("pc1"));
+        assertTrue(pap.query().graph().nodeExists("pc1"));
     }
 
     @Test
@@ -98,45 +99,45 @@ class CreatePolicyModificationStatementTest {
 
     @Test
     void testHierarchy() throws PMException {
-        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
+        MemoryPAP pap = new MemoryPAP();
 
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(memoryPolicyStore));
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u2"), GlobalScope.forExecute(pap));
         execCtx.scope().addVariable("ua1", new StringValue("ua1"));
 
-        memoryPolicyStore.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
-        stmt.execute(execCtx, memoryPolicyStore);
+        pap.modify().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+        stmt.execute(execCtx, pap);
 
-        MemoryPolicyModifier expected = new MemoryPolicyModifier();
-        expected.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
-        expected.graph().createPolicyClass("test", Map.of("a", "b"));
-        expected.graph().createUserAttribute("ua1", Map.of("k", "v"), List.of("test"));
-        expected.graph().createUserAttribute("ua1-1", new HashMap<>(), List.of("ua1"));
-        expected.graph().createUserAttribute("ua1-2", new HashMap<>(), List.of("ua1"));
-        expected.graph().createUserAttribute("ua1-2-1", Map.of("k", "v"), List.of("ua1-2"));
-        expected.graph().createUserAttribute("ua1-3", new HashMap<>(), List.of("ua1"));
-        expected.graph().createUserAttribute("ua2", Map.of("k", "v"), List.of("test"));
-        expected.graph().assign("ua1-2-1", "ua2");
+        MemoryPAP expected = new MemoryPAP();
+        expected.modify().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+        expected.modify().graph().createPolicyClass("test", Map.of("a", "b"));
+        expected.modify().graph().createUserAttribute("ua1", Map.of("k", "v"), List.of("test"));
+        expected.modify().graph().createUserAttribute("ua1-1", new HashMap<>(), List.of("ua1"));
+        expected.modify().graph().createUserAttribute("ua1-2", new HashMap<>(), List.of("ua1"));
+        expected.modify().graph().createUserAttribute("ua1-2-1", Map.of("k", "v"), List.of("ua1-2"));
+        expected.modify().graph().createUserAttribute("ua1-3", new HashMap<>(), List.of("ua1"));
+        expected.modify().graph().createUserAttribute("ua2", Map.of("k", "v"), List.of("test"));
+        expected.modify().graph().assign("ua1-2-1", "ua2");
 
-        expected.graph().createObjectAttribute("oa1", Map.of("k", "v"), List.of("test"));
-        expected.graph().createObjectAttribute("oa1-1", new HashMap<>(), List.of("oa1"));
-        expected.graph().createObjectAttribute("oa1-2", new HashMap<>(), List.of("oa1"));
-        expected.graph().createObjectAttribute("oa1-2-1", Map.of("k", "v"), List.of("oa1-2"));
-        expected.graph().createObjectAttribute("oa1-3", new HashMap<>(), List.of("oa1"));
-        expected.graph().createObjectAttribute("oa2", Map.of("k", "v"), List.of("test"));
-        expected.graph().assign("oa1-2-1", "oa2");
+        expected.modify().graph().createObjectAttribute("oa1", Map.of("k", "v"), List.of("test"));
+        expected.modify().graph().createObjectAttribute("oa1-1", new HashMap<>(), List.of("oa1"));
+        expected.modify().graph().createObjectAttribute("oa1-2", new HashMap<>(), List.of("oa1"));
+        expected.modify().graph().createObjectAttribute("oa1-2-1", Map.of("k", "v"), List.of("oa1-2"));
+        expected.modify().graph().createObjectAttribute("oa1-3", new HashMap<>(), List.of("oa1"));
+        expected.modify().graph().createObjectAttribute("oa2", Map.of("k", "v"), List.of("test"));
+        expected.modify().graph().assign("oa1-2-1", "oa2");
 
-        expected.graph().associate("ua1", "oa1", new AccessRightSet("read", "write"));
+        expected.modify().graph().associate("ua1", "oa1", new AccessRightSet("read", "write"));
 
-        PolicyEquals.assertPolicyEquals(expected, memoryPolicyStore);
+        PolicyEquals.assertPolicyEquals(expected.query(), pap.query());
 
         String s = stmt.toString();
-        memoryPolicyStore = new MemoryPolicyModifier();
-        memoryPolicyStore.graph().setResourceAccessRights(new AccessRightSet("read", "write"));
-        memoryPolicyStore.pml().createConstant("ua1", new StringValue("ua1"));
-        PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext("u2"), s);
-        memoryPolicyStore.pml().deleteConstant("ua1");
+        pap = new MemoryPAP();
+        pap.modify().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
+        pap.modify().pml().createConstant("ua1", new StringValue("ua1"));
+        PMLExecutor.compileAndExecutePML(pap, new UserContext("u2"), s);
+        pap.modify().pml().deleteConstant("ua1");
 
-        PolicyEquals.assertPolicyEquals(expected, memoryPolicyStore);
+        PolicyEquals.assertPolicyEquals(expected.query(), pap.query());
     }
 
     @Test

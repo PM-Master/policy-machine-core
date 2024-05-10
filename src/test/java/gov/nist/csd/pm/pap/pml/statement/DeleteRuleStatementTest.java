@@ -1,8 +1,13 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.common.obligation.EventPattern;
+import gov.nist.csd.pm.common.obligation.Response;
+import gov.nist.csd.pm.common.obligation.Rule;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
@@ -11,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 
+import static gov.nist.csd.pm.pap.pml.pattern.AnyPatternFunction.pAny;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DeleteRuleStatementTest {
@@ -20,21 +26,21 @@ class DeleteRuleStatementTest {
         DeleteRuleStatement stmt = new DeleteRuleStatement(
                 new StringLiteral("rule1"), new StringLiteral("obl1"));
 
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
-        store.graph().createPolicyClass("pc1", new HashMap<>());
-        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        PAP pap = new MemoryPAP();
+        pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
-        /* TODO store.obligations().create(userContext, "obl1", new Rule(
+        pap.modify().obligations().create(userContext, "obl1", new Rule(
                 "rule1",
-                new EventPattern(new AnyUserSubject(), new Performs("e1")),
+                new EventPattern(pAny("s"), pAny("o")),
                 new Response("e",List.of())
-        ));*/
+        ));
 
-        ExecutionContext execCtx = new ExecutionContext(userContext, GlobalScope.forExecute(store));
-        stmt.execute(execCtx, store);
+        ExecutionContext execCtx = new ExecutionContext(userContext, GlobalScope.forExecute(pap));
+        stmt.execute(execCtx, pap);
 
-        assertTrue(store.obligations().get("obl1").getRules().isEmpty());
+        assertTrue(pap.query().obligations().get("obl1").getRules().isEmpty());
     }
 
     @Test

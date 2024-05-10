@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pap.pml;
 
 import gov.nist.csd.pm.pap.pml.function.builtin.*;
+import gov.nist.csd.pm.pap.pml.pattern.*;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 
 import java.util.HashMap;
@@ -29,6 +30,13 @@ public class PMLBuiltinFunctions {
     private static final FunctionDefinitionStatement search = new Search();
     private static final FunctionDefinitionStatement append = new Append();
     private static final FunctionDefinitionStatement appendAll = new AppendAll();
+    private static final PMLPatternFunctionStmt pEquals = new EqualsPatternFunction();
+    private static final PMLPatternFunctionStmt pOr = new OrPatternFunction();
+    private static final PMLPatternFunctionStmt pAnd = new AndPatternFunction();
+    private static final PMLPatternFunctionStmt pAny = new AnyPatternFunction();
+    private static final PMLPatternFunctionStmt pIsAscendantOf = new AscendantOfPatternFunction();
+    private static final PMLPatternFunctionStmt pContainedIn = new ContainedInPatternFunction();
+    private static final PMLPatternFunctionStmt pContains = new ContainsPatternFunction();
 
     private static final Map<String, FunctionDefinitionStatement> BUILTIN_FUNCTIONS = new HashMap<>();
 
@@ -52,6 +60,15 @@ public class PMLBuiltinFunctions {
         BUILTIN_FUNCTIONS.put(search.getSignature().getFunctionName(), search);
         BUILTIN_FUNCTIONS.put(append.getSignature().getFunctionName(), append);
         BUILTIN_FUNCTIONS.put(appendAll.getSignature().getFunctionName(), appendAll);
+
+        // pattern functions
+        BUILTIN_FUNCTIONS.put(pEquals.getSignature().getFunctionName(), pEquals);
+        BUILTIN_FUNCTIONS.put(pOr.getSignature().getFunctionName(), pOr);
+        BUILTIN_FUNCTIONS.put(pAnd.getSignature().getFunctionName(), pAnd);
+        BUILTIN_FUNCTIONS.put(pAny.getSignature().getFunctionName(), pAny);
+        BUILTIN_FUNCTIONS.put(pIsAscendantOf.getSignature().getFunctionName(), pIsAscendantOf);
+        BUILTIN_FUNCTIONS.put(pContainedIn.getSignature().getFunctionName(), pContainedIn);
+        BUILTIN_FUNCTIONS.put(pContains.getSignature().getFunctionName(), pContains);
     }
 
     public static Map<String, FunctionDefinitionStatement> builtinFunctions() {

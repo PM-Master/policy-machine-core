@@ -3,6 +3,7 @@ package gov.nist.csd.pm.pap.pml.compiler.visitor;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.statement.FunctionReturnStatement;
 import gov.nist.csd.pm.pap.pml.statement.IfStatement;
@@ -29,7 +30,7 @@ public class StatementBlockVisitor extends PMLBaseVisitor<StatementBlockVisitor.
             PMLStatement pmlStatement = statementVisitor.visitStatement(statementContext);
 
             if (pmlStatement instanceof FunctionDefinitionStatement) {
-                visitorCtx.errorLog().addError(statementContext, "functions are not allowed inside statement blocks");
+                throw new PMLCompilationRuntimeException(statementContext, "functions are not allowed inside statement blocks");
             }
 
             stmts.add(pmlStatement);
@@ -39,10 +40,7 @@ public class StatementBlockVisitor extends PMLBaseVisitor<StatementBlockVisitor.
             boolean allPathsReturned = allPathsReturned(stmts, returnType);
             return new Result(allPathsReturned, stmts);
         } catch (PMException e) {
-            visitorCtx.errorLog().addError(ctx, e.getMessage());
-
-            // returning anything here will be ignored because of the error
-            return new Result(true, stmts);
+            throw new PMLCompilationRuntimeException(ctx, e.getMessage());
         }
     }
     private boolean allPathsReturned(List<PMLStatement> statements, Type returnType)

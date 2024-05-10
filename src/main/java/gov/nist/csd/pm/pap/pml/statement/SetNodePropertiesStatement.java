@@ -1,11 +1,12 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,8 +15,8 @@ import java.util.Objects;
 
 public class SetNodePropertiesStatement extends PMLStatement {
 
-    private final Expression nameExpr;
-    private final Expression propertiesExpr;
+    private Expression nameExpr;
+    private Expression propertiesExpr;
 
     public SetNodePropertiesStatement(Expression nameExpr, Expression propertiesExpr) {
         this.nameExpr = nameExpr;
@@ -31,15 +32,15 @@ public class SetNodePropertiesStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        String name = nameExpr.execute(ctx, policyModification).getStringValue();
-        Map<Value, Value> map = propertiesExpr.execute(ctx, policyModification).getMapValue();
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        String name = nameExpr.execute(ctx, pap).getStringValue();
+        Map<Value, Value> map = propertiesExpr.execute(ctx, pap).getMapValue();
         Map<String, String> properties = new HashMap<>();
         for (Value key : map.keySet()) {
             properties.put(key.getStringValue(), map.get(key).getStringValue());
         }
 
-        policyModification.graph().setNodeProperties(name, properties);
+        pap.modify().graph().setNodeProperties(name, properties);
 
         return new VoidValue();
     }

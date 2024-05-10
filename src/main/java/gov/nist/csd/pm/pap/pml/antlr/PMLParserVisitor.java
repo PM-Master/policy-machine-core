@@ -107,11 +107,11 @@ public interface PMLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCreateRuleStatement(PMLParser.CreateRuleStatementContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link PMLParser#pattern}.
+	 * Visit a parse tree produced by {@link PMLParser#patternArray}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitPattern(PMLParser.PatternContext ctx);
+	T visitPatternArray(PMLParser.PatternArrayContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PMLParser#response}.
 	 * @param ctx the parse tree
@@ -433,6 +433,13 @@ public interface PMLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitParenExpression(PMLParser.ParenExpressionContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code PatternExpression}
+	 * labeled alternative in {@link PMLParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPatternExpression(PMLParser.PatternExpressionContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code EqualsExpression}
 	 * labeled alternative in {@link PMLParser#expression}.
 	 * @param ctx the parse tree
@@ -445,6 +452,12 @@ public interface PMLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExpressionList(PMLParser.ExpressionListContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PMLParser#pattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPattern(PMLParser.PatternContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code StringLiteral}
 	 * labeled alternative in {@link PMLParser#literal}.

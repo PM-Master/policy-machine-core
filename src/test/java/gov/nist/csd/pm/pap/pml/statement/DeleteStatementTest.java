@@ -1,11 +1,17 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.obligation.EventPattern;
+import gov.nist.csd.pm.common.obligation.Response;
+import gov.nist.csd.pm.common.obligation.Rule;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.exception.PMLConstantNotDefinedException;
 import gov.nist.csd.pm.pap.exception.PMLFunctionNotDefinedException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.pap.pml.pattern.EqualsPatternFunction;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
@@ -18,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 
+import static gov.nist.csd.pm.pap.pml.pattern.AnyPatternFunction.pAny;
+import static gov.nist.csd.pm.pap.pml.pattern.EqualsPatternFunction.pEquals;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DeleteStatementTest {
@@ -30,41 +38,41 @@ class DeleteStatementTest {
         DeleteStatement stmt4 = new DeleteStatement(DeleteStatement.Type.FUNCTION, new StringLiteral("testFunc"));
         DeleteStatement stmt5 = new DeleteStatement(DeleteStatement.Type.CONST, new StringLiteral("testConst"));
 
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
-        store.graph().setResourceAccessRights(new AccessRightSet("read"));
-        store.graph().createPolicyClass("pc1", new HashMap<>());
-        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
-        store.graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-        store.graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
+        PAP pap = new MemoryPAP();
+        pap.modify().graph().setResourceAccessRights(new AccessRightSet("read"));
+        pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
         UserContext userContext = new UserContext("u1");
-        /* TODO store.obligations().create(userContext, "o1", new Rule(
+        pap.modify().obligations().create(userContext, "o1", new Rule(
                 "rule1",
-                new EventPattern(new AnyUserSubject(), new Performs("e1")),
+                new EventPattern(pAny("subject"), pEquals("op", new StringValue("e1"))),
                 new Response("e", List.of())
-        ));*/
-        store.prohibitions().create("p1",
+        ));
+        pap.modify().prohibitions().create("p1",
                                     new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
                                     new AccessRightSet("read"),
                                     true,
                                     new ContainerCondition("oa1", true)
         );
-        store.pml().createFunction(new FunctionDefinitionStatement.Builder("testFunc").build());
-        store.pml().createConstant("testConst", new StringValue("test"));
+        pap.modify().pml().createFunction(new FunctionDefinitionStatement.Builder("testFunc").build());
+        pap.modify().pml().createConstant("testConst", new StringValue("test"));
 
-        GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(store);
+        GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(pap);
 
-        stmt2.execute(new ExecutionContext(userContext, globalScope), store);
-        stmt3.execute(new ExecutionContext(userContext, globalScope), store);
-        stmt1.execute(new ExecutionContext(userContext, globalScope), store);
-        stmt4.execute(new ExecutionContext(userContext, globalScope), store);
-        stmt5.execute(new ExecutionContext(userContext, globalScope), store);
+        stmt2.execute(new ExecutionContext(userContext, globalScope), pap);
+        stmt3.execute(new ExecutionContext(userContext, globalScope), pap);
+        stmt1.execute(new ExecutionContext(userContext, globalScope), pap);
+        stmt4.execute(new ExecutionContext(userContext, globalScope), pap);
+        stmt5.execute(new ExecutionContext(userContext, globalScope), pap);
 
-        assertFalse(store.graph().nodeExists("oa1"));
-        assertFalse(store.prohibitions().exists("p1"));
-        assertFalse(store.obligations().exists("o1"));
-        assertThrows(PMLFunctionNotDefinedException.class, () -> store.pml().getFunction("testFunc"));
-        assertThrows(PMLConstantNotDefinedException.class, () -> store.pml().getConstant("testConst"));
+        assertFalse(pap.query().graph().nodeExists("oa1"));
+        assertFalse(pap.query().prohibitions().exists("p1"));
+        assertFalse(pap.query().obligations().exists("o1"));
+        assertThrows(PMLFunctionNotDefinedException.class, () -> pap.query().pml().getFunction("testFunc"));
+        assertThrows(PMLConstantNotDefinedException.class, () -> pap.query().pml().getConstant("testConst"));
     }
 
     @Test

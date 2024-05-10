@@ -7,17 +7,18 @@ import java.util.Objects;
 
 public class PatternValue extends Value{
 
-    private Pattern<?> value;
+    private Pattern value;
 
-    public PatternValue(Pattern<?> value) {
+    public PatternValue(Pattern value) {
         super(Type.any());
+        this.value = value;
     }
 
-    public Pattern<?> getValue() {
+    public Pattern getValue() {
         return value;
     }
 
-    public void setValue(Pattern<?> value) {
+    public void setValue(Pattern value) {
         this.value = value;
     }
 

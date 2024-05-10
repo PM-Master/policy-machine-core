@@ -1,11 +1,13 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.io.Serializable;
 import java.util.List;
@@ -14,9 +16,9 @@ import java.util.Objects;
 
 public class IfStatement extends PMLStatement {
 
-    private final ConditionalBlock ifBlock;
-    private final List<ConditionalBlock> ifElseBlocks;
-    private final List<PMLStatement> elseBlockStatements;
+    private ConditionalBlock ifBlock;
+    private List<ConditionalBlock> ifElseBlocks;
+    private List<PMLStatement> elseBlockStatements;
 
     public IfStatement(ConditionalBlock ifBlock, List<ConditionalBlock> ifElseBlocks, List<PMLStatement> elseBlock) {
         this.ifBlock = ifBlock;
@@ -37,22 +39,22 @@ public class IfStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        boolean condition = ifBlock.condition.execute(ctx, policyModification).getBooleanValue();
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        boolean condition = ifBlock.condition.execute(ctx, pap).getBooleanValue();
 
         if (condition) {
-            return executeBlock(ctx, policyModification, ifBlock.block);
+            return executeBlock(ctx, pap, ifBlock.block);
         }
 
         // check else ifs
         for (ConditionalBlock conditionalBlock : ifElseBlocks) {
-            condition = conditionalBlock.condition.execute(ctx, policyModification).getBooleanValue();
+            condition = conditionalBlock.condition.execute(ctx, pap).getBooleanValue();
             if (condition) {
-                return executeBlock(ctx, policyModification, conditionalBlock.block);
+                return executeBlock(ctx, pap, conditionalBlock.block);
             }
         }
 
-        return executeBlock(ctx, policyModification, elseBlockStatements);
+        return executeBlock(ctx, pap, elseBlockStatements);
     }
 
     @Override
@@ -86,10 +88,10 @@ public class IfStatement extends PMLStatement {
         return String.format("%sif %s %s", indent(indentLevel), ifBlock.condition, new PMLStatementBlock(ifBlock.block).toFormattedString(indentLevel));
     }
 
-    private Value executeBlock(ExecutionContext ctx, PolicyModification policyModification, List<PMLStatement> block) throws PMException {
+    private Value executeBlock(ExecutionContext ctx, PAP pap, List<PMLStatement> block) throws PMException {
         ExecutionContext copy = ctx.copy();
 
-        Value value = PMLExecutor.executeStatementBlock(copy, policyModification, block);
+        Value value = PMLExecutor.executeStatementBlock(copy, pap, block);
 
         ctx.scope().local().overwriteFromLocalScope(copy.scope().local());
 

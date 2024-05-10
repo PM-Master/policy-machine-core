@@ -9,7 +9,6 @@ public class CreateConstantOp extends UserDefinedPMLOp {
     private final Value value;
 
     public CreateConstantOp(String name, Value value) {
-        super(operands(name, value));
         this.name = name;
         this.value = value;
     }
@@ -17,6 +16,11 @@ public class CreateConstantOp extends UserDefinedPMLOp {
     @Override
     public String getOpName() {
         return "create_constant";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(name, value);
     }
 
     public String name() {

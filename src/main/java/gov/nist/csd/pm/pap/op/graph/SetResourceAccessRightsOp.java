@@ -9,13 +9,17 @@ public class SetResourceAccessRightsOp extends GraphOp {
     private final AccessRightSet accessRightSet;
 
     public SetResourceAccessRightsOp(AccessRightSet accessRightSet) {
-        super(Operation.operands(accessRightSet));
         this.accessRightSet = accessRightSet;
     }
 
     @Override
     public String getOpName() {
         return "set_resource_access_rights";
+    }
+
+    @Override
+    public Object[] getOperands() {
+        return operands(accessRightSet);
     }
 
     @Override

@@ -1,8 +1,10 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
@@ -23,19 +25,19 @@ class DeassignStatementTest {
                 buildArrayLiteral("ua1", "ua2")
         );
 
-        MemoryPolicyModifier store = new MemoryPolicyModifier();
-        store.graph().createPolicyClass("pc1", new HashMap<>());
-        store.graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
-        store.graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
-        store.graph().createUserAttribute("ua3", new HashMap<>(), List.of("ua1", "ua2", "pc1"));
-        store.graph().createUser("u1", new HashMap<>(), List.of("ua1"));
+        PAP pap = new MemoryPAP();
+        pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
+        pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createUserAttribute("ua2", new HashMap<>(), List.of("pc1"));
+        pap.modify().graph().createUserAttribute("ua3", new HashMap<>(), List.of("ua1", "ua2", "pc1"));
+        pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
-        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(store));
-        stmt.execute(execCtx, store);
+        ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(pap));
+        stmt.execute(execCtx, pap);
 
         assertEquals(
                 List.of("pc1"),
-                store.graph().getParents("ua3")
+                pap.query().graph().getParents("ua3")
         );
     }
 

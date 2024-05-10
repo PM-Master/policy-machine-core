@@ -1,8 +1,10 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
+
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pdp.UserContext;
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
@@ -82,11 +84,11 @@ class FunctionDefinitionStatementTest {
                     create policy class b
                 }
                 """;
-        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
-        PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext(""), pml);
+        PAP pap = new MemoryPAP();
+        PMLExecutor.compileAndExecutePML(pap, new UserContext(""), pml);
 
-        assertTrue(memoryPolicyStore.graph().nodeExists("test"));
-        assertTrue(memoryPolicyStore.graph().nodeExists("test2"));
+        assertTrue(pap.query().graph().nodeExists("test"));
+        assertTrue(pap.query().graph().nodeExists("test2"));
     }
 
     @Test
@@ -103,10 +105,10 @@ class FunctionDefinitionStatementTest {
                 
                 f2()
                 """;
-        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
-        PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext(""), pml);
+        PAP pap = new MemoryPAP();
+        PMLExecutor.compileAndExecutePML(pap, new UserContext(""), pml);
 
-        assertTrue(memoryPolicyStore.graph().nodeExists("test"));
+        assertTrue(pap.query().graph().nodeExists("test"));
     }
 
     @Test
@@ -124,8 +126,8 @@ class FunctionDefinitionStatementTest {
                     create policy class x
                 }
                 """;
-        MemoryPolicyModifier memoryPolicyStore = new MemoryPolicyModifier();
-        PMLExecutor.compileAndExecutePML(memoryPolicyStore, new UserContext(""), pml);
-        assertTrue(memoryPolicyStore.graph().nodeExists("x"));
+        PAP pap = new MemoryPAP();
+        PMLExecutor.compileAndExecutePML(pap, new UserContext(""), pml);
+        assertTrue(pap.query().graph().nodeExists("x"));
     }
 }

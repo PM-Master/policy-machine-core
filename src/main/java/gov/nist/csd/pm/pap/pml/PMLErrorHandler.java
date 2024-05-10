@@ -22,8 +22,4 @@ public class PMLErrorHandler extends BaseErrorListener {
                             String msg, RecognitionException e) {
         errors.add(new CompileError(new Position(line, charPositionInLine, 0), msg));
     }
-
-
-
-
 }

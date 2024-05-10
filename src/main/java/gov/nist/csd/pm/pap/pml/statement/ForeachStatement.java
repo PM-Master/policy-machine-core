@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
@@ -28,24 +28,20 @@ public class ForeachStatement extends PMLStatement {
         this.statements = statements;
     }
 
-    public ForeachStatement(PMLParser.ForeachStatementContext ctx) {
-        super(ctx);
-    }
-
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         if (statements.isEmpty()) {
             return new VoidValue();
         }
 
-        Value iterValue = iter.execute(ctx, policyModification);
+        Value iterValue = iter.execute(ctx, pap);
         if (iterValue instanceof ArrayValue arrayValue) {
             for (Value v : arrayValue.getValue()) {
                 ExecutionContext localExecutionCtx = ctx.copy();
 
                 localExecutionCtx.scope().addVariable(varName, v);
 
-                Value value = executeStatementBlock(localExecutionCtx, policyModification, statements);
+                Value value = executeStatementBlock(localExecutionCtx, pap, statements);
 
                 if (value instanceof BreakValue) {
                     break;
@@ -69,7 +65,7 @@ public class ForeachStatement extends PMLStatement {
                     localExecutionCtx.scope().addVariable(valueVarName, entry.getValue());
                 }
 
-                Value value = executeStatementBlock(localExecutionCtx, policyModification, statements);
+                Value value = executeStatementBlock(localExecutionCtx, pap, statements);
 
                 if (value instanceof BreakValue) {
                     break;

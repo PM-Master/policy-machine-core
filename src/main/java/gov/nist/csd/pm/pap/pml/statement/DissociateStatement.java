@@ -1,11 +1,12 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.List;
 import java.util.Objects;
@@ -13,8 +14,8 @@ import java.util.Objects;
 
 public class DissociateStatement extends PMLStatement {
 
-    private final Expression uaExpr;
-    private final Expression targetExpr;
+    private Expression uaExpr;
+    private Expression targetExpr;
 
     public DissociateStatement(Expression uaExpr, Expression targetExpr) {
         this.uaExpr = uaExpr;
@@ -30,12 +31,12 @@ public class DissociateStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyModification policyModification) throws PMException {
-        String ua = uaExpr.execute(ctx, policyModification).getStringValue();
-        List<Value> targets = targetExpr.execute(ctx, policyModification).getArrayValue();
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        String ua = uaExpr.execute(ctx, pap).getStringValue();
+        List<Value> targets = targetExpr.execute(ctx, pap).getArrayValue();
 
         for (Value target : targets) {
-            policyModification.graph().dissociate(ua, target.getStringValue());
+            pap.modify().graph().dissociate(ua, target.getStringValue());
         }
 
         return new VoidValue();
