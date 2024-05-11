@@ -92,6 +92,7 @@ public class CreateRuleStatement extends PMLStatement {
         for (PatternExpression operandExpr : operandExprs) {
             operandsStr += operandExpr + "\n";
         }
+        operandsStr = operandsStr.trim();
 
         return String.format(
                 """

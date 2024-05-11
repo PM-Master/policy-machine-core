@@ -316,12 +316,11 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
                 EventPattern eventPattern = rule.getEventPattern();
 
                 // check subject and operation patterns
-                boolean referenced = checkPatternForEntity(name, eventPattern.getSubjectPattern()) ||
-                        checkPatternForEntity(name, eventPattern.getOperationPattern());
+                boolean referenced = checkPatternForNode(name, eventPattern.getSubjectPattern());
 
                 // check operand patterns
                 for (Pattern pattern : eventPattern.getOperandPatterns()) {
-                    if (checkPatternForEntity(name, pattern)) {
+                    if (checkPatternForNode(name, pattern)) {
                         referenced = true;
                     }
                 }
@@ -333,7 +332,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
         }
     }
 
-    private boolean checkPatternForEntity(String entity, Pattern pattern) {
+    private boolean checkPatternForNode(String entity, Pattern pattern) {
         return pattern.getReferencedNodes().nodes().contains(entity);
     }
 

@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap.op.graph;
 
 import gov.nist.csd.pm.common.graph.node.NodeType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -24,6 +25,7 @@ public abstract class CreateNodeOp extends GraphOp {
         this.name = name;
         this.type = type;
         this.properties = properties;
+        this.parents = new ArrayList<>();
     }
 
     public String getName() {

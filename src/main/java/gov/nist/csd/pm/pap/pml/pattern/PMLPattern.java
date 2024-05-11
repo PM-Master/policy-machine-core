@@ -142,4 +142,12 @@ public abstract class PMLPattern extends Pattern {
     public int hashCode() {
         return Objects.hash(varName, argValues);
     }
+
+    @Override
+    public String toString() {
+        return "PMLPattern{" +
+                "varName='" + varName + '\'' +
+                ", argValues=" + argValues +
+                '}';
+    }
 }
