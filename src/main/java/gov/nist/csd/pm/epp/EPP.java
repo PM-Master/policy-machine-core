@@ -1,5 +1,6 @@
 package gov.nist.csd.pm.epp;
 
+import gov.nist.csd.pm.common.obligation.EventContext;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pdp.PDP;
 import gov.nist.csd.pm.common.exception.PMException;
@@ -13,6 +14,7 @@ import gov.nist.csd.pm.pap.pml.scope.Scope;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EPP {
@@ -27,6 +29,10 @@ public class EPP {
 
     public EPPEventProcessor getEventProcessor() {
         return eventListener;
+    }
+
+    public void addCustomFunctions(FunctionDefinitionStatement ... customFunctions) {
+        eventListener.addCustomFunctions(customFunctions);
     }
 
     public static class EPPEventProcessor implements EventProcessor {
@@ -62,6 +68,14 @@ public class EPP {
                     pdp.runTx(author, txPDP -> response.execute(executionCtx, txPDP, eventCtx));
                 }
             }
+        }
+
+        public void addCustomFunctions(FunctionDefinitionStatement[] customFunctions) {
+            ArrayList<FunctionDefinitionStatement> list = new ArrayList<>();
+            list.addAll(List.of(this.customFunctions));
+            list.addAll(List.of(customFunctions));
+
+            this.customFunctions = list.toArray(FunctionDefinitionStatement[]::new);
         }
     }
 }

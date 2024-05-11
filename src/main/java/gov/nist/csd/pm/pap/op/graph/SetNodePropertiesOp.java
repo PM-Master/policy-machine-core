@@ -21,14 +21,14 @@ public class SetNodePropertiesOp extends GraphOp {
 
     @Override
     public Object[] getOperands() {
-        return operands(name, properties);
+        return operands(name);
     }
 
-    public String name() {
+    public String getName() {
         return name;
     }
 
-    public Map<String, String> properties() {
+    public Map<String, String> getProperties() {
         return properties;
     }
 

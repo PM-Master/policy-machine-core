@@ -23,11 +23,11 @@ public class DissociateOp extends GraphOp {
         return operands(ua, target);
     }
 
-    public String ua() {
+    public String getUa() {
         return ua;
     }
 
-    public String target() {
+    public String getTarget() {
         return target;
     }
 

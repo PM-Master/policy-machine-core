@@ -1,7 +1,6 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.exception.PMRuntimeException;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.graph.relationship.Association;
@@ -14,15 +13,13 @@ import gov.nist.csd.pm.common.tx.Transactional;
 import gov.nist.csd.pm.impl.memory.pap.unmodifiable.UnmodifiableAccessRightSet;
 import gov.nist.csd.pm.impl.memory.pap.unmodifiable.UnmodifiableObligation;
 import gov.nist.csd.pm.impl.memory.pap.unmodifiable.UnmodifiableProhibition;
-import gov.nist.csd.pm.pap.exception.ObligationDoesNotExistException;
-import gov.nist.csd.pm.pap.exception.ProhibitionDoesNotExistException;
 import gov.nist.csd.pm.pap.modification.*;
 import gov.nist.csd.pm.pap.op.Operation;
 import gov.nist.csd.pm.pap.op.graph.*;
 import gov.nist.csd.pm.pap.op.obligation.CreateObligationOp;
 import gov.nist.csd.pm.pap.op.prohibition.CreateProhibitionOp;
-import gov.nist.csd.pm.pap.op.userdefinedpml.CreateConstantOp;
-import gov.nist.csd.pm.pap.op.userdefinedpml.CreateFunctionOp;
+import gov.nist.csd.pm.pap.op.pml.CreateConstantOp;
+import gov.nist.csd.pm.pap.op.pml.CreateFunctionOp;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.query.PolicyQuery;

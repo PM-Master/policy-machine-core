@@ -1,13 +1,13 @@
 package gov.nist.csd.pm.pdp;
 
-import gov.nist.csd.pm.epp.EventContext;
+import gov.nist.csd.pm.common.obligation.EventContext;
+import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
+import gov.nist.csd.pm.common.serialization.PolicySerializer;
 import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.epp.EventProcessor;
 import gov.nist.csd.pm.pap.*;
-import gov.nist.csd.pm.pap.modification.PolicyModifier;
 import gov.nist.csd.pm.pap.op.Operation;
-import gov.nist.csd.pm.pap.query.PolicyQuery;
-import gov.nist.csd.pm.pdp.adjudicator.Adjudicator;
+import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.exception.BootstrapExistingPolicyException;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLExecutable;
@@ -15,6 +15,9 @@ import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.common.tx.TxRunner;
+import gov.nist.csd.pm.pdp.adjudicator.PolicyModificationAdjudicator;
+import gov.nist.csd.pm.pdp.adjudicator.PolicyQueryAdjudicator;
+import gov.nist.csd.pm.pdp.adjudicator.PrivilegeChecker;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,8 +27,9 @@ import java.util.Set;
 import static gov.nist.csd.pm.pap.AdminPolicy.ALL_NODE_NAMES;
 import static gov.nist.csd.pm.common.graph.node.NodeType.ANY;
 import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 
-public class PDP implements AccessAdjudication, EventEmitter {
+public class PDP implements EventEmitter, AccessAdjudication {
 
     protected final PAP pap;
     protected final List<EventProcessor> eventProcessors;
@@ -81,20 +85,21 @@ public class PDP implements AccessAdjudication, EventEmitter {
     @Override
     public ResourceAdjudicationResponse adjudicateResourceAccess(UserContext user, Operation... operations)
             throws PMException {
-        /*runTx(user, (pdpTx) -> {
+        /*
+        TODO
+        runTx(user, (pdpTx) -> {
             for (Operation operation : operations) {
                 operation.apply(pdpTx);
             }
         });*/
-        // TODO
-        return null;
+        throw new PMException("not yet implemented");
     }
 
     @Override
     public AdminAdjudicationResponse adjudicateAdminAccess(UserContext user, Operation... operations)
             throws PMException {
         // TODO
-        return null;
+        throw new PMException("not yet implemented");
     }
 
     public interface PDPTxRunner {
@@ -103,34 +108,51 @@ public class PDP implements AccessAdjudication, EventEmitter {
 
     public static class PDPTx extends PAP {
 
-        private final Adjudicator adjudicator;
+        private final UserContext userCtx;
         private final PAP pap;
         private final PDPEventEmitter eventEmitter;
 
-        private final PDPPolicyModifier pdpModifier;
-        private final PDPPolicyQuerier pdpQuerier;
+        private final PolicyModificationAdjudicator pdpModifier;
+        private final PolicyQueryAdjudicator pdpQuerier;
 
-        public PDPTx(UserContext userCtx, PAP pap, List<EventProcessor> epps) throws PMException {
-            super(pap.modify(), pap.query());
-            this.adjudicator = new Adjudicator(userCtx, pap);
+        public PDPTx(UserContext userCtx, PAP pap, List<EventProcessor> epps) {
+            this.userCtx = userCtx;
             this.pap = pap;
             this.eventEmitter = new PDPEventEmitter(epps);
-
-            this.pdpModifier = new PDPPolicyModifier(
-
-            );
-            this.pdpQuerier = new PDPPolicyQuerier(userCtx, pap, this.adjudicator.getAccessRightChecker());
-
+            this.pdpModifier = new PolicyModificationAdjudicator(userCtx, pap, eventEmitter);
+            this.pdpQuerier = new PolicyQueryAdjudicator(userCtx, pap);
         }
 
         @Override
-        public PolicyModifier modify() {
-            return super.modify();
+        public PolicyModificationAdjudicator modify() {
+            return pdpModifier;
         }
 
         @Override
-        public PolicyQuery query() {
-            return super.query();
+        public PolicyQueryAdjudicator query() {
+            return pdpQuerier;
+        }
+
+        @Override
+        public void reset() throws PMException {
+            PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(), RESET);
+
+            pap.reset();
+        }
+
+        @Override
+        public String serialize(PolicySerializer serializer) throws PMException {
+            PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(), SERIALIZE_POLICY);
+
+            return pap.serialize(serializer);
+        }
+
+        @Override
+        public void deserialize(UserContext author, String input, PolicyDeserializer policyDeserializer)
+                throws PMException {
+            PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(), DESERIALIZE_POLICY);
+
+            pap.deserialize(author, input, policyDeserializer);
         }
 
         @Override
@@ -146,50 +168,20 @@ public class PDP implements AccessAdjudication, EventEmitter {
             PMLExecutor.compileAndExecutePML(this, userContext, pml);
         }
 
-
-
-
-
-        /*@Override
-        public GraphModification graph() {
-            return pdpGraph;
+        @Override
+        public void beginTx() throws PMException {
+            pap.beginTx();
         }
 
         @Override
-        public ProhibitionsModification prohibitions() {
-            return pdpProhibitions;
+        public void commit() throws PMException {
+            pap.commit();
         }
 
         @Override
-        public ObligationsModification obligations() {
-            return pdpObligations;
+        public void rollback() throws PMException {
+            pap.rollback();
         }
-
-        @Override
-        public PMLModification pml() {
-            return pdpUserDefinedPML;
-        }
-
-        @Override
-        public String serialize(PolicySerializer policySerializer) throws PMException {
-            adjudicator.serialize(policySerializer);
-
-            return pap.modify().serialize(policySerializer);
-        }
-
-        @Override
-        public void deserialize(UserContext author, String input, PolicyDeserializer policyDeserializer)
-                throws PMException {
-            adjudicator.deserialize(author, input, policyDeserializer);
-
-            pap.modify().deserialize(author, input, policyDeserializer);
-        }
-
-        @Override
-        public void reset() throws PMException {
-            adjudicator.reset();
-
-            pap.modify().reset();
-        }*/
     }
+
 }

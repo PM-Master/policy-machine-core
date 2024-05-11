@@ -23,18 +23,18 @@ public class AssociateOp extends GraphOp {
 
     @Override
     public Object[] getOperands() {
-        return operands(ua, target, accessRightSet);
+        return operands(ua, target);
     }
 
-    public String ua() {
+    public String getUa() {
         return ua;
     }
 
-    public String target() {
+    public String getTarget() {
         return target;
     }
 
-    public AccessRightSet accessRightSet() {
+    public AccessRightSet getAccessRightSet() {
         return accessRightSet;
     }
 

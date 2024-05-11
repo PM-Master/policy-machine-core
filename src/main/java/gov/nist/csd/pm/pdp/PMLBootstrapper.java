@@ -4,6 +4,7 @@ import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.pap.query.UserContext;
 
 public class PMLBootstrapper implements PolicyBootstrapper{
 
@@ -19,6 +20,6 @@ public class PMLBootstrapper implements PolicyBootstrapper{
 
     @Override
     public void bootstrap(PAP pap) throws PMException {
-        pap.modify().deserialize(author, pml, new PMLDeserializer(customFunctions));
+        pap.deserialize(author, pml, new PMLDeserializer(customFunctions));
     }
 }

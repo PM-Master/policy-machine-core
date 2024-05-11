@@ -111,14 +111,11 @@ public abstract class ObligationsModifier extends Modifier implements Obligation
 
             // check subject pattern
             Pattern pattern = event.getSubjectPattern();
-            pattern.checkReferencedPolicyEntitiesExist(query());
-
-            // TODO add check for operations - not yet implemented
-            // pattern = event.operationPattern();
+            pattern.checkReferencedNodesExist(query());
 
             // check operand patterns
             for (Pattern operandPattern : event.getOperandPatterns()) {
-                operandPattern.checkReferencedPolicyEntitiesExist(query());
+                operandPattern.checkReferencedNodesExist(query());
             }
         }
     }

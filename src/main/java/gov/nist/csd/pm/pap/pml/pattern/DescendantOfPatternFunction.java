@@ -3,7 +3,6 @@ package gov.nist.csd.pm.pap.pml.pattern;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
-import gov.nist.csd.pm.pap.op.pattern.ReferencedPolicyEntities;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.type.Type;

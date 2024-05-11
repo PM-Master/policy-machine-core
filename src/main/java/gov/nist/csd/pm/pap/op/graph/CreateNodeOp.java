@@ -44,7 +44,7 @@ public abstract class CreateNodeOp extends GraphOp {
 
     @Override
     public Object[] getOperands() {
-        return operands(name, type, properties, parents);
+        return operands(name, parents);
     }
 
     @Override

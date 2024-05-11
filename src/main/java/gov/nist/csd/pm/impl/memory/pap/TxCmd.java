@@ -4,9 +4,9 @@ import gov.nist.csd.pm.pap.op.Operation;
 import gov.nist.csd.pm.pap.op.graph.*;
 import gov.nist.csd.pm.pap.op.obligation.CreateObligationOp;
 import gov.nist.csd.pm.pap.op.prohibition.CreateProhibitionOp;
-import gov.nist.csd.pm.pap.op.userdefinedpml.CreateConstantOp;
+import gov.nist.csd.pm.pap.op.pml.CreateConstantOp;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.op.userdefinedpml.CreateFunctionOp;
+import gov.nist.csd.pm.pap.op.pml.CreateFunctionOp;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.node.NodeType;
@@ -40,7 +40,6 @@ abstract class TxCmd implements TxRollbackSupport {
         USER_DEFINED_PML
     }
 
-
     static TxCmd eventToCmd(Operation op) throws UnsupportedPolicyEvent {
         if (op instanceof CreateConstantOp o) {
             return new TxCmd.AddConstantTxCmd(
@@ -55,19 +54,13 @@ abstract class TxCmd implements TxRollbackSupport {
 
         } else if (op instanceof AssignOp o) {
             return new TxCmd.AssignTxCmd(
-                    o.child(),
-                    o.parent()
-            );
-
-        } else if (op instanceof AssignToOp o) {
-            return new TxCmd.AssignTxCmd(
-                    o.child(),
-                    o.parent()
+                    o.getChild(),
+                    o.getParent()
             );
 
         } else if (op instanceof AssociateOp o) {
             return new TxCmd.AssociateTxCmd(
-                    new Association(o.ua(), o.target(), o.accessRightSet())
+                    new Association(o.getUa(), o.getTarget(), o.getAccessRightSet())
             );
 
         } else if (op instanceof CreateObjectAttributeOp o) {
@@ -86,7 +79,7 @@ abstract class TxCmd implements TxRollbackSupport {
 
         } else if (op instanceof CreateObligationOp o) {
             return new TxCmd.CreateObligationTxCmd(
-                    new Obligation(o.author(), o.name(), o.rules())
+                    new Obligation(o.getAuthor(), o.getName(), o.getRules())
             );
 
         } else if (op instanceof CreatePolicyClassOp o) {
@@ -97,7 +90,7 @@ abstract class TxCmd implements TxRollbackSupport {
 
         } else if (op instanceof CreateProhibitionOp o) {
             return new TxCmd.CreateProhibitionTxCmd(
-                    new Prohibition(o.name(), o.subject(), o.accessRightSet(), o.intersection(), o.containers())
+                    new Prohibition(o.getName(), o.getSubject(), o.getAccessRightSet(), o.isIntersection(), o.getContainerConditions())
             );
 
         } else if (op instanceof CreateUserAttributeOp o) {
@@ -116,13 +109,13 @@ abstract class TxCmd implements TxRollbackSupport {
 
         } else if (op instanceof DeassignOp o) {
             return new TxCmd.DeassignTxCmd(
-                    o.child(),
-                    o.parent()
+                    o.getChild(),
+                    o.getParent()
             );
 
         } else if (op instanceof TxOps.MemoryDeleteNodeOp o) {
             return new TxCmd.DeleteNodeTxCmd(
-                    o.name(),
+                    o.getName(),
                     o.getNode(),
                     o.getParents()
             );
@@ -139,7 +132,7 @@ abstract class TxCmd implements TxRollbackSupport {
 
         } else if (op instanceof TxOps.MemoryDissociateOp o) {
             return new TxCmd.DissociateTxCmd(
-                    new Association(o.ua(), o.target(), o.getAccessRightSet())
+                    new Association(o.getUa(), o.getTarget(), o.getAccessRightSet())
             );
 
         } else if (op instanceof TxOps.MemoryDeleteConstantOp o) {
@@ -153,19 +146,19 @@ abstract class TxCmd implements TxRollbackSupport {
 
         } else if (op instanceof TxOps.MemorySetNodePropertiesOp o) {
             return new TxCmd.SetNodePropertiesTxCmd(
-                    o.name(),
+                    o.getName(),
                     o.getOldProps(),
-                    o.properties()
+                    o.getProperties()
             );
 
         } else if (op instanceof TxOps.MemoryUpdateObligationOp o) {
             return new TxCmd.UpdateObligationTxCmd(
-                    new Obligation(o.author(), o.name(), o.rules()), o.getOldObl()
+                    new Obligation(o.getAuthor(), o.getName(), o.getRules()), o.getOldObl()
             );
 
         } else if (op instanceof TxOps.MemoryUpdateProhibitionOp o) {
             return new TxCmd.UpdateProhibitionTxCmd(
-                    new Prohibition(o.name(), o.subject(), o.accessRightSet(), o.intersection(), o.containers()), o.getOldPro()
+                    new Prohibition(o.getName(), o.getSubject(), o.getAccessRightSet(), o.isIntersection(), o.getContainerConditions()), o.getOldPro()
             );
 
         } else if (op instanceof TxOps.MemorySetResourceAccessRightsOp o) {

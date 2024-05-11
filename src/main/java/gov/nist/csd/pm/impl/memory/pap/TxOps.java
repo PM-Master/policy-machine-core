@@ -2,8 +2,8 @@ package gov.nist.csd.pm.impl.memory.pap;
 
 import gov.nist.csd.pm.pap.op.graph.DeleteNodeOp;
 import gov.nist.csd.pm.pap.op.graph.SetNodePropertiesOp;
-import gov.nist.csd.pm.pap.op.userdefinedpml.DeleteConstantOp;
-import gov.nist.csd.pm.pap.op.userdefinedpml.DeleteFunctionOp;
+import gov.nist.csd.pm.pap.op.pml.DeleteConstantOp;
+import gov.nist.csd.pm.pap.op.pml.DeleteFunctionOp;
 import gov.nist.csd.pm.pap.op.graph.DissociateOp;
 import gov.nist.csd.pm.pap.op.graph.SetResourceAccessRightsOp;
 import gov.nist.csd.pm.pap.op.obligation.DeleteObligationOp;
@@ -48,20 +48,14 @@ public class TxOps {
     public static class MemoryDeleteNodeOp extends DeleteNodeOp {
 
         private Node node;
-        private List<String> parents;
 
         public MemoryDeleteNodeOp(String name, Node node, List<String> parents) {
-            super(name);
+            super(name, parents);
             this.node = node;
-            this.parents = parents;
         }
 
         public Node getNode() {
             return node;
-        }
-
-        public List<String> getParents() {
-            return parents;
         }
     }
 
@@ -70,7 +64,7 @@ public class TxOps {
         private Obligation obligationToDelete;
 
         public MemoryDeleteObligationOp(Obligation obligationToDelete) {
-            super(obligationToDelete.getName());
+            super(obligationToDelete.getAuthor(), obligationToDelete.getName(), obligationToDelete.getRules());
             this.obligationToDelete = obligationToDelete;
         }
 
@@ -84,7 +78,8 @@ public class TxOps {
         private Prohibition prohibitionToDelete;
 
         public MemoryDeleteProhibitionOp(Prohibition prohibition) {
-            super(prohibition.getName());
+            super(prohibition.getName(), prohibition.getSubject(), prohibition.getAccessRightSet(),
+                    prohibition.isIntersection(), prohibition.getContainers());
             prohibitionToDelete = prohibition;
         }
 

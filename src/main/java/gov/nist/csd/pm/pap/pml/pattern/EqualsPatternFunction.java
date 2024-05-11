@@ -3,7 +3,6 @@ package gov.nist.csd.pm.pap.pml.pattern;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
-import gov.nist.csd.pm.pap.op.pattern.ReferencedPolicyEntities;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
@@ -36,7 +35,7 @@ public class EqualsPatternFunction extends PMLPatternFunctionStmt {
 
             @Override
             public PatternExpression toPatternExpression() {
-                ContainsPatternFunction pFunc = new ContainsPatternFunction();
+                EqualsPatternFunction pFunc = new EqualsPatternFunction();
                 FunctionSignature signature = pFunc.getSignature();
 
                 Value argValue = argValues.get(0);

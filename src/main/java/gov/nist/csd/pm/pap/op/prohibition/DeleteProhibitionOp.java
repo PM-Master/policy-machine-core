@@ -1,50 +1,24 @@
 package gov.nist.csd.pm.pap.op.prohibition;
 
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
+import gov.nist.csd.pm.common.prohibition.ContainerCondition;
+import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
+
+import java.util.List;
 import java.util.Objects;
 
-public class DeleteProhibitionOp extends ProhibitionsOp {
-    private final String name;
+public class DeleteProhibitionOp extends ProhibitionOp {
 
-    public DeleteProhibitionOp(String name) {
-        this.name = name;
+    public DeleteProhibitionOp(String name,
+                               ProhibitionSubject subject,
+                               AccessRightSet accessRightSet,
+                               boolean intersection,
+                               List<ContainerCondition> containers) {
+        super(name, subject, accessRightSet, intersection, containers);
     }
 
     @Override
     public String getOpName() {
         return "delete_prohibition";
     }
-
-    @Override
-    public Object[] getOperands() {
-        return operands(name);
-    }
-
-    public String name() {
-        return name;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (obj == null || obj.getClass() != this.getClass()) {
-            return false;
-        }
-        var that = (DeleteProhibitionOp) obj;
-        return Objects.equals(this.name, that.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name);
-    }
-
-    @Override
-    public String toString() {
-        return "DeleteProhibitionOp[" +
-                "name=" + name + ']';
-    }
-
-
 }

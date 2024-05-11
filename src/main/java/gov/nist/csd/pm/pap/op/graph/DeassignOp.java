@@ -23,11 +23,11 @@ public class DeassignOp extends GraphOp {
         return operands(child, parent);
     }
 
-    public String child() {
+    public String getChild() {
         return child;
     }
 
-    public String parent() {
+    public String getParent() {
         return parent;
     }
 

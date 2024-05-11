@@ -19,7 +19,11 @@ public class SetResourceAccessRightsOp extends GraphOp {
 
     @Override
     public Object[] getOperands() {
-        return operands(accessRightSet);
+        return operands();
+    }
+
+    public AccessRightSet getAccessRightSet() {
+        return accessRightSet;
     }
 
     @Override
@@ -32,10 +36,6 @@ public class SetResourceAccessRightsOp extends GraphOp {
         }
         SetResourceAccessRightsOp that = (SetResourceAccessRightsOp) o;
         return Objects.equals(accessRightSet, that.accessRightSet);
-    }
-
-    public AccessRightSet accessRightSet() {
-        return accessRightSet;
     }
 
     @Override

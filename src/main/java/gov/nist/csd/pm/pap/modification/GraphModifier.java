@@ -334,7 +334,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
     }
 
     private boolean checkPatternForEntity(String entity, Pattern pattern) {
-        return pattern.getReferencedPolicyEntities().entities().contains(entity);
+        return pattern.getReferencedNodes().nodes().contains(entity);
     }
 
     /**

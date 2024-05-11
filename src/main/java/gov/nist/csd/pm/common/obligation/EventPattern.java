@@ -106,6 +106,7 @@ public class EventPattern implements Serializable {
             return false;
         }
         var that = (EventPattern) obj;
+
         return Objects.equals(this.subjectPattern, that.subjectPattern) &&
                 Objects.equals(this.operationPattern, that.operationPattern) &&
                 Objects.equals(this.operandPatterns, that.operandPatterns);

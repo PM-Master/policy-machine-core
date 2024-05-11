@@ -1,12 +1,15 @@
 package gov.nist.csd.pm.pap.op.graph;
 
+import java.util.List;
 import java.util.Objects;
 
 public class DeleteNodeOp extends GraphOp {
     private final String name;
+    private final List<String> parents;
 
-    public DeleteNodeOp(String name) {
+    public DeleteNodeOp(String name, List<String> parents) {
         this.name = name;
+        this.parents = parents;
     }
 
     @Override
@@ -16,35 +19,39 @@ public class DeleteNodeOp extends GraphOp {
 
     @Override
     public Object[] getOperands() {
-        return operands(name);
+        return operands(name, parents);
     }
 
-    public String name() {
+    public String getName() {
         return name;
     }
 
+    public List<String> getParents() {
+        return parents;
+    }
+
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (obj == null || obj.getClass() != this.getClass()) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        var that = (DeleteNodeOp) obj;
-        return Objects.equals(this.name, that.name);
+        DeleteNodeOp that = (DeleteNodeOp) o;
+        return Objects.equals(name, that.name) && Objects.equals(parents, that.parents);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(name, parents);
     }
 
     @Override
     public String toString() {
-        return "DeleteNodeOp[" +
-                "name=" + name + ']';
+        return "DeleteNodeOp{" +
+                "name='" + name + '\'' +
+                ", parents=" + parents +
+                '}';
     }
-
-
 }

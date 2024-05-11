@@ -3,7 +3,7 @@ package gov.nist.csd.pm.pap.pml.pattern;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
-import gov.nist.csd.pm.pap.op.pattern.ReferencedPolicyEntities;
+import gov.nist.csd.pm.pap.op.pattern.ReferencedNodes;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.PatternValue;
@@ -22,9 +22,9 @@ public abstract class PMLPattern extends Pattern {
         }
 
         @Override
-        public ReferencedPolicyEntities getReferencedPolicyEntities() {
-            ReferencedPolicyEntities entities = new ReferencedPolicyEntities(false);
-            entities.addEntities(getEntityFromValue(getArgValues().get(0)));
+        public ReferencedNodes getReferencedNodes() {
+            ReferencedNodes entities = new ReferencedNodes(false);
+            entities.addNodes(getEntityFromValue(getArgValues().get(0)));
 
             return entities;
         }
@@ -58,8 +58,8 @@ public abstract class PMLPattern extends Pattern {
         }
 
         @Override
-        public ReferencedPolicyEntities getReferencedPolicyEntities() {
-            return new ReferencedPolicyEntities(false);
+        public ReferencedNodes getReferencedNodes() {
+            return new ReferencedNodes(false);
         }
 
         @Override
@@ -101,7 +101,7 @@ public abstract class PMLPattern extends Pattern {
     public abstract boolean matches(Object value, PAP pap) throws PMException;
 
     @Override
-    public abstract ReferencedPolicyEntities getReferencedPolicyEntities();
+    public abstract ReferencedNodes getReferencedNodes();
 
     public String getVarName() {
         return varName;

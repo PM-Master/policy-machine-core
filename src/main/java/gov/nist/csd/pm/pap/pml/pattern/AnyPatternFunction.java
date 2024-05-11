@@ -3,7 +3,7 @@ package gov.nist.csd.pm.pap.pml.pattern;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
-import gov.nist.csd.pm.pap.op.pattern.ReferencedPolicyEntities;
+import gov.nist.csd.pm.pap.op.pattern.ReferencedNodes;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
@@ -30,8 +30,8 @@ public class AnyPatternFunction extends PMLPatternFunctionStmt {
             }
 
             @Override
-            public ReferencedPolicyEntities getReferencedPolicyEntities() {
-                return new ReferencedPolicyEntities(true);
+            public ReferencedNodes getReferencedNodes() {
+                return new ReferencedNodes(true);
             }
 
             @Override

@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap;
 
 import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.common.serialization.PolicySerializer;
+import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.pap.modification.PolicyModifier;
 import gov.nist.csd.pm.pap.pml.PMLExecutable;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
@@ -17,9 +18,9 @@ import java.io.Serializable;
 
 public abstract class PAP implements Transactional, PMLExecutable {
 
-    public abstract PolicyModifier modify();
+    public abstract PolicyModification modify();
 
-    public abstract PolicyQuerier query();
+    public abstract PolicyQuery query();
 
     public abstract void reset() throws PMException;
 
