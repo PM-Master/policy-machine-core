@@ -1,8 +1,7 @@
-package gov.nist.csd.pm.common.serialization.json;
+package gov.nist.csd.pm.pap.serialization.json;
 
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
-import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.node.NodeType;
@@ -11,7 +10,7 @@ import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
-import gov.nist.csd.pm.common.serialization.PolicySerializer;
+import gov.nist.csd.pm.pap.serialization.PolicySerializer;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
 
 import java.util.*;
@@ -210,6 +209,7 @@ public class JSONSerializer implements PolicySerializer {
     private List<JSONNode> getAttributes(String start, NodeType type, List<Association> associations, PolicyQuery policyQuery) throws PMException {
         List<JSONNode> jsonNodes = new ArrayList<>();
         Collection<String> children = policyQuery.graph().getChildren(start);
+
         for(String child : children) {
             Node node = policyQuery.graph().getNode(child);
             if (node.getType() != type) {
@@ -224,6 +224,19 @@ public class JSONSerializer implements PolicySerializer {
                 }
 
                 delayedAssociations.put(association, waitingFor);
+            }
+
+            // if the node is a UA, then check for any associations with admin policy nodes, those will be created here
+            // since the admin policy is not serialized
+            if (node.getType() == UA) {
+                Collection<Association> uaAssociations = policyQuery.graph()
+                        .getAssociationsWithSource(node.getName());
+                for (Association association : uaAssociations) {
+                    String target = association.getTarget();
+                    if (AdminPolicy.isAdminPolicyNodeName(target)) {
+                        nodeAssociations.add(association);
+                    }
+                }
             }
 
             associations.addAll(nodeAssociations);

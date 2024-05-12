@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.pap.query;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.pap.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.pap.PAP;
 import org.junit.jupiter.api.Test;
 

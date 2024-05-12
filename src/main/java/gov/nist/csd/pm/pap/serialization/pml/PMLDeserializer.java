@@ -1,8 +1,7 @@
-package gov.nist.csd.pm.common.serialization.pml;
+package gov.nist.csd.pm.pap.serialization.pml;
 
-import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
+import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;

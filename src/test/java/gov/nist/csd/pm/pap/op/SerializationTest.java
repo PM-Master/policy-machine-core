@@ -4,7 +4,7 @@ import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.common.obligation.Response;
 import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
-import gov.nist.csd.pm.common.serialization.pml.PMLSerializer;
+import gov.nist.csd.pm.pap.serialization.pml.PMLSerializer;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.graph.CreatePolicyClassOp;

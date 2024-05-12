@@ -4,13 +4,13 @@ import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
-import gov.nist.csd.pm.common.serialization.json.JSONDeserializer;
-import gov.nist.csd.pm.common.serialization.json.JSONSerializer;
+import gov.nist.csd.pm.pap.serialization.json.JSONDeserializer;
+import gov.nist.csd.pm.pap.serialization.json.JSONSerializer;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
-import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
-import gov.nist.csd.pm.common.serialization.pml.PMLSerializer;
+import gov.nist.csd.pm.pap.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.pap.serialization.pml.PMLSerializer;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.graph.relationship.Association;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
@@ -42,7 +42,7 @@ public abstract class PAPTest {
         pap.beginTx();
         pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
         pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
-        pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of());
+        pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
         pap.modify().graph().associate("ua1", "oa1", new AccessRightSet());
         pap.commit();
 

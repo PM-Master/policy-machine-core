@@ -1,10 +1,8 @@
-package gov.nist.csd.pm.common.serialization.pml;
+package gov.nist.csd.pm.pap.serialization.pml;
 
-import gov.nist.csd.pm.common.serialization.json.*;
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
 
-import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
@@ -16,8 +14,9 @@ import gov.nist.csd.pm.pap.pml.expression.reference.ReferenceByID;
 import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
 import gov.nist.csd.pm.pap.pml.statement.*;
 import gov.nist.csd.pm.pap.pml.type.Type;
-import gov.nist.csd.pm.common.serialization.PolicySerializer;
+import gov.nist.csd.pm.pap.serialization.PolicySerializer;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
+import gov.nist.csd.pm.pap.serialization.json.*;
 
 import java.util.*;
 

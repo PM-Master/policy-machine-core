@@ -36,7 +36,8 @@ public interface GraphModification {
     String createPolicyClass(String name, Map<String, String> properties) throws PMException;
 
     /**
-     * Create a new user attribute and assign it to the provided parent and optional additional parents.
+     * Create a new user attribute and assign it to the provided parents. User attributes must be assigned to at
+     * least one parent node initially.
      *
      * @param name    the name of the user attribute
      * @param parents A list of parents to assign the new node to.

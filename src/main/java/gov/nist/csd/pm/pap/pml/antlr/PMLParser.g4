@@ -45,7 +45,7 @@ associationsHierarchyStatement: ua=expression AND target=expression WITH arset=e
 createNonPCStatement:
     CREATE nonPCNodeType name=expression
     (WITH_PROPERTIES properties=expression)?
-    (ASSIGN_TO assignTo=expression)? ;
+    ASSIGN_TO assignTo=expression ;
 nonPCNodeType:
     (OBJECT_ATTRIBUTE | USER_ATTRIBUTE | OBJECT | USER) ;
 

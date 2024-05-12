@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pdp;
 
 import gov.nist.csd.pm.common.obligation.EventContext;
-import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
-import gov.nist.csd.pm.common.serialization.PolicySerializer;
+import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
+import gov.nist.csd.pm.pap.serialization.PolicySerializer;
 import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.epp.EventProcessor;
 import gov.nist.csd.pm.pap.*;

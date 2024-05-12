@@ -9,6 +9,7 @@ import gov.nist.csd.pm.pap.exception.ProhibitionExistsException;
 import gov.nist.csd.pm.pap.exception.ProhibitionSubjectDoesNotExistException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import static gov.nist.csd.pm.pap.modification.GraphModifier.checkAccessRightsValid;
@@ -33,9 +34,9 @@ public abstract class ProhibitionsModifier extends Modifier implements Prohibiti
                        AccessRightSet accessRightSet,
                        boolean intersection,
                        Collection<ContainerCondition> containerConditions) throws PMException {
-        checkCreateInput(name, subject, accessRightSet, intersection, containerConditions);
+        checkCreateInput(name, subject, accessRightSet, intersection, new ArrayList<>(containerConditions));
 
-        createInternal(name, subject, accessRightSet, intersection, containerConditions);
+        createInternal(name, subject, accessRightSet, intersection, new ArrayList<>(containerConditions));
     }
 
     @Override
@@ -44,9 +45,9 @@ public abstract class ProhibitionsModifier extends Modifier implements Prohibiti
                        AccessRightSet accessRightSet,
                        boolean intersection,
                        Collection<ContainerCondition> containerConditions) throws PMException {
-        checkUpdateInput(name, subject, accessRightSet, intersection, containerConditions);
+        checkUpdateInput(name, subject, accessRightSet, intersection, new ArrayList<>(containerConditions));
 
-        updateInternal(name, subject, accessRightSet, intersection, containerConditions);
+        updateInternal(name, subject, accessRightSet, intersection, new ArrayList<>(containerConditions));
     }
 
     @Override

@@ -7,6 +7,7 @@ import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.exception.*;
 import gov.nist.csd.pm.pap.query.UserContext;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,14 +22,14 @@ public abstract class ObligationsModifier extends Modifier implements Obligation
     public void create(UserContext author, String name, Collection<Rule> rules) throws PMException {
         checkCreateInput(author, name, rules);
 
-        createInternal(author, name, rules);
+        createInternal(author, name, new ArrayList<>(rules));
     }
 
     @Override
     public void update(UserContext author, String name, Collection<Rule> rules) throws PMException {
         checkUpdateInput(author, name, rules);
 
-        updateInternal(author, name, rules);
+        updateInternal(author, name, new ArrayList<>(rules));
     }
 
     @Override

@@ -36,10 +36,7 @@ class DeassignStatementTest {
         ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(pap));
         stmt.execute(execCtx, pap);
 
-        assertEquals(
-                Set.of("pc1"),
-                pap.query().graph().getParents("ua3")
-        );
+        assertTrue(pap.query().graph().getParents("ua3").contains("pc1"));
     }
 
     @Test

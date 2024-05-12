@@ -71,7 +71,10 @@ public abstract class ProhibitionsModifierTest extends ModificationTest {
             pap.modify().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
             pap.modify().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
-                    Collections.singleton(new ContainerCondition("oa1", true))
+                    List.of(
+                    new ContainerCondition("oa1", true),
+                    new ContainerCondition("oa2", false)
+                    )
             );
 
             Prohibition p = pap.query().prohibitions().get("pro1");
@@ -161,10 +164,12 @@ public abstract class ProhibitionsModifierTest extends ModificationTest {
             pap.modify().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
             pap.modify().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
-                    Collections.singleton(new ContainerCondition("oa1", true))
-            );
+                    List.of(
+                    new ContainerCondition("oa1", true),
+                    new ContainerCondition("oa2", false)));
             pap.modify().prohibitions().update("pro1", ProhibitionSubject.userAttribute("subject2"), new AccessRightSet("read", "write"), true,
-                    List.of(new ContainerCondition("oa1", false),
+                    List.of(
+                    new ContainerCondition("oa1", false),
                     new ContainerCondition("oa2", true)));
 
             Prohibition p = pap.query().prohibitions().get("pro1");
@@ -198,8 +203,9 @@ public abstract class ProhibitionsModifierTest extends ModificationTest {
             pap.modify().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
             pap.modify().prohibitions().create("pro1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
-                    Collections.singleton(new ContainerCondition("oa1", true))
-            );
+                    List.of(
+                    new ContainerCondition("oa1", true),
+                    new ContainerCondition("oa2", false)));
 
             assertDoesNotThrow(() -> pap.query().prohibitions().get("pro1"));
 
@@ -225,11 +231,13 @@ public abstract class ProhibitionsModifierTest extends ModificationTest {
             pap.modify().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
             pap.modify().prohibitions().create("label1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
-                    Collections.singleton(new ContainerCondition("oa1", true))
-            );
+                    List.of(
+                    new ContainerCondition("oa1", true),
+                    new ContainerCondition("oa2", false)));
             pap.modify().prohibitions().create("label2", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
-                    Collections.singleton(new ContainerCondition("oa3", true))
-            );
+                    List.of(
+                    new ContainerCondition("oa3", true),
+                    new ContainerCondition("oa4", false)));
 
             Map<String, Collection<Prohibition>> prohibitions = pap.query().prohibitions().getAll();
             assertEquals(1, prohibitions.size());
@@ -283,11 +291,11 @@ public abstract class ProhibitionsModifierTest extends ModificationTest {
             pap.modify().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
             pap.modify().prohibitions().create("label1", ProhibitionSubject.userAttribute("subject1"), new AccessRightSet("read"), true,
-                    Collections.singleton(new ContainerCondition("oa1", true))
-            );
+                    List.of(new ContainerCondition("oa1", true),
+                    new ContainerCondition("oa2", false)));
             pap.modify().prohibitions().create("label2", ProhibitionSubject.userAttribute("subject2"), new AccessRightSet("read"), true,
-                    Collections.singleton(new ContainerCondition("oa3", true))
-            );
+                    List.of(new ContainerCondition("oa3", true),
+                    new ContainerCondition("oa4", false)));
 
             Collection<Prohibition> pros = pap.query().prohibitions().getWithSubject("subject1");
             assertEquals(1, pros.size());
@@ -325,11 +333,11 @@ public abstract class ProhibitionsModifierTest extends ModificationTest {
             pap.modify().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
 
             pap.modify().prohibitions().create("label1", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
-                    Collections.singleton(new ContainerCondition("oa1", true))
-            );
+                    List.of(new ContainerCondition("oa1", true),
+                    new ContainerCondition("oa2", false)));
             pap.modify().prohibitions().create("label2", ProhibitionSubject.userAttribute("subject"), new AccessRightSet("read"), true,
-                    Collections.singleton(new ContainerCondition("oa3", true))
-            );
+                    List.of(new ContainerCondition("oa3", true),
+                    new ContainerCondition("oa4", false)));
 
             Prohibition p = pap.query().prohibitions().get("label1");
             assertEquals("label1", p.getName());

@@ -2,14 +2,12 @@ package gov.nist.csd.pm.common.obligation;
 
 import gov.nist.csd.pm.epp.EPP;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.graph.AssignOp;
 import gov.nist.csd.pm.pap.pml.expression.reference.ReferenceByID;
 import gov.nist.csd.pm.pap.pml.statement.CreatePolicyStatement;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
-import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.pap.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pdp.PDP;
 import gov.nist.csd.pm.common.exception.PMException;

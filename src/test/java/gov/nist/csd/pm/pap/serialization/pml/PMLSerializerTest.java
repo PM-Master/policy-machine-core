@@ -1,6 +1,5 @@
 package gov.nist.csd.pm.pap.serialization.pml;
 
-import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.pap.AdminPolicy;
 import gov.nist.csd.pm.pap.PAP;

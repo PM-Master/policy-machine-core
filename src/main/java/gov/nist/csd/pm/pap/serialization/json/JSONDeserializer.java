@@ -1,9 +1,9 @@
-package gov.nist.csd.pm.common.serialization.json;
+package gov.nist.csd.pm.pap.serialization.json;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
-import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
+import gov.nist.csd.pm.pap.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
@@ -14,7 +14,6 @@ import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.graph.node.NodeType;
-import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 

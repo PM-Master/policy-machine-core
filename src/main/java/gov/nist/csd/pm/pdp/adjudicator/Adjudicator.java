@@ -6,8 +6,8 @@ import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
 import gov.nist.csd.pm.pap.query.UserContext;
-import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
-import gov.nist.csd.pm.common.serialization.PolicySerializer;
+import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
+import gov.nist.csd.pm.pap.serialization.PolicySerializer;
 import gov.nist.csd.pm.pdp.PDPEventEmitter;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;

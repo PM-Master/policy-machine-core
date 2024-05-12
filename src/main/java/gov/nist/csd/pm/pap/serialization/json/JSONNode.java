@@ -1,4 +1,4 @@
-package gov.nist.csd.pm.common.serialization.json;
+package gov.nist.csd.pm.pap.serialization.json;
 
 import java.util.List;
 import java.util.Map;

@@ -30,11 +30,11 @@ class DeleteRuleStatementTest {
         pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
         pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
-        pap.modify().obligations().create(userContext, "obl1", new ArrayList<>(List.of(new Rule(
+        pap.modify().obligations().create(userContext, "obl1", List.of(new Rule(
                 "rule1",
                 new EventPattern(pAny("s"), pAny("o")),
                 new Response("e", List.of()))
-        )));
+        ));
 
         ExecutionContext execCtx = new ExecutionContext(userContext, GlobalScope.forExecute(pap));
         stmt.execute(execCtx, pap);

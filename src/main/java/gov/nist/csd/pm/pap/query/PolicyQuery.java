@@ -1,8 +1,5 @@
 package gov.nist.csd.pm.pap.query;
 
-import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.serialization.PolicySerializer;
-
 public interface PolicyQuery {
 
     AccessQuery access();

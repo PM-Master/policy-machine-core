@@ -221,7 +221,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
         }
 
         // object attributes, objects, and users need to be assigned to at least one node initially
-        if (type != UA && parents.isEmpty()) {
+        if (parents.isEmpty()) {
             throw new DisconnectedNodeException(name, type);
         }
 
@@ -442,7 +442,6 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
 
     static void checkAccessRightsValid(AccessRightSet resourceAccessRights, AccessRightSet accessRightSet) throws PMException {
         for (String ar : accessRightSet) {
-            System.out.println(resourceAccessRights.contains(ar));
             if (!resourceAccessRights.contains(ar)
                     && !allAdminAccessRights().contains(ar)
                     && !wildcardAccessRights().contains(ar)) {

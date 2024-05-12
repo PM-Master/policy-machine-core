@@ -497,9 +497,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
 
         @Override
         protected void deleteInternal(String name) {
-            ArrayList<Obligation> copy = new ArrayList<>(obligations);
-            copy.removeIf(o -> o.getName().equals(name));
-            obligations = Collections.unmodifiableList(copy);
+            obligations.removeIf(o -> o.getName().equals(name));
         }
 
         @Override

@@ -8,7 +8,7 @@ import gov.nist.csd.pm.common.obligation.Response;
 import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
-import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
+import gov.nist.csd.pm.pap.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.op.graph.CreateObjectAttributeOp;
 import gov.nist.csd.pm.pap.pml.expression.Expression;

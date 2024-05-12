@@ -1,4 +1,4 @@
-package gov.nist.csd.pm.common.serialization;
+package gov.nist.csd.pm.pap.serialization;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
