@@ -8,10 +8,7 @@ import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.exception.ProhibitionDoesNotExistException;
 import gov.nist.csd.pm.pap.query.ProhibitionsQuerier;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MemoryProhibitionsQuerier extends ProhibitionsQuerier {
 
@@ -24,8 +21,8 @@ public class MemoryProhibitionsQuerier extends ProhibitionsQuerier {
     }
 
     @Override
-    public Map<String, List<Prohibition>> getAll() throws PMException {
-        Map<String, List<Prohibition>> retProhibitions = new HashMap<>();
+    public Map<String, Collection<Prohibition>> getAll() throws PMException {
+        Map<String, Collection<Prohibition>> retProhibitions = new HashMap<>();
         for (String subject : memoryPolicy.prohibitions.keySet()) {
             retProhibitions.put(subject, memoryPolicy.prohibitions.get(subject));
         }
@@ -47,7 +44,7 @@ public class MemoryProhibitionsQuerier extends ProhibitionsQuerier {
     }
 
     @Override
-    public List<Prohibition> getWithSubject(String subject) throws PMException {
+    public Collection<Prohibition> getWithSubject(String subject) throws PMException {
         List<Prohibition> subjectPros = memoryPolicy.prohibitions.get(subject);
         if (subjectPros == null) {
             return new ArrayList<>();
@@ -71,7 +68,7 @@ public class MemoryProhibitionsQuerier extends ProhibitionsQuerier {
     }
 
     @Override
-    public List<Prohibition> getInheritedProhibitionsFor(String subject) throws PMException {
+    public Collection<Prohibition> getInheritedProhibitionsFor(String subject) throws PMException {
         List<Prohibition> pros = new ArrayList<>();
 
         new DepthFirstGraphWalker(graph)
@@ -85,12 +82,12 @@ public class MemoryProhibitionsQuerier extends ProhibitionsQuerier {
     }
 
     @Override
-    public List<Prohibition> getProhibitionsWithContainer(String container) throws PMException {
-        List<Prohibition> pros = new ArrayList<>();
+    public Collection<Prohibition> getProhibitionsWithContainer(String container) throws PMException {
+        Collection<Prohibition> pros = new ArrayList<>();
 
-        Map<String, List<Prohibition>> prohibitions = getAll();
+        Map<String, Collection<Prohibition>> prohibitions = getAll();
         for (String subject : prohibitions.keySet()) {
-            List<Prohibition> subjectProhibitions = prohibitions.get(subject);
+            Collection<Prohibition> subjectProhibitions = prohibitions.get(subject);
             for (Prohibition prohibition : subjectProhibitions) {
                 for (ContainerCondition cc : prohibition.getContainers()) {
                     if (cc.getName().equals(container)) {

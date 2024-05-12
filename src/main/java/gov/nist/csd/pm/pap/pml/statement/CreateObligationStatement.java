@@ -49,7 +49,7 @@ public class CreateObligationStatement extends PMLStatement {
             rules.add(rule);
         }
 
-        pap.modify().obligations().create(author, nameStr, rules.toArray(rules.toArray(Rule[]::new)));
+        pap.modify().obligations().create(author, nameStr, rules);
 
         return new VoidValue();
     }

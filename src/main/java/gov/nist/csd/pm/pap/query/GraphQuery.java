@@ -6,7 +6,7 @@ import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.graph.relationship.Association;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 public interface GraphQuery {
@@ -39,7 +39,7 @@ public interface GraphQuery {
 
     /**
      * Search for nodes with the given type and/or properties. To return all nodes, use type=NodeType.ANY and properties=new HashMap<>().
-     *
+     * <p>
      * Supports wildcard property values i.e. {"prop1": "*"} which will match any nodes with the "prop1" property key.
      *
      * @param type       The type of nodes to search for. Use NodeType.ANY to search for any node type.
@@ -47,7 +47,7 @@ public interface GraphQuery {
      * @return The nodes that match the type and property criteria.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    List<String> search(NodeType type, Map<String, String> properties) throws PMException;
+    Collection<String> search(NodeType type, Map<String, String> properties) throws PMException;
 
     /**
      * Get all policy class names.
@@ -55,7 +55,7 @@ public interface GraphQuery {
      * @return The names of all policy classes.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    List<String> getPolicyClasses() throws PMException;
+    Collection<String> getPolicyClasses() throws PMException;
 
     /**
      * Get the parents of the given node.
@@ -64,7 +64,7 @@ public interface GraphQuery {
      * @return The names of the parents of the given node.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    List<String> getParents(String node) throws PMException;
+    Collection<String> getParents(String node) throws PMException;
 
     /**
      * Get the children of the given node.
@@ -73,7 +73,7 @@ public interface GraphQuery {
      * @return The names of the children of the given node.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    List<String> getChildren(String node) throws PMException;
+    Collection<String> getChildren(String node) throws PMException;
 
     /**
      * Get the associations in which the given user attribute is the source.
@@ -82,7 +82,7 @@ public interface GraphQuery {
      * @return The associations in which the source of the relation is the given user attribute.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    List<Association> getAssociationsWithSource(String ua) throws PMException;
+    Collection<Association> getAssociationsWithSource(String ua) throws PMException;
 
     /**
      * Get the associations in which the given node is the target.
@@ -91,11 +91,11 @@ public interface GraphQuery {
      * @return The associations in which the target of the relation is the given node.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    List<Association> getAssociationsWithTarget(String target) throws PMException;
+    Collection<Association> getAssociationsWithTarget(String target) throws PMException;
 
 
-    List<String> getAttributeContainers(String node) throws PMException;
-    List<String> getPolicyClassContainers(String node) throws PMException;
+    Collection<String> getAttributeContainers(String node) throws PMException;
+    Collection<String> getPolicyClassContainers(String node) throws PMException;
     boolean isContained(String subject, String container) throws PMException;
 
 }

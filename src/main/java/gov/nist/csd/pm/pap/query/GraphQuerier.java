@@ -5,17 +5,17 @@ import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.relationship.Association;
 import gov.nist.csd.pm.pap.exception.NodeDoesNotExistException;
 
-import java.util.List;
+import java.util.Collection;
 
 public abstract class GraphQuerier implements GraphQuery{
 
     protected abstract Node getNodeInternal(String name) throws PMException;
-    protected abstract List<String> getParentsInternal(String name) throws PMException;
-    protected abstract List<String> getChildrenInternal(String name) throws PMException;
-    protected abstract List<Association> getAssociationsWithSourceInternal(String ua) throws PMException;
-    protected abstract List<Association> getAssociationsWithTargetInternal(String target) throws PMException;
-    protected abstract List<String> getAttributeContainersInternal(String node) throws PMException;
-    protected abstract List<String> getPolicyClassContainersInternal(String node) throws PMException;
+    protected abstract Collection<String> getParentsInternal(String name) throws PMException;
+    protected abstract Collection<String> getChildrenInternal(String name) throws PMException;
+    protected abstract Collection<Association> getAssociationsWithSourceInternal(String ua) throws PMException;
+    protected abstract Collection<Association> getAssociationsWithTargetInternal(String target) throws PMException;
+    protected abstract Collection<String> getAttributeContainersInternal(String node) throws PMException;
+    protected abstract Collection<String> getPolicyClassContainersInternal(String node) throws PMException;
     protected abstract boolean isContainedInternal(String node, String container) throws PMException;
 
     @Override
@@ -25,37 +25,37 @@ public abstract class GraphQuerier implements GraphQuery{
     }
 
     @Override
-    public List<String> getParents(String node) throws PMException {
+    public Collection<String> getParents(String node) throws PMException {
         checkNodeExists(node);
         return getParentsInternal(node);
     }
 
     @Override
-    public List<String> getChildren(String node) throws PMException {
+    public Collection<String> getChildren(String node) throws PMException {
         checkNodeExists(node);
         return getChildrenInternal(node);
     }
 
     @Override
-    public List<Association> getAssociationsWithSource(String ua) throws PMException {
+    public Collection<Association> getAssociationsWithSource(String ua) throws PMException {
         checkNodeExists(ua);
         return getAssociationsWithSourceInternal(ua);
     }
 
     @Override
-    public List<Association> getAssociationsWithTarget(String target) throws PMException {
+    public Collection<Association> getAssociationsWithTarget(String target) throws PMException {
         checkNodeExists(target);
         return getAssociationsWithTargetInternal(target);
     }
 
     @Override
-    public List<String> getAttributeContainers(String node) throws PMException {
+    public Collection<String> getAttributeContainers(String node) throws PMException {
         checkNodeExists(node);
         return getAttributeContainersInternal(node);
     }
 
     @Override
-    public List<String> getPolicyClassContainers(String node) throws PMException {
+    public Collection<String> getPolicyClassContainers(String node) throws PMException {
         checkNodeExists(node);
         return getPolicyClassContainersInternal(node);
     }

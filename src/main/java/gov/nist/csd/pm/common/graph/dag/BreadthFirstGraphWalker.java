@@ -5,6 +5,7 @@ import gov.nist.csd.pm.pap.modification.GraphModification;
 import gov.nist.csd.pm.pap.query.GraphQuery;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
 
+import java.util.Collection;
 import java.util.List;
 
 public class BreadthFirstGraphWalker implements GraphWalker {
@@ -62,7 +63,7 @@ public class BreadthFirstGraphWalker implements GraphWalker {
     }
 
     private boolean walkInternal(String start) throws PMException {
-        List<String> nextLevel = getNextLevel(start);
+        Collection<String> nextLevel = getNextLevel(start);
         for (String n : nextLevel) {
             visitor.visit(n);
             if (allPathsShortCircuit.evaluate(n)){
@@ -83,7 +84,7 @@ public class BreadthFirstGraphWalker implements GraphWalker {
         return false;
     }
 
-    private List<String> getNextLevel(String node) throws PMException {
+    private Collection<String> getNextLevel(String node) throws PMException {
         if (direction == Direction.PARENTS) {
             return graphQuery.getParents(node);
         } else {

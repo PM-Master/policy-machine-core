@@ -8,7 +8,6 @@ import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
-import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,7 @@ public class DeleteRuleStatement extends PMLStatement {
         pap.modify().obligations().update(
                 obligation.getAuthor(),
                 obligation.getName(),
-                rules.toArray(new Rule[]{})
+                rules
         );
 
         return new VoidValue();

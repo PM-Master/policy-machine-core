@@ -7,24 +7,25 @@ import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.exception.*;
 import gov.nist.csd.pm.pap.query.UserContext;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 public abstract class ObligationsModifier extends Modifier implements ObligationsModification {
 
-    protected abstract void createInternal(UserContext author, String name, Rule... rules) throws PMException;
-    protected abstract void updateInternal(UserContext author, String name, Rule... rules) throws PMException;
+    protected abstract void createInternal(UserContext author, String name, Collection<Rule> rules) throws PMException;
+    protected abstract void updateInternal(UserContext author, String name, Collection<Rule> rules) throws PMException;
     protected abstract void deleteInternal(String name) throws PMException;
 
     @Override
-    public void create(UserContext author, String name, Rule... rules) throws PMException {
+    public void create(UserContext author, String name, Collection<Rule> rules) throws PMException {
         checkCreateInput(author, name, rules);
 
         createInternal(author, name, rules);
     }
 
     @Override
-    public void update(UserContext author, String name, Rule... rules) throws PMException {
+    public void update(UserContext author, String name, Collection<Rule> rules) throws PMException {
         checkUpdateInput(author, name, rules);
 
         updateInternal(author, name, rules);
@@ -43,11 +44,11 @@ public abstract class ObligationsModifier extends Modifier implements Obligation
      * Check the obligation being created.
      *
      * @param author The author of the obligation.
-     * @param name The name of the obligation.
-     * @param rules The rules of the obligation.
+     * @param name   The name of the obligation.
+     * @param rules  The rules of the obligation.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    protected void checkCreateInput(UserContext author, String name, Rule... rules) throws PMException {
+    protected void checkCreateInput(UserContext author, String name, Collection<Rule> rules) throws PMException {
         if (query().obligations().exists(name)) {
             throw new ObligationNameExistsException(name);
         }
@@ -59,12 +60,12 @@ public abstract class ObligationsModifier extends Modifier implements Obligation
     /**
      * Check the obligation being created.
      *
-     * @param author     The author of the obligation.
-     * @param name         The name of the obligation.
-     * @param rules      The rules of the obligation.
+     * @param author The author of the obligation.
+     * @param name   The name of the obligation.
+     * @param rules  The rules of the obligation.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    protected void checkUpdateInput(UserContext author, String name, Rule... rules) throws PMException {
+    protected void checkUpdateInput(UserContext author, String name, Collection<Rule> rules) throws PMException {
         if (!query().obligations().exists(name)) {
             throw new ObligationDoesNotExistException(name);
         }
@@ -105,7 +106,7 @@ public abstract class ObligationsModifier extends Modifier implements Obligation
         }
     }
 
-    private void checkEventPatternAttributesExist(Rule... rules) throws PMException {
+    private void checkEventPatternAttributesExist(Collection<Rule> rules) throws PMException {
         for (Rule rule : rules) {
             EventPattern event = rule.getEventPattern();
 

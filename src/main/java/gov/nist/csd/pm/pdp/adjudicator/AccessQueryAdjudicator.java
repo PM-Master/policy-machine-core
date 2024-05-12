@@ -8,7 +8,7 @@ import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.audit.Explain;
 import gov.nist.csd.pm.pap.query.AccessQuery;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -91,7 +91,7 @@ public class AccessQueryAdjudicator implements AccessQuery {
     }
 
     @Override
-    public List<String> computeAccessibleChildren(UserContext userCtx, String root) throws PMException {
+    public Collection<String> computeAccessibleChildren(UserContext userCtx, String root) throws PMException {
         PrivilegeChecker.check(pap, userCtx, userCtx.getUser(), AdminAccessRights.REVIEW_POLICY);
         PrivilegeChecker.check(pap, userCtx, root, AdminAccessRights.REVIEW_POLICY);
 
@@ -99,7 +99,7 @@ public class AccessQueryAdjudicator implements AccessQuery {
     }
 
     @Override
-    public List<String> computeAccessibleParents(UserContext userCtx, String root) throws PMException {
+    public Collection<String> computeAccessibleParents(UserContext userCtx, String root) throws PMException {
         PrivilegeChecker.check(pap, userCtx, userCtx.getUser(), AdminAccessRights.REVIEW_POLICY);
         PrivilegeChecker.check(pap, userCtx, root, AdminAccessRights.REVIEW_POLICY);
 

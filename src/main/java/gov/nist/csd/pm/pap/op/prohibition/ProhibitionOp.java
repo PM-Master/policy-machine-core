@@ -16,10 +16,10 @@ public abstract class ProhibitionOp extends Operation {
     protected final Map<String, Boolean> containers;
 
     public ProhibitionOp(String name,
-                               ProhibitionSubject subject,
-                               AccessRightSet accessRightSet,
-                               boolean intersection,
-                               List<ContainerCondition> containers) {
+                         ProhibitionSubject subject,
+                         AccessRightSet accessRightSet,
+                         boolean intersection,
+                         Collection<ContainerCondition> containers) {
         this.name = name;
         this.subject = subject;
         this.accessRightSet = accessRightSet;

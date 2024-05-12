@@ -10,11 +10,9 @@ import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pap.op.graph.*;
 import gov.nist.csd.pm.pap.query.UserContext;
-import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.node.NodeType;
-import gov.nist.csd.pm.common.graph.relationship.Association;
-import gov.nist.csd.pm.pdp.PDPEventEmitter;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +53,7 @@ public class GraphModificationAdjudicator implements GraphModification {
     }
 
     @Override
-    public String createUserAttribute(String name, Map<String, String> properties, List<String> parents) throws PMException {
+    public String createUserAttribute(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
         if (!parents.isEmpty()) {
             checkParents(CREATE_USER_ATTRIBUTE, parents);
         } else {
@@ -70,7 +68,7 @@ public class GraphModificationAdjudicator implements GraphModification {
     }
 
     @Override
-    public String createObjectAttribute(String name, Map<String, String> properties, List<String> parents) throws PMException {
+    public String createObjectAttribute(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
         checkParents(CREATE_OBJECT_ATTRIBUTE, parents);
 
         pap.modify().graph().createObjectAttribute(name, properties, parents);
@@ -81,7 +79,7 @@ public class GraphModificationAdjudicator implements GraphModification {
     }
 
     @Override
-    public String createObject(String name, Map<String, String> properties, List<String> parents) throws PMException {
+    public String createObject(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
         checkParents(CREATE_OBJECT, parents);
 
         pap.modify().graph().createObject(name, properties, parents);
@@ -92,7 +90,7 @@ public class GraphModificationAdjudicator implements GraphModification {
     }
 
     @Override
-    public String createUser(String name, Map<String, String> properties, List<String> parents) throws PMException {
+    public String createUser(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
         checkParents(CREATE_USER, parents);
 
         pap.modify().graph().createUser(name, properties, parents);
@@ -132,7 +130,7 @@ public class GraphModificationAdjudicator implements GraphModification {
         PrivilegeChecker.check(pap, userCtx, name, op);
 
         // check that the user can delete the node from the node's parents
-        List<String> parents = pap.query().graph().getParents(name);
+        Collection<String> parents = pap.query().graph().getParents(name);
 
         for(String parent : parents) {
             PrivilegeChecker.check(pap, userCtx, parent, op);
@@ -196,7 +194,7 @@ public class GraphModificationAdjudicator implements GraphModification {
         eventEmitter.emitEvent(new EventContext(userCtx, new DissociateOp(ua, target)));
     }
 
-    private void checkParents(String accessRight, List<String> parents) throws PMException {
+    private void checkParents(String accessRight, Collection<String> parents) throws PMException {
         for (String parent : parents) {
             PrivilegeChecker.check(pap, userCtx, parent, accessRight);
         }

@@ -5,7 +5,7 @@ import gov.nist.csd.pm.pap.AdminPolicyNode;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pap.exception.*;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -44,7 +44,7 @@ public interface GraphModification {
      * @return the name of the user attribute.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    String createUserAttribute(String name, Map<String, String> properties, List<String> parents) throws PMException;
+    String createUserAttribute(String name, Map<String, String> properties, Collection<String> parents) throws PMException;
 
     /**
      * Create a new object attribute and assign it to the provided parents. Object attributes must be assigned to at
@@ -56,7 +56,7 @@ public interface GraphModification {
      * @return The name of the object attribute.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    String createObjectAttribute(String name, Map<String, String> properties, List<String> parents) throws PMException;
+    String createObjectAttribute(String name, Map<String, String> properties, Collection<String> parents) throws PMException;
 
     /**
      * Create a new object and assign it to the provided parents. Objects must be assigned to at least one parent node
@@ -66,7 +66,7 @@ public interface GraphModification {
      * @param parents A list of 0 or more parents to assign the new node to.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    String createObject(String name, Map<String, String> properties, List<String> parents) throws PMException;
+    String createObject(String name, Map<String, String> properties, Collection<String> parents) throws PMException;
 
     /**
      * Create a new user and assign it to the provided parents. Users must be assigned to at least one parent node
@@ -78,7 +78,7 @@ public interface GraphModification {
      * @return The name of the object attribute.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    String createUser(String name, Map<String, String> properties, List<String> parents) throws PMException;
+    String createUser(String name, Map<String, String> properties, Collection<String> parents) throws PMException;
 
     /**
      * Update the properties of the node with the given name. The given properties overwrite any existing properties.

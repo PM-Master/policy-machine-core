@@ -9,10 +9,7 @@ import gov.nist.csd.pm.pap.pml.value.ArrayValue;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Search extends FunctionDefinitionStatement {
     public Search() {
@@ -32,7 +29,7 @@ public class Search extends FunctionDefinitionStatement {
                               properties.put(prop.getKey().getStringValue(), prop.getValue().getStringValue());
                           }
 
-                          List<String> search = pap.query().graph().search(nodeType, properties);
+                          Collection<String> search = pap.query().graph().search(nodeType, properties);
 
                           List<Value> ret = new ArrayList<>(search.size());
                           for (String s : search) {

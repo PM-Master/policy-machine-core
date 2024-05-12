@@ -7,6 +7,7 @@ import gov.nist.csd.pm.pap.query.ObligationsQuerier;
 import gov.nist.csd.pm.pap.query.UserContext;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class MemoryObligationsQuerier extends ObligationsQuerier {
@@ -18,7 +19,7 @@ public class MemoryObligationsQuerier extends ObligationsQuerier {
     }
 
     @Override
-    public List<Obligation> getAll() throws PMException {
+    public Collection<Obligation> getAll() throws PMException {
         return memoryPolicy.obligations;
     }
 
@@ -34,7 +35,7 @@ public class MemoryObligationsQuerier extends ObligationsQuerier {
     }
 
     @Override
-    public List<Obligation> getObligationsWithAuthor(UserContext userCtx) throws PMException {
+    public Collection<Obligation> getObligationsWithAuthor(UserContext userCtx) throws PMException {
         List<Obligation> obls = new ArrayList<>();
         for (Obligation obligation : getAll()) {
             if (obligation.getAuthor().equals(userCtx)) {

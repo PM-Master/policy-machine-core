@@ -17,6 +17,7 @@ import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public class TxOps {
 
         private Node node;
 
-        public MemoryDeleteNodeOp(String name, Node node, List<String> parents) {
+        public MemoryDeleteNodeOp(String name, Node node, Collection<String> parents) {
             super(name, parents);
             this.node = node;
         }

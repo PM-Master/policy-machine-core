@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.graph.relationship.Association;
@@ -10,9 +11,6 @@ import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 import gov.nist.csd.pm.common.tx.Transactional;
-import gov.nist.csd.pm.impl.memory.pap.unmodifiable.UnmodifiableAccessRightSet;
-import gov.nist.csd.pm.impl.memory.pap.unmodifiable.UnmodifiableObligation;
-import gov.nist.csd.pm.impl.memory.pap.unmodifiable.UnmodifiableProhibition;
 import gov.nist.csd.pm.pap.modification.*;
 import gov.nist.csd.pm.pap.op.Operation;
 import gov.nist.csd.pm.pap.op.graph.*;
@@ -24,6 +22,8 @@ import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
 import gov.nist.csd.pm.pap.query.UserContext;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 import java.util.*;
 
@@ -33,16 +33,9 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
 
     protected Map<String, Vertex> graph;
     protected AccessRightSet resourceAccessRights;
-    protected List<String> pcs;
-    protected List<String> oas;
-    protected List<String> uas;
-    protected List<String> os;
-    protected List<String> us;
-
+    protected Set<String> pcs;
     protected Map<String, List<Prohibition>> prohibitions;
-
     protected List<Obligation> obligations;
-
     protected Map<String, FunctionDefinitionStatement> functions;
     protected Map<String, Value> constants;
 
@@ -86,13 +79,9 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
     }
 
     public void reset() {
-        this.graph = new HashMap<>();
+        this.graph = new Object2ObjectOpenHashMap<>();
+        this.pcs = new ObjectOpenHashSet<>();
         this.resourceAccessRights = new AccessRightSet();
-        this.pcs = new ArrayList<>();
-        this.oas = new ArrayList<>();
-        this.uas = new ArrayList<>();
-        this.os = new ArrayList<>();
-        this.us = new ArrayList<>();
         this.prohibitions = new HashMap<>();
         this.obligations = new ArrayList<>();
         this.functions = new HashMap<>();
@@ -149,7 +138,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
 
         @Override
         protected void setResourceAccessRightsInternal(AccessRightSet accessRightSet) throws PMException {
-            resourceAccessRights = new UnmodifiableAccessRightSet(accessRightSet);
+            resourceAccessRights = accessRightSet;
         }
 
         @Override
@@ -160,37 +149,13 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
                 props.putAll(properties);
             }
 
-            graph.put(name, buildVertex(name, type, properties));
             if (type == PC) {
                 pcs.add(name);
-            } else if (type == OA) {
-                oas.add(name);
-            } else if (type == UA) {
-                uas.add(name);
-            } else if (type == O) {
-                os.add(name);
-            } else if (type == U) {
-                us.add(name);
-            }
-        }
-
-        private Vertex buildVertex(String name, NodeType type, Map<String, String> properties) {
-            switch (type) {
-                case PC -> {
-                    return new VertexPolicyClass(name, properties);
-                }
-                case OA -> {
-                    return new VertexAttribute(name, OA, properties);
-                }
-                case UA -> {
-                    return new VertexAttribute(name, UA, properties);
-                }
-                case O -> {
-                    return new VertexLeaf(name, O, properties);
-                }
-                default -> {
-                    return new VertexLeaf(name, U, properties);
-                }
+                graph.put(name, new VertexPolicyClass(name, properties));
+            } else if (type == OA || type == UA) {
+                graph.put(name, new VertexAttribute(name, type, properties));
+            } else if (type == O || type == U) {
+                graph.put(name, new VertexLeaf(name, type, properties));
             }
         }
 
@@ -198,9 +163,9 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         protected void deleteNodeInternal(String name) throws PMException {
             Vertex vertex = graph.get(name);
 
-            List<String> parents = vertex.getParents();
-            List<Association> incomingAssociations = vertex.getIncomingAssociations();
-            List<Association> outgoingAssociations = vertex.getOutgoingAssociations();
+            Collection<String> parents = vertex.getParents();
+            Collection<Association> incomingAssociations = vertex.getIncomingAssociations();
+            Collection<Association> outgoingAssociations = vertex.getOutgoingAssociations();
 
             for (String parent : parents) {
                 graph.get(parent).deleteAssignment(name, parent);
@@ -226,31 +191,18 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
 
             graph.remove(name);
 
-            if (vertex.getNode().getType() == PC) {
+            if (vertex.getType() == PC) {
                 pcs.remove(name);
-            } else if (vertex.getNode().getType() == OA) {
-                oas.remove(name);
-            } else if (vertex.getNode().getType() == UA) {
-                uas.remove(name);
-            } else if (vertex.getNode().getType() == O) {
-                os.remove(name);
-            } else if (vertex.getNode().getType() == U) {
-                us.remove(name);
             }
         }
 
         @Override
-        protected void setNodePropertiesInternal(String name, Map<String, String> properties) throws PMException {
+        protected void setNodePropertiesInternal(String name, Map<String, String> properties) {
             graph.get(name).setProperties(properties);
         }
 
         @Override
         protected void createAssignmentInternal(String start, String end) throws PMException {
-            // TODO slows down policy building -- use fastutil sets
-            if (graph.get(start).getParents().contains(end)) {
-                return;
-            }
-
             graph.get(start).addAssignment(start, end);
             graph.get(end).addAssignment(start, end);
         }
@@ -294,7 +246,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         }
 
         @Override
-        public String createUserAttribute(String name, Map<String, String> properties, List<String> parents)
+        public String createUserAttribute(String name, Map<String, String> properties, Collection<String> parents)
                 throws PMException {
             String ret = super.createUserAttribute(name, properties, parents);
             txOpTracker.trackOp(tx, new CreateUserAttributeOp(name, properties, parents));
@@ -302,7 +254,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         }
 
         @Override
-        public String createObjectAttribute(String name, Map<String, String> properties, List<String> parents)
+        public String createObjectAttribute(String name, Map<String, String> properties, Collection<String> parents)
                 throws PMException {
             String ret = super.createObjectAttribute(name, properties, parents);
             txOpTracker.trackOp(tx, new CreateObjectAttributeOp(name, properties, parents));
@@ -310,7 +262,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         }
 
         @Override
-        public String createObject(String name, Map<String, String> properties, List<String> parents)
+        public String createObject(String name, Map<String, String> properties, Collection<String> parents)
                 throws PMException {
             String ret = super.createObject(name, properties, parents);
             txOpTracker.trackOp(tx, new CreateObjectOp(name, properties, parents));
@@ -318,7 +270,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         }
 
         @Override
-        public String createUser(String name, Map<String, String> properties, List<String> parents) throws PMException {
+        public String createUser(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
             String ret = super.createUser(name, properties, parents);
             txOpTracker.trackOp(tx, new CreateUserOp(name, properties, parents));
             return ret;
@@ -327,8 +279,13 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         @Override
         public void setNodeProperties(String name, Map<String, String> properties) throws PMException {
             Vertex vertex = graph.get(name);
+            Map<String, String> oldProperties = new HashMap<>();
+            if(vertex != null) {
+                oldProperties = vertex.getProperties();
+            }
+
             super.setNodeProperties(name, properties);
-            Map<String, String> oldProperties = vertex.getNode().getProperties();
+
             txOpTracker.trackOp(tx,
                     new TxOps.MemorySetNodePropertiesOp(name, oldProperties, properties)
             );
@@ -343,7 +300,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
             if (vertex != null) {
                 txOpTracker.trackOp(tx, new TxOps.MemoryDeleteNodeOp(
                         name,
-                        vertex.getNode(),
+                        new Node(vertex.name, vertex.type, vertex.properties),
                         vertex.getParents()
                 ));
             }
@@ -416,17 +373,17 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
                                       ProhibitionSubject subject,
                                       AccessRightSet accessRightSet,
                                       boolean intersection,
-                                      ContainerCondition... containerConditions) {
+                                      Collection<ContainerCondition> containerConditions) {
             List<Prohibition> existingPros = new ArrayList<>(prohibitions.getOrDefault(
                     subject.getName(),
                     new ArrayList<>()
             ));
-            existingPros.add(new UnmodifiableProhibition(
+            existingPros.add(new Prohibition(
                     name,
                     subject,
                     accessRightSet,
                     intersection,
-                    Arrays.asList(containerConditions)
+                    containerConditions.stream().toList()
             ));
 
             HashMap<String, List<Prohibition>> m = new HashMap<>(prohibitions);
@@ -440,7 +397,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
                                       ProhibitionSubject subject,
                                       AccessRightSet accessRightSet,
                                       boolean intersection,
-                                      ContainerCondition... containerConditions) throws PMException {
+                                      Collection<ContainerCondition> containerConditions) throws PMException {
             runTx(() -> {
                 deleteInternal(name);
                 create(name, subject, accessRightSet, intersection, containerConditions);
@@ -460,19 +417,19 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         }
 
         @Override
-        public void create(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, ContainerCondition... containerConditions)
+        public void create(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, Collection<ContainerCondition> containerConditions)
                 throws PMException {
             super.create(name, subject, accessRightSet, intersection, containerConditions);
-            txOpTracker.trackOp(tx, new CreateProhibitionOp(name, subject, accessRightSet, intersection, List.of(containerConditions)));
+            txOpTracker.trackOp(tx, new CreateProhibitionOp(name, subject, accessRightSet, intersection, containerConditions.stream().toList()));
         }
 
         @Override
-        public void update(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, ContainerCondition... containerConditions)
+        public void update(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, Collection<ContainerCondition> containerConditions)
                 throws PMException {
             Prohibition old = getProhibition(name);
             super.update(name, subject, accessRightSet, intersection, containerConditions);
             txOpTracker.trackOp(tx, new TxOps.MemoryUpdateProhibitionOp(
-                    new Prohibition(name, subject, accessRightSet, intersection, List.of(containerConditions)), old
+                    new Prohibition(name, subject, accessRightSet, intersection, containerConditions.stream().toList()), old
             ));
         }
 
@@ -528,26 +485,14 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         }
 
         @Override
-        protected void createInternal(UserContext author, String name, Rule... rules) {
-            createWithIndex(obligations.size() - 1, author, name, rules);
-        }
-
-        private void createWithIndex(int index, UserContext author, String name, Rule... rules) {
-            ArrayList<Obligation> copy = new ArrayList<>(obligations);
-            copy.add(Math.max(index, 0), new UnmodifiableObligation(author, name, Arrays.asList(rules)));
-            obligations = Collections.unmodifiableList(copy);
+        protected void createInternal(UserContext author, String name, Collection<Rule> rules) {
+            obligations.add(new Obligation(author, name, rules.stream().toList()));
         }
 
         @Override
-        protected void updateInternal(UserContext author, String name, Rule... rules) {
-            for (int i = 0; i < obligations.size(); i++) {
-                if (obligations.get(i).getName().equals(name)) {
-                    deleteInternal(name);
-                    createWithIndex(i, author, name, rules);
-
-                    return;
-                }
-            }
+        protected void updateInternal(UserContext author, String name, Collection<Rule> rules) {
+            deleteInternal(name);
+            createInternal(author, name, rules);
         }
 
         @Override
@@ -558,17 +503,17 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         }
 
         @Override
-        public void create(UserContext author, String name, Rule... rules) throws PMException {
+        public void create(UserContext author, String name, Collection<Rule> rules) throws PMException {
             super.create(author, name, rules);
-            txOpTracker.trackOp(tx, new CreateObligationOp(author, name, List.of(rules)));
+            txOpTracker.trackOp(tx, new CreateObligationOp(author, name, rules.stream().toList()));
         }
 
         @Override
-        public void update(UserContext author, String name, Rule... rules) throws PMException {
+        public void update(UserContext author, String name, Collection<Rule> rules) throws PMException {
             Obligation old = getObligation(name);
             super.update(author, name, rules);
             txOpTracker.trackOp(tx, new TxOps.MemoryUpdateObligationOp(
-                    new Obligation(author, name, List.of(rules)), old
+                    new Obligation(author, name, rules.stream().toList()), old
             ));
         }
 

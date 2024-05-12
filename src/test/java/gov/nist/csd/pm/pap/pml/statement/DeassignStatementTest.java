@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import static gov.nist.csd.pm.pap.pml.PMLUtil.buildArrayLiteral;
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,7 +37,7 @@ class DeassignStatementTest {
         stmt.execute(execCtx, pap);
 
         assertEquals(
-                List.of("pc1"),
+                Set.of("pc1"),
                 pap.query().graph().getParents("ua3")
         );
     }

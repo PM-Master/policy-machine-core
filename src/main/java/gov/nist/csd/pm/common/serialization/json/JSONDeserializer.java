@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import gov.nist.csd.pm.common.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
@@ -19,10 +18,7 @@ import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static gov.nist.csd.pm.common.graph.node.NodeType.*;
 
@@ -93,7 +89,7 @@ public class JSONDeserializer implements PolicyDeserializer {
                     prohibition.getSubject(),
                     prohibition.getAccessRightSet(),
                     prohibition.isIntersection(),
-                    prohibition.getContainers().toArray(new ContainerCondition[0])
+                    prohibition.getContainers()
             );
         }
     }
@@ -124,7 +120,7 @@ public class JSONDeserializer implements PolicyDeserializer {
 
     private void createUserOrObjects(PAP pap, List<JSONUserOrObject> usersOrObjects, NodeType type) throws PMException {
         for (JSONUserOrObject userOrObject : usersOrObjects) {
-            List<String> parents = userOrObject.getParents();
+            Collection<String> parents = userOrObject.getParents();
             if (parents.isEmpty()) {
                 throw new PMException("node " + userOrObject.getName() + " does not have any parents");
             }

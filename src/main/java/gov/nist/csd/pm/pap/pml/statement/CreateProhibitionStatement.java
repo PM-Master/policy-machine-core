@@ -16,7 +16,6 @@ import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.ComplementedValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
-import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -94,7 +93,7 @@ public class CreateProhibitionStatement extends PMLStatement {
                 new ProhibitionSubject(subjectValue.getStringValue(), subjectType),
                 ops,
                 isIntersection,
-                containerConditions.toArray(new ContainerCondition[]{})
+                containerConditions
         );
 
         return new VoidValue();

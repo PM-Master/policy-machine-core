@@ -3,7 +3,7 @@ package gov.nist.csd.pm.pap.query;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.obligation.Obligation;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface ObligationsQuery {
 
@@ -13,7 +13,7 @@ public interface ObligationsQuery {
      * @return All obligations.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    List<Obligation> getAll() throws PMException;
+    Collection<Obligation> getAll() throws PMException;
 
     /**
      * Check if an obligation exists with the given name.
@@ -35,10 +35,11 @@ public interface ObligationsQuery {
 
     /**
      * Get the obligations created by the given author.
+     *
      * @param userCtx The user context representing the author to search for.
      * @return A list of Obligation objects.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    List<Obligation> getObligationsWithAuthor(UserContext userCtx) throws PMException;
+    Collection<Obligation> getObligationsWithAuthor(UserContext userCtx) throws PMException;
 
 }

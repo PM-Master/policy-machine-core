@@ -73,7 +73,7 @@ public class JSONSerializer implements PolicySerializer {
 
     private List<String> buildObligationsJSON(PolicyQuery policyQuery) throws PMException {
         List<String> jsonObligations = new ArrayList<>();
-        List<Obligation> all = policyQuery.obligations().getAll();
+        Collection<Obligation> all = policyQuery.obligations().getAll();
         for (Obligation obligation : all) {
             jsonObligations.add(obligation.toString());
         }
@@ -83,8 +83,8 @@ public class JSONSerializer implements PolicySerializer {
 
     private List<Prohibition> buildProhibitionsJSON(PolicyQuery policyQuery) throws PMException {
         List<Prohibition> prohibitions = new ArrayList<>();
-        Map<String, List<Prohibition>> all = policyQuery.prohibitions().getAll();
-        for (List<Prohibition> value : all.values()) {
+        Map<String, Collection<Prohibition>> all = policyQuery.prohibitions().getAll();
+        for (Collection<Prohibition> value : all.values()) {
             prohibitions.addAll(value);
         }
 
@@ -104,7 +104,7 @@ public class JSONSerializer implements PolicySerializer {
             throws PMException {
         List<JSONUserOrObject> userOrObjects = new ArrayList<>();
 
-        List<String> search = policyQuery.graph().search(type, NO_PROPERTIES);
+        Collection<String> search = policyQuery.graph().search(type, NO_PROPERTIES);
         for (String userOrObject : search) {
             JSONUserOrObject jsonUserOrObject = new JSONUserOrObject();
             jsonUserOrObject.setName(userOrObject);
@@ -125,7 +125,7 @@ public class JSONSerializer implements PolicySerializer {
     private List<JSONPolicyClass> buildPolicyClasses(PolicyQuery policyQuery) throws PMException {
         List<JSONPolicyClass> policyClassesList = new ArrayList<>();
 
-        List<String> policyClasses = policyQuery.graph().getPolicyClasses();
+        Collection<String> policyClasses = policyQuery.graph().getPolicyClasses();
         for (String pc : policyClasses) {
             JSONPolicyClass jsonPolicyClass = buildJSONPolicyCLass(pc, policyQuery);
 
@@ -209,14 +209,14 @@ public class JSONSerializer implements PolicySerializer {
 
     private List<JSONNode> getAttributes(String start, NodeType type, List<Association> associations, PolicyQuery policyQuery) throws PMException {
         List<JSONNode> jsonNodes = new ArrayList<>();
-        List<String> children = policyQuery.graph().getChildren(start);
+        Collection<String> children = policyQuery.graph().getChildren(start);
         for(String child : children) {
             Node node = policyQuery.graph().getNode(child);
             if (node.getType() != type) {
                 continue;
             }
 
-            List<Association> nodeAssociations = policyQuery.graph().getAssociationsWithTarget(node.getName());
+            Collection<Association> nodeAssociations = policyQuery.graph().getAssociationsWithTarget(node.getName());
             for (Association association : nodeAssociations) {
                 List<String> waitingFor = new ArrayList<>(List.of(association.getSource()));
                 if (!AdminPolicy.isAdminPolicyNodeName(association.getTarget())) {

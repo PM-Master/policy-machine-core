@@ -10,6 +10,7 @@ import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.query.ProhibitionsQuery;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +29,11 @@ public class ProhibitionsQueryAdjudicator implements ProhibitionsQuery {
     }
 
     @Override
-    public Map<String, List<Prohibition>> getAll() throws PMException {
-        Map<String, List<Prohibition>> prohibitions = pap.query().prohibitions().getAll();
-        Map<String, List<Prohibition>> retProhibitions = new HashMap<>();
+    public Map<String, Collection<Prohibition>> getAll() throws PMException {
+        Map<String, Collection<Prohibition>> prohibitions = pap.query().prohibitions().getAll();
+        Map<String, Collection<Prohibition>> retProhibitions = new HashMap<>();
         for (String subject : prohibitions.keySet()) {
-            List<Prohibition> subjectPros = filterProhibitions(prohibitions.get(subject));
+            Collection<Prohibition> subjectPros = filterProhibitions(prohibitions.get(subject));
             retProhibitions.put(subject, subjectPros);
         }
 
@@ -53,7 +54,7 @@ public class ProhibitionsQueryAdjudicator implements ProhibitionsQuery {
     }
 
     @Override
-    public List<Prohibition> getWithSubject(String subject) throws PMException {
+    public Collection<Prohibition> getWithSubject(String subject) throws PMException {
         return filterProhibitions(pap.query().prohibitions().getWithSubject(subject));
     }
 
@@ -77,20 +78,20 @@ public class ProhibitionsQueryAdjudicator implements ProhibitionsQuery {
     }
 
     @Override
-    public List<Prohibition> getInheritedProhibitionsFor(String subject) throws PMException {
+    public Collection<Prohibition> getInheritedProhibitionsFor(String subject) throws PMException {
         PrivilegeChecker.check(pap, this.userCtx, subject, AdminAccessRights.REVIEW_POLICY);
 
         return pap.query().prohibitions().getInheritedProhibitionsFor(subject);
     }
 
     @Override
-    public List<Prohibition> getProhibitionsWithContainer(String container) throws PMException {
+    public Collection<Prohibition> getProhibitionsWithContainer(String container) throws PMException {
         PrivilegeChecker.check(pap, this.userCtx, container, AdminAccessRights.REVIEW_POLICY);
 
         return pap.query().prohibitions().getProhibitionsWithContainer(container);
     }
 
-    private List<Prohibition> filterProhibitions(List<Prohibition> prohibitions) {
+    private Collection<Prohibition> filterProhibitions(Collection<Prohibition> prohibitions) {
         prohibitions.removeIf(prohibition -> {
             try {
                 // check user has access to subject prohibitions

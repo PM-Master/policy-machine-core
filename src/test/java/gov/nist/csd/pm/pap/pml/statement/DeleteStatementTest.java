@@ -10,7 +10,6 @@ import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.exception.PMLConstantNotDefinedException;
 import gov.nist.csd.pm.pap.exception.PMLFunctionNotDefinedException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.pap.pml.pattern.EqualsPatternFunction;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
@@ -21,6 +20,7 @@ import gov.nist.csd.pm.pap.pml.value.StringValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -46,16 +46,16 @@ class DeleteStatementTest {
         pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
         pap.modify().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
         UserContext userContext = new UserContext("u1");
-        pap.modify().obligations().create(userContext, "o1", new Rule(
+        pap.modify().obligations().create(userContext, "o1", List.of(new Rule(
                 "rule1",
                 new EventPattern(pAny("subject"), pEquals("op", new StringValue("e1"))),
                 new Response("e", List.of())
-        ));
+        )));
         pap.modify().prohibitions().create("p1",
                                     new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
                                     new AccessRightSet("read"),
                                     true,
-                                    new ContainerCondition("oa1", true)
+                Collections.singleton(new ContainerCondition("oa1", true))
         );
         pap.modify().pml().createFunction(new FunctionDefinitionStatement.Builder("testFunc").build());
         pap.modify().pml().createConstant("testConst", new StringValue("test"));

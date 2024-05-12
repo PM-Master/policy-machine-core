@@ -14,6 +14,7 @@ import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 
+import java.util.Collection;
 import java.util.List;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
@@ -30,26 +31,26 @@ public class ProhibitionsModificationAdjudicator implements ProhibitionsModifica
     }
 
     @Override
-    public void create(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, ContainerCondition... containerConditions) throws PMException {
+    public void create(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, Collection<ContainerCondition> containerConditions) throws PMException {
         checkCreate(subject, containerConditions);
 
         pap.modify().prohibitions().create(name, subject, accessRightSet, intersection, containerConditions);
 
         eventEmitter.emitEvent(new EventContext(
                 userCtx,
-                new CreateProhibitionOp(name, subject, accessRightSet, intersection, List.of(containerConditions))
+                new CreateProhibitionOp(name, subject, accessRightSet, intersection, containerConditions)
         ));
     }
 
     @Override
-    public void update(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, ContainerCondition... containerConditions) throws PMException {
+    public void update(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, Collection<ContainerCondition> containerConditions) throws PMException {
         checkCreate(subject, containerConditions);
 
         pap.modify().prohibitions().update(name, subject, accessRightSet, intersection, containerConditions);
 
         eventEmitter.emitEvent(new EventContext(
                 userCtx,
-                new UpdateProhibitionOp(name, subject, accessRightSet, intersection, List.of(containerConditions))
+                new UpdateProhibitionOp(name, subject, accessRightSet, intersection, containerConditions)
         ));
     }
 
@@ -83,8 +84,7 @@ public class ProhibitionsModificationAdjudicator implements ProhibitionsModifica
         ));
     }
 
-    private void checkCreate(ProhibitionSubject subject,
-                             ContainerCondition[] containerConditions) throws PMException {
+    private void checkCreate(ProhibitionSubject subject, Collection<ContainerCondition> containerConditions) throws PMException {
         if (subject.getType() == ProhibitionSubject.Type.PROCESS) {
             PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.PROHIBITIONS_TARGET.nodeName(), CREATE_PROCESS_PROHIBITION);
         } else {

@@ -9,6 +9,7 @@ import gov.nist.csd.pm.pap.query.UserContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,13 +54,13 @@ class MemoryProhibitionsQuerierTest {
 
     @Test
     void testGetInheritedProhibitionsFor() throws PMException {
-        List<Prohibition> prohibitions = querier.getInheritedProhibitionsFor("u1");
+        Collection<Prohibition> prohibitions = querier.getInheritedProhibitionsFor("u1");
         assertEquals(2, prohibitions.size());
     }
 
     @Test
     void testGetProhibitionsWithContainer() throws PMException {
-        List<Prohibition> prohibitions = querier.getProhibitionsWithContainer("oa1");
+        Collection<Prohibition> prohibitions = querier.getProhibitionsWithContainer("oa1");
         assertEquals(2, prohibitions.size());
     }
 

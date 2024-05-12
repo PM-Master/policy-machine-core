@@ -19,6 +19,7 @@ import gov.nist.csd.pm.util.SamplePolicy;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -83,13 +84,15 @@ class PDPTest {
         pap.modify().graph().createObject("o1", new HashMap<>(), List.of("oa1"));
 
         pap.modify().prohibitions().create("pro1", new ProhibitionSubject("u1", ProhibitionSubject.Type.USER),
-                                  new AccessRightSet("read"), true, new ContainerCondition("oa1", false));
+                                  new AccessRightSet("read"), true,
+                Collections.singleton(new ContainerCondition("oa1", false))
+        );
 
         assertThrows(BootstrapExistingPolicyException.class, () -> {
             pdp.bootstrap((policy) -> {});
         });
 
-        pap.modify().obligations().create(new UserContext("u1"), "obl1");
+        pap.modify().obligations().create(new UserContext("u1"), "obl1", List.of());
 
         assertThrows(BootstrapExistingPolicyException.class, () -> {
             pdp.bootstrap((policy) -> {});

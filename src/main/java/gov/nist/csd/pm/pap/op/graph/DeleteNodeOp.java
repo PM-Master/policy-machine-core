@@ -1,13 +1,14 @@
 package gov.nist.csd.pm.pap.op.graph;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
 public class DeleteNodeOp extends GraphOp {
     private final String name;
-    private final List<String> parents;
+    private final Collection<String> parents;
 
-    public DeleteNodeOp(String name, List<String> parents) {
+    public DeleteNodeOp(String name, Collection<String> parents) {
         this.name = name;
         this.parents = parents;
     }
@@ -26,7 +27,7 @@ public class DeleteNodeOp extends GraphOp {
         return name;
     }
 
-    public List<String> getParents() {
+    public Collection<String> getParents() {
         return parents;
     }
 

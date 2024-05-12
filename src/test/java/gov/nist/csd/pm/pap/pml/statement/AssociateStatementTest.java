@@ -37,8 +37,8 @@ class AssociateStatementTest {
         ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(pap));
         stmt.execute(execCtx, pap);
 
-        assertTrue(pap.query().graph().getAssociationsWithSource("ua1").get(0).equals(new Association("ua1", "oa1", new AccessRightSet("read"))));
-        assertTrue(pap.query().graph().getAssociationsWithTarget("oa1").get(0).equals(new Association("ua1", "oa1", new AccessRightSet("read"))));
+        assertTrue(pap.query().graph().getAssociationsWithSource("ua1").iterator().next().equals(new Association("ua1", "oa1", new AccessRightSet("read"))));
+        assertTrue(pap.query().graph().getAssociationsWithTarget("oa1").iterator().next().equals(new Association("ua1", "oa1", new AccessRightSet("read"))));
     }
 
     @Test

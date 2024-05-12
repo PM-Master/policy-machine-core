@@ -5,6 +5,7 @@ import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.pap.PAP;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -44,7 +45,7 @@ public abstract class GraphQuerierTest {
                 """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        List<String> conts = testCtx.pap().query().graph().getAttributeContainers("o1");
+        Collection<String> conts = testCtx.pap().query().graph().getAttributeContainers("o1");
         List<String> expected = List.of("oa3", "oa2", "oa1", "oa6", "oa5");
         assertTrue(conts.containsAll(expected));
         assertTrue(expected.containsAll(conts));
@@ -78,7 +79,7 @@ public abstract class GraphQuerierTest {
                       """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        List<String> pcs = testCtx.pap().query().graph().getPolicyClassContainers("o1");
+        Collection<String> pcs = testCtx.pap().query().graph().getPolicyClassContainers("o1");
         List<String> expected = List.of("pc1", "pc2");
         assertTrue(pcs.containsAll(expected));
         assertTrue(expected.containsAll(pcs));

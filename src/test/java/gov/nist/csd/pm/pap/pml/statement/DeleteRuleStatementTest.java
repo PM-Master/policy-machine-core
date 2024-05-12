@@ -13,8 +13,7 @@ import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static gov.nist.csd.pm.pap.pml.pattern.AnyPatternFunction.pAny;
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,11 +30,11 @@ class DeleteRuleStatementTest {
         pap.modify().graph().createUserAttribute("ua1", new HashMap<>(), List.of("pc1"));
         pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
         UserContext userContext = new UserContext("u1");
-        pap.modify().obligations().create(userContext, "obl1", new Rule(
+        pap.modify().obligations().create(userContext, "obl1", new ArrayList<>(List.of(new Rule(
                 "rule1",
                 new EventPattern(pAny("s"), pAny("o")),
-                new Response("e",List.of())
-        ));
+                new Response("e", List.of()))
+        )));
 
         ExecutionContext execCtx = new ExecutionContext(userContext, GlobalScope.forExecute(pap));
         stmt.execute(execCtx, pap);

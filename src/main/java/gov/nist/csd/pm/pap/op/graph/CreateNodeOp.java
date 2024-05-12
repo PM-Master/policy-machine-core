@@ -2,19 +2,16 @@ package gov.nist.csd.pm.pap.op.graph;
 
 import gov.nist.csd.pm.common.graph.node.NodeType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class CreateNodeOp extends GraphOp {
 
     protected final String name;
     protected final NodeType type;
     protected final Map<String, String> properties;
-    protected List<String> parents;
+    protected Collection<String> parents;
 
-    protected CreateNodeOp(String name, NodeType type, Map<String, String> properties, List<String> parents) {
+    protected CreateNodeOp(String name, NodeType type, Map<String, String> properties, Collection<String> parents) {
         this.name = name;
         this.type = type;
         this.properties = properties;
@@ -40,7 +37,7 @@ public abstract class CreateNodeOp extends GraphOp {
         return properties;
     }
 
-    public List<String> getParents() {
+    public Collection<String> getParents() {
         return parents;
     }
 

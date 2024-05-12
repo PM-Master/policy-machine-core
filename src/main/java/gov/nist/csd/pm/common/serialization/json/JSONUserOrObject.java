@@ -1,5 +1,6 @@
 package gov.nist.csd.pm.common.serialization.json;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -7,7 +8,7 @@ public class JSONUserOrObject {
 
     private String name;
     private Map<String, String> properties;
-    private List<String> parents;
+    private Collection<String> parents;
 
     public JSONUserOrObject() {
     }
@@ -34,11 +35,11 @@ public class JSONUserOrObject {
         this.properties = properties;
     }
 
-    public List<String> getParents() {
+    public Collection<String> getParents() {
         return parents;
     }
 
-    public void setParents(List<String> parents) {
+    public void setParents(Collection<String> parents) {
         this.parents = parents;
     }
 }

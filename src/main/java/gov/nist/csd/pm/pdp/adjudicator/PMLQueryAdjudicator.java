@@ -21,6 +21,7 @@ public class PMLQueryAdjudicator implements PMLQuery {
 
     @Override
     public Map<String, FunctionDefinitionStatement> getFunctions() throws PMException {
+        // TODO add PrivilegeChecker when PML functions and constants are objects in graph
         return pap.query().pml().getFunctions();
     }
 

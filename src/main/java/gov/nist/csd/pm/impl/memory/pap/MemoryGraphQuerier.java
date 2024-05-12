@@ -11,6 +11,7 @@ import gov.nist.csd.pm.pap.query.GraphQuerier;
 import gov.nist.csd.pm.pap.query.GraphQuery;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,32 +28,33 @@ public class MemoryGraphQuerier extends GraphQuerier implements GraphQuery {
     }
 
     @Override
-    public Node getNodeInternal(String name) throws PMException {
-        return memoryPolicy.graph.get(name).getNode();
+    public Node getNodeInternal(String name) {
+        Vertex vertex = memoryPolicy.graph.get(name);
+        return new Node(vertex.getName(), vertex.getType(), vertex.getProperties());
     }
 
     @Override
-    public List<String> getParentsInternal(String name) throws PMException {
+    public Collection<String> getParentsInternal(String name) {
         return memoryPolicy.graph.get(name).getParents();
     }
 
     @Override
-    public List<String> getChildrenInternal(String name) throws PMException {
+    public Collection<String> getChildrenInternal(String name) throws PMException {
         return memoryPolicy.graph.get(name).getChildren();
     }
 
     @Override
-    public List<Association> getAssociationsWithSourceInternal(String ua) throws PMException {
+    public Collection<Association> getAssociationsWithSourceInternal(String ua) throws PMException {
         return memoryPolicy.graph.get(ua).getOutgoingAssociations();
     }
 
     @Override
-    public List<Association> getAssociationsWithTargetInternal(String target) throws PMException {
+    public Collection<Association> getAssociationsWithTargetInternal(String target) throws PMException {
         return memoryPolicy.graph.get(target).getIncomingAssociations();
     }
 
     @Override
-    public List<String> getAttributeContainersInternal(String node) throws PMException {
+    public Collection<String> getAttributeContainersInternal(String node) throws PMException {
         List<String> attrs = new ArrayList<>();
 
         new DepthFirstGraphWalker(this)
@@ -71,7 +73,7 @@ public class MemoryGraphQuerier extends GraphQuerier implements GraphQuery {
     }
 
     @Override
-    public List<String> getPolicyClassContainersInternal(String node) throws PMException {
+    public Collection<String> getPolicyClassContainersInternal(String node) throws PMException {
         List<String> attrs = new ArrayList<>();
 
         new DepthFirstGraphWalker(this)
@@ -115,13 +117,13 @@ public class MemoryGraphQuerier extends GraphQuerier implements GraphQuery {
     }
 
     @Override
-    public List<String> search(NodeType type, Map<String, String> properties) {
+    public Collection<String> search(NodeType type, Map<String, String> properties) {
         List<String> nodes = filterByType(type);
         return filterByProperties(nodes, properties);
     }
 
     @Override
-    public List<String> getPolicyClasses() {
+    public Collection<String> getPolicyClasses() {
         return new ArrayList<>(memoryPolicy.pcs);
     }
 
@@ -131,7 +133,7 @@ public class MemoryGraphQuerier extends GraphQuerier implements GraphQuery {
             results.addAll(nodes);
         } else {
             for (String n : nodes) {
-                Map<String, String> nodeProperties = memoryPolicy.graph.get(n).getNode().getProperties();
+                Map<String, String> nodeProperties = getNodeInternal(n).getProperties();
 
                 if (!hasAllKeys(nodeProperties, properties)
                         || !valuesMatch(nodeProperties, properties)) {
@@ -147,24 +149,29 @@ public class MemoryGraphQuerier extends GraphQuerier implements GraphQuery {
 
     private List<String> filterByType(NodeType type) {
         List<String> nodes = new ArrayList<>();
-        if (type != ANY) {
-            if (type == PC) {
-                nodes.addAll(memoryPolicy.pcs);
-            } else if (type == OA) {
-                nodes.addAll(memoryPolicy.oas);
-            } else if (type == UA) {
-                nodes.addAll(memoryPolicy.uas);
-            } else if (type == O) {
-                nodes.addAll(memoryPolicy.os);
-            } else {
-                nodes.addAll(memoryPolicy.us);
+
+        // return all nodes if type is ANY
+        if (type == ANY) {
+            for (Map.Entry<String, Vertex> node : memoryPolicy.graph.entrySet()) {
+                nodes.add(node.getKey());
             }
-        } else {
+
+            return nodes;
+        }
+
+        // return pcs from separate set if type is PC
+        if (type == PC) {
             nodes.addAll(memoryPolicy.pcs);
-            nodes.addAll(memoryPolicy.uas);
-            nodes.addAll(memoryPolicy.oas);
-            nodes.addAll(memoryPolicy.us);
-            nodes.addAll(memoryPolicy.os);
+
+            return nodes;
+        }
+
+        // get other node types that match
+        for (Map.Entry<String, Vertex> node : memoryPolicy.graph.entrySet()) {
+            Vertex vertex = node.getValue();
+            if (vertex.type == type) {
+                nodes.add(node.getKey());
+            }
         }
 
         return nodes;
@@ -191,16 +198,5 @@ public class MemoryGraphQuerier extends GraphQuerier implements GraphQuery {
         }
 
         return true;
-    }
-
-    private boolean associationExists(String source, String target) {
-        List<Association> outgoingAssociations = memoryPolicy.graph.get(source).getOutgoingAssociations();
-        for (Association a : outgoingAssociations) {
-            if (a.getTarget().equals(target)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

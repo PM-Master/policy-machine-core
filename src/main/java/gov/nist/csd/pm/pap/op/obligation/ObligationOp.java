@@ -8,6 +8,7 @@ import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.query.UserContext;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,9 +17,9 @@ public abstract class ObligationOp extends Operation {
     protected final UserContext author;
     protected final String name;
     protected final List<String> eventPatternNodes;
-    private final transient List<Rule> rules;
+    private final transient Collection<Rule> rules;
 
-    public ObligationOp(UserContext author, String name, List<Rule> rules) {
+    public ObligationOp(UserContext author, String name, Collection<Rule> rules) {
         this.author = author;
         this.name = name;
         this.rules = rules;
@@ -57,7 +58,7 @@ public abstract class ObligationOp extends Operation {
         return eventPatternNodes;
     }
 
-    public List<Rule> getRules() {
+    public Collection<Rule> getRules() {
         return rules;
     }
 

@@ -17,8 +17,8 @@ import gov.nist.csd.pm.pap.exception.*;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -59,7 +59,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
                 createNodeInternal(pcTarget, OA, new HashMap<>());
             }
 
-            List<String> parents = query().graph().getParents(pcTarget);
+            Collection<String> parents = query().graph().getParents(pcTarget);
             if (!parents.contains(POLICY_CLASS_TARGETS.nodeName())) {
                 createAssignmentInternal(pcTarget, POLICY_CLASS_TARGETS.nodeName());
             }
@@ -69,24 +69,24 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
     }
 
     @Override
-    public String createUserAttribute(String name, Map<String, String> properties, List<String> parents)
+    public String createUserAttribute(String name, Map<String, String> properties, Collection<String> parents)
             throws PMException {
         return createNonPolicyClassNode(name, UA, properties, parents);
     }
 
     @Override
-    public String createObjectAttribute(String name, Map<String, String> properties, List<String> parents)
+    public String createObjectAttribute(String name, Map<String, String> properties, Collection<String> parents)
             throws PMException {
         return createNonPolicyClassNode(name, OA, properties, parents);
     }
 
     @Override
-    public String createObject(String name, Map<String, String> properties, List<String> parents) throws PMException {
+    public String createObject(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
         return createNonPolicyClassNode(name, O, properties, parents);
     }
 
     @Override
-    public String createUser(String name, Map<String, String> properties, List<String> parents) throws PMException {
+    public String createUser(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
         return createNonPolicyClassNode(name, U, properties, parents);
     }
 
@@ -210,7 +210,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      * assignment.
      */
-    protected void checkCreateNodeInput(String name, NodeType type, List<String> parents) throws PMException {
+    protected void checkCreateNodeInput(String name, NodeType type, Collection<String> parents) throws PMException {
         if (query().graph().nodeExists(name)) {
             throw new NodeNameExistsException(name);
         }
@@ -260,7 +260,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected boolean checkDeleteNodeInput(String name) throws PMException {
-        List<String> children;
+        Collection<String> children;
         try {
             children = query().graph().getChildren(name);
         } catch (NodeDoesNotExistException e) {
@@ -286,8 +286,8 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected void checkIfNodeInProhibition(String name) throws PMException {
-        Map<String, List<Prohibition>> allProhibitions = query().prohibitions().getAll();
-        for (List<Prohibition> subjPros : allProhibitions.values()) {
+        Map<String, Collection<Prohibition>> allProhibitions = query().prohibitions().getAll();
+        for (Collection<Prohibition> subjPros : allProhibitions.values()) {
             for (Prohibition p : subjPros) {
                 if (nodeInProhibition(name, p)) {
                     throw new NodeReferencedInProhibitionException(name, p.getName());
@@ -304,7 +304,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected void checkIfNodeInObligation(String name) throws PMException {
-        List<Obligation> obligations = query().obligations().getAll();
+        Collection<Obligation> obligations = query().obligations().getAll();
         for (Obligation obligation : obligations) {
             // if the node is the author of the obligation or referenced in any rules throw an exception
             if (obligation.getAuthor().getUser().equals(name)) {
@@ -381,7 +381,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
             throw new NodeDoesNotExistException(parent);
         }
 
-        List<String> parents = query().graph().getParents(child);
+        Collection<String> parents = query().graph().getParents(child);
         if (!parents.contains(parent)) {
             return false;
         }
@@ -430,7 +430,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
             throw new NodeDoesNotExistException(target);
         }
 
-        List<Association> associations = query().graph().getAssociationsWithSource(ua);
+        Collection<Association> associations = query().graph().getAssociationsWithSource(ua);
         for (Association a : associations) {
             if (a.getSource().equals(ua) && a.getTarget().equals(target)) {
                 return true;
@@ -442,6 +442,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
 
     static void checkAccessRightsValid(AccessRightSet resourceAccessRights, AccessRightSet accessRightSet) throws PMException {
         for (String ar : accessRightSet) {
+            System.out.println(resourceAccessRights.contains(ar));
             if (!resourceAccessRights.contains(ar)
                     && !allAdminAccessRights().contains(ar)
                     && !wildcardAccessRights().contains(ar)) {
@@ -464,7 +465,7 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
         return false;
     }
 
-    private String createNonPolicyClassNode(String name, NodeType type, Map<String, String> properties, List<String> parents)
+    private String createNonPolicyClassNode(String name, NodeType type, Map<String, String> properties, Collection<String> parents)
             throws PMException {
         return runTx(() -> {
             checkCreateNodeInput(name, type, parents);

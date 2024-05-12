@@ -4,7 +4,7 @@ import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pap.audit.Explain;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,7 +19,7 @@ public interface AccessQuery {
     Map<String, AccessRightSet> computeSubgraphPrivileges(UserContext userCtx, String root) throws PMException;
     Explain explain(UserContext userCtx, String target) throws PMException;
     Set<String> buildPOS(UserContext userCtx) throws PMException;
-    List<String> computeAccessibleChildren(UserContext userCtx, String root) throws PMException;
-    List<String> computeAccessibleParents(UserContext userCtx, String root) throws PMException;
+    Collection<String> computeAccessibleChildren(UserContext userCtx, String root) throws PMException;
+    Collection<String> computeAccessibleParents(UserContext userCtx, String root) throws PMException;
 
 }

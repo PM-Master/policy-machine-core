@@ -15,6 +15,7 @@ import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class EPP {
@@ -50,7 +51,7 @@ public class EPP {
         @Override
         public void processEvent(EventContext eventCtx) throws PMException {
             GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(pap, customFunctions);
-            List<Obligation> obligations = pap.query().obligations().getAll();
+            Collection<Obligation> obligations = pap.query().obligations().getAll();
 
             for(Obligation obligation : obligations) {
                 UserContext author = obligation.getAuthor();

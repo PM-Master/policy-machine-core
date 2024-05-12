@@ -11,6 +11,7 @@ import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.pap.query.ObligationsQuery;
 import gov.nist.csd.pm.pdp.exception.UnauthorizedException;
 
+import java.util.Collection;
 import java.util.List;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.GET_OBLIGATION;
@@ -26,8 +27,8 @@ public class ObligationsQueryAdjudicator implements ObligationsQuery {
     }
 
     @Override
-    public List<Obligation> getAll() throws PMException {
-        List<Obligation> obligations = pap.query().obligations().getAll();
+    public Collection<Obligation> getAll() throws PMException {
+        Collection<Obligation> obligations = pap.query().obligations().getAll();
         obligations.removeIf(obligation -> {
             try {
                 for (Rule rule : obligation.getRules()) {
@@ -69,7 +70,7 @@ public class ObligationsQueryAdjudicator implements ObligationsQuery {
     }
 
     @Override
-    public List<Obligation> getObligationsWithAuthor(UserContext userCtx) throws PMException {
+    public Collection<Obligation> getObligationsWithAuthor(UserContext userCtx) throws PMException {
         PrivilegeChecker.check(pap, userCtx, userCtx.getUser(), AdminAccessRights.REVIEW_POLICY);
 
         return pap.query().obligations().getObligationsWithAuthor(userCtx);

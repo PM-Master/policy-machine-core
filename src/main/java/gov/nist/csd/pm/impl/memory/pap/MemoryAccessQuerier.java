@@ -112,7 +112,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
     @Override
     public Map<String, AccessRightSet> buildACL(String target) throws PMException {
         Map<String, AccessRightSet> acl = new HashMap<>();
-        List<String> search = graphQuerier.search(U, NO_PROPERTIES);
+        Collection<String> search = graphQuerier.search(U, NO_PROPERTIES);
         for (String user : search) {
             AccessRightSet list = this.computePrivileges(new UserContext(user), target);
             acl.put(user, list);
@@ -205,7 +205,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
     }
 
     @Override
-    public List<String> computeAccessibleChildren(UserContext userCtx, String root) throws PMException {
+    public Collection<String> computeAccessibleChildren(UserContext userCtx, String root) throws PMException {
         List<String> children = new ArrayList<>(graphQuerier.getChildren(root));
         children.removeIf(child -> {
             try {
@@ -220,7 +220,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
     }
 
     @Override
-    public List<String> computeAccessibleParents(UserContext userCtx, String root) throws PMException {
+    public Collection<String> computeAccessibleParents(UserContext userCtx, String root) throws PMException {
         List<String> parents = new ArrayList<>(graphQuerier.getParents(root));
         parents.removeIf(parent -> {
             try {
@@ -251,7 +251,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
             throw new NodeDoesNotExistException(target);
         }
 
-        List<String> policyClasses = graphQuerier.getPolicyClasses();
+        Collection<String> policyClasses = graphQuerier.getPolicyClasses();
         Map<String, AccessRightSet> borderTargets = userCtx.borderTargets();
         Map<String, Map<String, AccessRightSet>> visitedNodes = new HashMap<>();
         Set<String> reachedTargets = new HashSet<>();
@@ -322,11 +322,11 @@ public class MemoryAccessQuerier extends AccessQuerier {
 
         // get the associations for the subject, it the subject is a user, nothing will be returned
         // this is only when a UA is the subject
-        List<Association> subjectAssociations = graphQuerier.getAssociationsWithSource(subject);
+        Collection<Association> subjectAssociations = graphQuerier.getAssociationsWithSource(subject);
         collectAssociationsFromBorderTargets(subjectAssociations, borderTargets);
 
         Visitor visitor = node -> {
-            List<Prohibition> subjectProhibitions = prohibitionsQuerier.getWithSubject(node);
+            Collection<Prohibition> subjectProhibitions = prohibitionsQuerier.getWithSubject(node);
             reachedProhibitions.addAll(subjectProhibitions);
             for (Prohibition prohibition : subjectProhibitions) {
                 List<ContainerCondition> containers = prohibition.getContainers();
@@ -335,7 +335,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
                 }
             }
 
-            List<Association> nodeAssociations = graphQuerier.getAssociationsWithSource(node);
+            Collection<Association> nodeAssociations = graphQuerier.getAssociationsWithSource(node);
             collectAssociationsFromBorderTargets(nodeAssociations, borderTargets);
         };
 
@@ -348,7 +348,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
         return new UserDagResult(borderTargets, reachedProhibitions, prohibitionTargets);
     }
 
-    private void collectAssociationsFromBorderTargets(List<Association> assocs, Map<String, AccessRightSet> borderTargets) {
+    private void collectAssociationsFromBorderTargets(Collection<Association> assocs, Map<String, AccessRightSet> borderTargets) {
         for (Association association : assocs) {
             AccessRightSet ops = association.getAccessRightSet();
             AccessRightSet exOps = borderTargets.getOrDefault(association.getTarget(), new AccessRightSet());
@@ -362,7 +362,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
     private Set<String> getDescendants(String vNode) throws PMException {
         Set<String> descendants = new HashSet<>();
 
-        List<String> children = graphQuerier.getChildren(vNode);
+        Collection<String> children = graphQuerier.getChildren(vNode);
         if (children.isEmpty()) {
             return descendants;
         }
@@ -389,7 +389,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
         String crtNode;
 
         // Get u's directly assigned attributes and put them into the queue.
-        List<String> hsAttrs = graphQuerier.getParents(userCtx.getUser());
+        Collection<String> hsAttrs = graphQuerier.getParents(userCtx.getUser());
         List<String> queue = new ArrayList<>(hsAttrs);
 
         // While the queue has elements, extract an element from the queue
@@ -407,7 +407,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
 
                     // Find the opsets of this user attribute. Note that the set of containers for this
                     // node (user attribute) may contain not only opsets.
-                    List<Association> assocs = graphQuerier.getAssociationsWithSource(crtNode);
+                    Collection<Association> assocs = graphQuerier.getAssociationsWithSource(crtNode);
 
                     // Go through the containers and only for opsets do the following.
                     // For each opset ops of ua:
@@ -457,7 +457,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
                 }
                 visited.add(crtNode);
 
-                List<String> hsDescs = graphQuerier.getParents(crtNode);
+                Collection<String> hsDescs = graphQuerier.getParents(crtNode);
                 queue.addAll(hsDescs);
             }
         }
@@ -498,7 +498,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
         // Insert the start node into the queue
         queue.add(node);
 
-        List<String> policyClasses = graphQuerier.getPolicyClasses();
+        Collection<String> policyClasses = graphQuerier.getPolicyClasses();
 
         // While queue is not empty
         while (!queue.isEmpty()) {
@@ -511,7 +511,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
                 // Extract its direct descendants. If a descendant is an attribute,
                 // insert it into the queue. If it is a pc, add it to reachable,
                 // if not already there
-                List<String> hsContainers = graphQuerier.getParents(crtNode);
+                Collection<String> hsContainers = graphQuerier.getParents(crtNode);
                 for (String n : hsContainers) {
                     if (policyClasses.contains(n)) {
                         reachable.add(n);
@@ -648,7 +648,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
                 }
             }
 
-            List<Association> assocs = graphQuerier.getAssociationsWithSource(node.getName());
+            Collection<Association> assocs = graphQuerier.getAssociationsWithSource(node.getName());
             for(Association association : assocs) {
                 Node targetNode = graphQuerier.getNode(association.getTarget());
                 EdgePath path = new EdgePath();

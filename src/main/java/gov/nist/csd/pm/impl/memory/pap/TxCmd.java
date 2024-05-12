@@ -18,6 +18,7 @@ import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -79,7 +80,7 @@ abstract class TxCmd implements TxRollbackSupport {
 
         } else if (op instanceof CreateObligationOp o) {
             return new TxCmd.CreateObligationTxCmd(
-                    new Obligation(o.getAuthor(), o.getName(), o.getRules())
+                    new Obligation(o.getAuthor(), o.getName(), o.getRules().stream().toList())
             );
 
         } else if (op instanceof CreatePolicyClassOp o) {
@@ -153,7 +154,7 @@ abstract class TxCmd implements TxRollbackSupport {
 
         } else if (op instanceof TxOps.MemoryUpdateObligationOp o) {
             return new TxCmd.UpdateObligationTxCmd(
-                    new Obligation(o.getAuthor(), o.getName(), o.getRules()), o.getOldObl()
+                    new Obligation(o.getAuthor(), o.getName(), o.getRules().stream().toList()), o.getOldObl()
             );
 
         } else if (op instanceof TxOps.MemoryUpdateProhibitionOp o) {
@@ -209,9 +210,9 @@ abstract class TxCmd implements TxRollbackSupport {
     static class CreateObjectAttributeTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> properties;
-        private final List<String> parents;
+        private final Collection<String> parents;
 
-        public CreateObjectAttributeTxCmd(String name, Map<String, String> properties, List<String> parents) {
+        public CreateObjectAttributeTxCmd(String name, Map<String, String> properties, Collection<String> parents) {
             super(Type.GRAPH);
             this.name = name;
             this.properties = properties;
@@ -227,9 +228,9 @@ abstract class TxCmd implements TxRollbackSupport {
     static class CreateUserAttributeTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> properties;
-        private final List<String> parents;
+        private final Collection<String> parents;
 
-        public CreateUserAttributeTxCmd(String name, Map<String, String> properties, List<String> parents) {
+        public CreateUserAttributeTxCmd(String name, Map<String, String> properties, Collection<String> parents) {
             super(Type.GRAPH);
             this.name = name;
             this.properties = properties;
@@ -245,9 +246,9 @@ abstract class TxCmd implements TxRollbackSupport {
     static class CreateObjectTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> properties;
-        private final List<String> parents;
+        private final Collection<String> parents;
 
-        public CreateObjectTxCmd(String name, Map<String, String> properties, List<String> parents) {
+        public CreateObjectTxCmd(String name, Map<String, String> properties, Collection<String> parents) {
             super(Type.GRAPH);
             this.name = name;
             this.properties = properties;
@@ -263,9 +264,9 @@ abstract class TxCmd implements TxRollbackSupport {
     static class CreateUserTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> properties;
-        private final List<String> parents;
+        private final Collection<String> parents;
 
-        public CreateUserTxCmd(String name, Map<String, String> properties, List<String> parents) {
+        public CreateUserTxCmd(String name, Map<String, String> properties, Collection<String> parents) {
             super(Type.GRAPH);
             this.name = name;
             this.properties = properties;
@@ -299,9 +300,9 @@ abstract class TxCmd implements TxRollbackSupport {
     static class DeleteNodeTxCmd extends TxCmd {
         private final String name;
         private final Node nodeToDelete;
-        private final List<String> parents;
+        private final Collection<String> parents;
 
-        public DeleteNodeTxCmd(String name, Node nodeToDelete, List<String> parents) {
+        public DeleteNodeTxCmd(String name, Node nodeToDelete, Collection<String> parents) {
             super(Type.GRAPH);
             this.name = name;
             this.nodeToDelete = nodeToDelete;
@@ -414,7 +415,7 @@ abstract class TxCmd implements TxRollbackSupport {
                     oldProhibition.getSubject(),
                     oldProhibition.getAccessRightSet(),
                     oldProhibition.isIntersection(),
-                    oldProhibition.getContainers().toArray(new ContainerCondition[]{})
+                    oldProhibition.getContainers()
             );
         }
     }
@@ -434,7 +435,7 @@ abstract class TxCmd implements TxRollbackSupport {
                     prohibitionToDelete.getSubject(),
                     prohibitionToDelete.getAccessRightSet(),
                     prohibitionToDelete.isIntersection(),
-                    prohibitionToDelete.getContainers().toArray(new ContainerCondition[]{})
+                    prohibitionToDelete.getContainers()
             );
         }
     }
@@ -468,7 +469,7 @@ abstract class TxCmd implements TxRollbackSupport {
             memoryPolicy.obligations().update(
                     oldObligation.getAuthor(),
                     oldObligation.getName(),
-                    oldObligation.getRules().toArray(new Rule[]{})
+                    oldObligation.getRules()
             );
         }
     }
@@ -485,7 +486,7 @@ abstract class TxCmd implements TxRollbackSupport {
             memoryPolicy.obligations().create(
                     obligationToDelete.getAuthor(),
                     obligationToDelete.getName(),
-                    obligationToDelete.getRules().toArray(new Rule[]{})
+                    obligationToDelete.getRules()
             );
         }
     }

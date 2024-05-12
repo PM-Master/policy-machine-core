@@ -9,6 +9,7 @@ import gov.nist.csd.pm.pap.query.UserContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -86,9 +87,9 @@ class MemoryObligationsQuerierTest {
 
     @Test
     void TestGetObligationsWithAuthor() throws PMException {
-        List<Obligation> u1 = querier.getObligationsWithAuthor(new UserContext("u1"));
+        Collection<Obligation> u1 = querier.getObligationsWithAuthor(new UserContext("u1"));
         assertEquals(2, u1.size());
-        List<Obligation> u2 = querier.getObligationsWithAuthor(new UserContext("u2"));
+        Collection<Obligation> u2 = querier.getObligationsWithAuthor(new UserContext("u2"));
         assertEquals(2, u2.size());
     }
 }

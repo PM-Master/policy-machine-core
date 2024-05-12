@@ -20,9 +20,7 @@ import gov.nist.csd.pm.pap.query.UserContext;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static gov.nist.csd.pm.common.graph.node.NodeType.*;
 import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
@@ -275,7 +273,7 @@ public abstract class GraphModifierTest extends ModificationTest {
             assertEquals("v", pap.query().graph().getNode("o1").getProperties().get("k"));
 
             assertTrue(pap.query().graph().getChildren("oa1").contains("o1"));
-            assertEquals( List.of("oa1"), pap.query().graph().getParents("o1"));
+            assertEquals(Set.of("oa1"), pap.query().graph().getParents("o1"));
             assertTrue(pap.query().graph().getChildren("oa1").contains("o1"));
         }
     }
@@ -337,7 +335,7 @@ public abstract class GraphModifierTest extends ModificationTest {
             assertEquals("v", pap.query().graph().getNode("u1").getProperties().get("k"));
 
             assertTrue(pap.query().graph().getChildren("ua1").contains("u1"));
-            assertEquals( List.of("ua1"), pap.query().graph().getParents("u1"));
+            assertEquals(Set.of("ua1"), pap.query().graph().getParents("u1"));
             assertTrue(pap.query().graph().getChildren("ua1").contains("u1"));
         }
     }
@@ -421,7 +419,7 @@ public abstract class GraphModifierTest extends ModificationTest {
             pap.modify().graph().createObjectAttribute("oa2", toProperties("key1", "value1"), List.of("pc1"));
             pap.modify().graph().createObjectAttribute("oa3", toProperties("key1", "value1", "key2", "value2"), List.of("pc1"));
 
-            List<String> nodes = pap.query().graph().search(OA, NO_PROPERTIES);
+            Collection<String> nodes = pap.query().graph().search(OA, NO_PROPERTIES);
             assertEquals(10, nodes.size());
 
             nodes = pap.query().graph().search(ANY, toProperties("key1", "value1"));
@@ -484,7 +482,8 @@ public abstract class GraphModifierTest extends ModificationTest {
             pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua2"));
             pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
             pap.modify().prohibitions().create("pro1", ProhibitionSubject.userAttribute("ua1"),
-                    new AccessRightSet(), true, new ContainerCondition("oa1", true));
+                    new AccessRightSet(), true, Collections.singleton(new ContainerCondition("oa1", true))
+            );
 
             assertThrows(NodeReferencedInProhibitionException.class,
                     () -> pap.modify().graph().deleteNode("ua1"));
@@ -493,22 +492,14 @@ public abstract class GraphModifierTest extends ModificationTest {
 
             pap.modify().prohibitions().delete("pro1");
             pap.modify().obligations().create(new UserContext("u1"), "oblLabel",
-                    new Rule(
+                    List.of(new Rule(
                             "rule1",
                             new EventPattern(
                                     pAscendantOf("subject", "ua1"),
                                     pEquals("op", new StringValue("event1"))
                             ),
                             new Response("evtCtx", List.of())
-                    ),
-                    new Rule(
-                            "rule1",
-                            new EventPattern(
-                                    pAscendantOf("subject", "ua1"),
-                                    pEquals("op", new StringValue("event1"))
-                            ),
-                            new Response("evtCtx", List.of())
-                    )
+                    ))
             );
 
             assertThrows(NodeReferencedInObligationException.class,
@@ -635,7 +626,7 @@ public abstract class GraphModifierTest extends ModificationTest {
             pap.modify().graph().createPolicyClass("pc2", new HashMap<>());
             pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1", "pc2"));
             pap.modify().graph().deassign("oa1", "pc1");
-            assertEquals(List.of("pc2"), pap.query().graph().getParents("oa1"));
+            assertEquals(Set.of("pc2"), pap.query().graph().getParents("oa1"));
             assertFalse(pap.query().graph().getParents("oa1").contains("pc1"));
             assertFalse(pap.query().graph().getChildren("pc1").contains("oa1"));
         }
@@ -754,11 +745,11 @@ public abstract class GraphModifierTest extends ModificationTest {
 
             assertEquals(
                     new Association("ua1", "oa1", new AccessRightSet("read")),
-                    pap.query().graph().getAssociationsWithSource("ua1").get(0)
+                    pap.query().graph().getAssociationsWithSource("ua1").iterator().next()
             );
             assertEquals(
                     new Association("ua1", "oa1", new AccessRightSet("read")),
-                    pap.query().graph().getAssociationsWithTarget("oa1").get(0)
+                    pap.query().graph().getAssociationsWithTarget("oa1").iterator().next()
             );
         }
 
@@ -771,8 +762,8 @@ public abstract class GraphModifierTest extends ModificationTest {
             pap.modify().graph().setResourceAccessRights(new AccessRightSet("read", "write"));
             pap.modify().graph().associate("ua1", "oa1", new AccessRightSet("read"));
 
-            List<Association> assocs = pap.query().graph().getAssociationsWithSource("ua1");
-            Association assoc = assocs.get(0);
+            Collection<Association> assocs = pap.query().graph().getAssociationsWithSource("ua1");
+            Association assoc = assocs.iterator().next();
             assertEquals("ua1", assoc.getSource());
             assertEquals("oa1", assoc.getTarget());
             assertEquals(new AccessRightSet("read"), assoc.getAccessRightSet());
@@ -780,7 +771,7 @@ public abstract class GraphModifierTest extends ModificationTest {
             pap.modify().graph().associate("ua1", "oa1", new AccessRightSet("read", "write"));
 
             assocs = pap.query().graph().getAssociationsWithSource("ua1");
-            assoc = assocs.get(0);
+            assoc = assocs.iterator().next();
             assertEquals("ua1", assoc.getSource());
             assertEquals("oa1", assoc.getTarget());
             assertEquals(new AccessRightSet("read", "write"), assoc.getAccessRightSet());
@@ -846,7 +837,7 @@ public abstract class GraphModifierTest extends ModificationTest {
             pap.modify().graph().associate("ua1", "oa1", new AccessRightSet("read"));
             pap.modify().graph().associate("ua1", "oa2", new AccessRightSet("read", "write"));
 
-            List<Association> assocs = pap.query().graph().getAssociationsWithSource("ua1");
+            Collection<Association> assocs = pap.query().graph().getAssociationsWithSource("ua1");
 
             assertEquals(2, assocs.size());
 
@@ -883,7 +874,7 @@ public abstract class GraphModifierTest extends ModificationTest {
             pap.modify().graph().associate("ua1", "oa1", new AccessRightSet("read"));
             pap.modify().graph().associate("ua2", "oa1", new AccessRightSet("read", "write"));
 
-            List<Association> assocs = pap.query().graph().getAssociationsWithTarget("oa1");
+            Collection<Association> assocs = pap.query().graph().getAssociationsWithTarget("oa1");
 
             assertEquals(2, assocs.size());
 

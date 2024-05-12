@@ -11,6 +11,7 @@ import gov.nist.csd.pm.pap.query.UserContext;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -65,7 +66,7 @@ public class ExecutionTest {
 
         assertEquals("v", pap.query().graph().getNode("pc1").getProperties().get("k"));
 
-        List<String> children = pap.query().graph().getChildren("pc1");
+        Collection<String> children = pap.query().graph().getChildren("pc1");
         assertTrue(children.containsAll(Arrays.asList("ua1", "ua2", "ua3")));
         children = pap.query().graph().getChildren("pc1");
         assertTrue(children.containsAll(Arrays.asList("oa1", "oa2", "oa3")));
@@ -80,11 +81,11 @@ public class ExecutionTest {
         assertTrue(pap.query().graph().getParents("o1").containsAll(Arrays.asList("oa1", "oa2", "oa3")));
 
         assertEquals(new Association("ua1", "oa1", new AccessRightSet("read", "write")),
-                pap.query().graph().getAssociationsWithSource("ua1").get(0));
+                pap.query().graph().getAssociationsWithSource("ua1").iterator().next());
         assertEquals(new Association("ua2", "oa2", new AccessRightSet("read", "write")),
-                pap.query().graph().getAssociationsWithSource("ua2").get(0));
+                pap.query().graph().getAssociationsWithSource("ua2").iterator().next());
         assertEquals(new Association("ua3", "oa3", new AccessRightSet("read", "write")),
-                pap.query().graph().getAssociationsWithSource("ua3").get(0));
+                pap.query().graph().getAssociationsWithSource("ua3").iterator().next());
 
         input = """
                 dissociate "ua1" and ["oa1"]

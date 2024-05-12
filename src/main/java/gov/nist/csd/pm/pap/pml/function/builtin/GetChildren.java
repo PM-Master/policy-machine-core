@@ -9,6 +9,7 @@ import gov.nist.csd.pm.pap.pml.value.StringValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class GetChildren extends FunctionDefinitionStatement {
@@ -22,11 +23,10 @@ public class GetChildren extends FunctionDefinitionStatement {
                               new FormalArgument("nodeName", Type.string())
                       )
                       .executor((ctx, pap) -> {
-                          List<String> children = pap.query().graph().getChildren(ctx.scope().getVariable("nodeName").getStringValue());
+                          Collection<String> children = pap.query().graph().getChildren(ctx.scope().getVariable("nodeName").getStringValue());
                           List<Value> childValues = new ArrayList<>(children.size());
-                          for (int i = 0; i < children.size(); i++) {
-                              childValues.add(new StringValue(children.get(i)));
-                          }
+
+                          children.forEach(child -> childValues.add(new StringValue(child)));
 
                           return new ArrayValue(childValues, returnType);
                       })

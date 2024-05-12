@@ -12,8 +12,8 @@ import gov.nist.csd.pm.pap.op.obligation.DeleteObligationOp;
 import gov.nist.csd.pm.pap.op.obligation.UpdateObligationOp;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.pdp.PDPEventEmitter;
 
+import java.util.Collection;
 import java.util.List;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
@@ -30,21 +30,21 @@ public class ObligationsModificationAdjudicator implements ObligationsModificati
     }
 
     @Override
-    public void create(UserContext author, String name, Rule... rules) throws PMException {
+    public void create(UserContext author, String name, Collection<Rule> rules) throws PMException {
         PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.OBLIGATIONS_TARGET.nodeName(), CREATE_OBLIGATION);
 
         pap.modify().obligations().create(author, name, rules);
 
-        eventEmitter.emitEvent(new EventContext(userCtx, new CreateObligationOp(author, name, List.of(rules))));
+        eventEmitter.emitEvent(new EventContext(userCtx, new CreateObligationOp(author, name, rules)));
     }
 
     @Override
-    public void update(UserContext author, String name, Rule... rules) throws PMException {
+    public void update(UserContext author, String name, Collection<Rule> rules) throws PMException {
         PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.OBLIGATIONS_TARGET.nodeName(), CREATE_OBLIGATION);
 
         pap.modify().obligations().update(author, name, rules);
 
-        eventEmitter.emitEvent(new EventContext(userCtx, new UpdateObligationOp(author, name, List.of(rules))));
+        eventEmitter.emitEvent(new EventContext(userCtx, new UpdateObligationOp(author, name, rules)));
     }
 
     @Override

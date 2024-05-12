@@ -1,73 +1,48 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
-import gov.nist.csd.pm.impl.memory.pap.unmodifiable.UnmodifiableNode;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.graph.relationship.Association;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 class VertexPolicyClass extends Vertex {
-
-    private UnmodifiableNode node;
-    private List<String> children;
+    private ObjectOpenHashSet<String> children;
 
     public VertexPolicyClass(String name, Map<String, String> properties) {
-        this.node = new UnmodifiableNode(name, NodeType.PC, properties);
-        this.children = Collections.unmodifiableList(new ArrayList<>());
-    }
-
-    private VertexPolicyClass(Node node, List<String> children) {
-        this.node = new UnmodifiableNode(node);
-        this.children = Collections.unmodifiableList(children);
+        super(name, NodeType.PC, properties);
+        this.children = new ObjectOpenHashSet<>();
     }
 
     @Override
-    protected void setProperties(Map<String, String> properties) {
-        node = new UnmodifiableNode(node.getName(), node.getType(), properties);
+    protected ObjectOpenHashSet<String> getParents() {
+        return new ObjectOpenHashSet<>();
     }
 
     @Override
-    public UnmodifiableNode getNode() {
-        return node;
-    }
-
-    @Override
-    public List<String> getParents() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<String> getChildren() {
+    protected ObjectOpenHashSet<String> getChildren() {
         return children;
     }
 
     @Override
-    public List<Association> getOutgoingAssociations() {
-        return Collections.emptyList();
+    protected ObjectOpenHashSet<Association> getOutgoingAssociations() {
+        return new ObjectOpenHashSet<>();
     }
 
     @Override
-    public List<Association> getIncomingAssociations() {
-        return Collections.emptyList();
+    protected ObjectOpenHashSet<Association> getIncomingAssociations() {
+        return new ObjectOpenHashSet<>();
     }
 
     @Override
     public void addAssignment(String child, String parent) {
-        List<String> l = new ArrayList<>(children);
-        l.add(child);
-        children = Collections.unmodifiableList(l);
+        children.add(child);
     }
 
     @Override
     public void deleteAssignment(String child, String parent) {
-        List<String> l = new ArrayList<>(children);
-        l.remove(child);
-        children = Collections.unmodifiableList(l);
+        children.remove(child);
     }
 
     @Override

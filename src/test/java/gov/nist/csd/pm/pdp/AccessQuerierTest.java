@@ -63,7 +63,7 @@ public abstract class AccessQuerierTest {
                 """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        List<String> actual = testCtx.pap().query().access().computeAccessibleChildren(new UserContext("u1"), "oa1");
+        Collection<String> actual = testCtx.pap().query().access().computeAccessibleChildren(new UserContext("u1"), "oa1");
         assertEquals(
                 Set.of("oa2", "o1", "o2"),
                 new HashSet<>(actual)
@@ -95,7 +95,7 @@ public abstract class AccessQuerierTest {
                """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        List<String> actual = testCtx.pap().query().access().computeAccessibleParents(new UserContext("u1"), "o1");
+        Collection<String> actual = testCtx.pap().query().access().computeAccessibleParents(new UserContext("u1"), "o1");
         assertEquals(
                 Set.of("oa1", "oa2"),
                 new HashSet<>(actual)
@@ -1003,13 +1003,12 @@ public abstract class AccessQuerierTest {
 
             testCtx.pap().modify().graph().associate(ua1, oa3, new AccessRightSet("read", "write", "execute"));
             testCtx.pap().modify().prohibitions().create("deny", ProhibitionSubject.userAttribute("ua1"), new AccessRightSet("read"), true,
-                                         new ContainerCondition(oa1, false),
-                                         new ContainerCondition(oa2, false)
+                    Collections.singleton(new ContainerCondition(oa1, false))
             );
 
             testCtx.pap().modify().prohibitions().create("deny2", ProhibitionSubject.user(u1), new AccessRightSet("write"),
                                          true,
-                                         new ContainerCondition(oa3, false)
+                    Collections.singleton(new ContainerCondition(oa3, false))
             );
 
 
@@ -1036,8 +1035,7 @@ public abstract class AccessQuerierTest {
             testCtx.pap().modify().prohibitions().create("deny", ProhibitionSubject.userAttribute(ua1),
                                          new AccessRightSet("read"),
                                          true,
-                                         new ContainerCondition(oa1, false),
-                                         new ContainerCondition(oa2, true)
+                    Collections.singleton(new ContainerCondition(oa1, false))
             );
 
 
@@ -1049,7 +1047,7 @@ public abstract class AccessQuerierTest {
             testCtx.pap().modify().prohibitions().create("deny-process", ProhibitionSubject.process("1234"),
                                                    new AccessRightSet("read"),
                                                    false,
-                                                   new ContainerCondition(oa1, false)
+                    Collections.singleton(new ContainerCondition(oa1, false))
             );
 
             assertEquals(
@@ -1078,8 +1076,7 @@ public abstract class AccessQuerierTest {
 
             testCtx.pap().modify().prohibitions().create("deny", ProhibitionSubject.user(u1), new AccessRightSet("read", "write"),
                                          true,
-                                         new ContainerCondition(oa4, true),
-                                         new ContainerCondition(oa1, false)
+                    Collections.singleton(new ContainerCondition(oa4, true))
             );
 
 
@@ -1106,8 +1103,7 @@ public abstract class AccessQuerierTest {
 
             testCtx.pap().modify().prohibitions().create("deny", ProhibitionSubject.user(u1), new AccessRightSet("read", "write"),
                                          true,
-                                         new ContainerCondition(oa1, false),
-                                         new ContainerCondition(oa2, false)
+                    Collections.singleton(new ContainerCondition(oa1, false))
             );
 
 
@@ -1164,9 +1160,7 @@ public abstract class AccessQuerierTest {
                     ProhibitionSubject.user("u1"),
                     new AccessRightSet("write"),
                     true,
-                    new ContainerCondition("oa1", false),
-                    new ContainerCondition("oa2", false),
-                    new ContainerCondition("oa3", false)
+                    Collections.singleton(new ContainerCondition("oa1", false))
             );
 
             testCtx.pap().modify().prohibitions().create(
@@ -1174,9 +1168,7 @@ public abstract class AccessQuerierTest {
                     ProhibitionSubject.user("u2"),
                     new AccessRightSet("write"),
                     false,
-                    new ContainerCondition("oa1", false),
-                    new ContainerCondition("oa2", false),
-                    new ContainerCondition("oa3", false)
+                    Collections.singleton(new ContainerCondition("oa1", false))
             );
 
             testCtx.pap().modify().prohibitions().create(
@@ -1184,8 +1176,7 @@ public abstract class AccessQuerierTest {
                     ProhibitionSubject.user("u3"),
                     new AccessRightSet("write"),
                     true,
-                    new ContainerCondition("oa1", false),
-                    new ContainerCondition("oa2", true)
+                    Collections.singleton(new ContainerCondition("oa1", false))
             );
 
             testCtx.pap().modify().prohibitions().create(
@@ -1193,8 +1184,7 @@ public abstract class AccessQuerierTest {
                     ProhibitionSubject.user("u4"),
                     new AccessRightSet("write"),
                     false,
-                    new ContainerCondition("oa1", false),
-                    new ContainerCondition("oa2", true)
+                    Collections.singleton(new ContainerCondition("oa1", false))
             );
 
             testCtx.pap().modify().prohibitions().create(
@@ -1202,7 +1192,7 @@ public abstract class AccessQuerierTest {
                     ProhibitionSubject.user("u4"),
                     new AccessRightSet("write"),
                     false,
-                    new ContainerCondition("oa2", true)
+                    Collections.singleton(new ContainerCondition("oa2", true))
             );
 
 
@@ -1288,7 +1278,7 @@ public abstract class AccessQuerierTest {
             testCtx.pap().modify().graph().associate("ua1", "oa1", new AccessRightSet("read"));
 
             testCtx.pap().modify().prohibitions().create("deny1", ProhibitionSubject.user("u1"), new AccessRightSet("read"), false,
-                                         new ContainerCondition("oa1", false)
+                    Collections.singleton(new ContainerCondition("oa1", false))
             );
 
 
@@ -1308,7 +1298,7 @@ public abstract class AccessQuerierTest {
             testCtx.pap().modify().graph().associate("ua1", "oa1", new AccessRightSet("read"));
 
             testCtx.pap().modify().prohibitions().create("deny1", ProhibitionSubject.user("u1"), new AccessRightSet("read"), false,
-                                         new ContainerCondition("oa1", true)
+                    Collections.singleton(new ContainerCondition("oa1", true))
             );
 
 

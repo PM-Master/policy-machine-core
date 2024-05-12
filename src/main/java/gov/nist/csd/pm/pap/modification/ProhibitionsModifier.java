@@ -9,6 +9,8 @@ import gov.nist.csd.pm.pap.exception.ProhibitionExistsException;
 import gov.nist.csd.pm.pap.exception.ProhibitionSubjectDoesNotExistException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 
+import java.util.Collection;
+
 import static gov.nist.csd.pm.pap.modification.GraphModifier.checkAccessRightsValid;
 
 public abstract class ProhibitionsModifier extends Modifier implements ProhibitionsModification {
@@ -17,12 +19,12 @@ public abstract class ProhibitionsModifier extends Modifier implements Prohibiti
                                            ProhibitionSubject subject,
                                            AccessRightSet accessRightSet,
                                            boolean intersection,
-                                           ContainerCondition... containerConditions) throws PMException;
+                                           Collection<ContainerCondition> containerConditions) throws PMException;
     protected abstract void updateInternal(String name,
                                            ProhibitionSubject subject,
                                            AccessRightSet accessRightSet,
                                            boolean intersection,
-                                           ContainerCondition... containerConditions) throws PMException;
+                                           Collection<ContainerCondition> containerConditions) throws PMException;
     protected abstract void deleteInternal(String name) throws PMException;
 
     @Override
@@ -30,7 +32,7 @@ public abstract class ProhibitionsModifier extends Modifier implements Prohibiti
                        ProhibitionSubject subject,
                        AccessRightSet accessRightSet,
                        boolean intersection,
-                       ContainerCondition... containerConditions) throws PMException {
+                       Collection<ContainerCondition> containerConditions) throws PMException {
         checkCreateInput(name, subject, accessRightSet, intersection, containerConditions);
 
         createInternal(name, subject, accessRightSet, intersection, containerConditions);
@@ -41,7 +43,7 @@ public abstract class ProhibitionsModifier extends Modifier implements Prohibiti
                        ProhibitionSubject subject,
                        AccessRightSet accessRightSet,
                        boolean intersection,
-                       ContainerCondition... containerConditions) throws PMException {
+                       Collection<ContainerCondition> containerConditions) throws PMException {
         checkUpdateInput(name, subject, accessRightSet, intersection, containerConditions);
 
         updateInternal(name, subject, accessRightSet, intersection, containerConditions);
@@ -59,15 +61,15 @@ public abstract class ProhibitionsModifier extends Modifier implements Prohibiti
     /**
      * Check the prohibition being created.
      *
-     * @param name The name of the prohibition.
-     * @param subject The subject of the prohibition.
-     * @param accessRightSet The denied access rights.
-     * @param intersection The boolean flag indicating an evaluation of the union or intersection of the container conditions.
+     * @param name                The name of the prohibition.
+     * @param subject             The subject of the prohibition.
+     * @param accessRightSet      The denied access rights.
+     * @param intersection        The boolean flag indicating an evaluation of the union or intersection of the container conditions.
      * @param containerConditions The prohibition container conditions.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected void checkCreateInput(String name, ProhibitionSubject subject, AccessRightSet accessRightSet,
-                                    boolean intersection, ContainerCondition... containerConditions) throws PMException {
+                                    boolean intersection, Collection<ContainerCondition> containerConditions) throws PMException {
         if (query().prohibitions().exists(name)) {
             throw new ProhibitionExistsException(name);
         }
@@ -81,15 +83,15 @@ public abstract class ProhibitionsModifier extends Modifier implements Prohibiti
     /**
      * Check the prohibition being updated.
      *
-     * @param name The name of the prohibition.
-     * @param subject The subject of the prohibition.
-     * @param accessRightSet The denied access rights.
-     * @param intersection The boolean flag indicating an evaluation of the union or intersection of the container conditions.
+     * @param name                The name of the prohibition.
+     * @param subject             The subject of the prohibition.
+     * @param accessRightSet      The denied access rights.
+     * @param intersection        The boolean flag indicating an evaluation of the union or intersection of the container conditions.
      * @param containerConditions The prohibition container conditions.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected void checkUpdateInput(String name, ProhibitionSubject subject, AccessRightSet accessRightSet,
-                                    boolean intersection , ContainerCondition ... containerConditions) throws PMException {
+                                    boolean intersection, Collection<ContainerCondition> containerConditions) throws PMException {
         if (!query().prohibitions().exists(name)) {
             throw new ProhibitionDoesNotExistException(name);
         }
@@ -125,7 +127,7 @@ public abstract class ProhibitionsModifier extends Modifier implements Prohibiti
         }
     }
 
-    protected void checkProhibitionContainersExist(ContainerCondition ... containerConditions)
+    protected void checkProhibitionContainersExist(Collection<ContainerCondition> containerConditions)
             throws PMException {
         for (ContainerCondition container : containerConditions) {
             if (!query().graph().nodeExists(container.getName())) {

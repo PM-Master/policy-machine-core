@@ -10,6 +10,7 @@ import gov.nist.csd.pm.pap.pml.value.ProhibitionValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class GetProhibitionsFor extends FunctionDefinitionStatement {
@@ -19,22 +20,22 @@ public class GetProhibitionsFor extends FunctionDefinitionStatement {
 
     public GetProhibitionsFor() {
         super(new FunctionDefinitionStatement.Builder("getProhibitionsFor")
-                      .returns(returnType)
-                      .args(
-                              new FormalArgument("subject", Type.string())
-                      )
-                      .executor((ctx, pap) -> {
-                                    String subject = ctx.scope().getVariable("subject").getStringValue();
-                                    List<Prohibition> prohibitions = pap.query().prohibitions().getWithSubject(subject);
-                                    List<Value> prohibitionValues = new ArrayList<>(prohibitions.size());
-                                    for (Prohibition prohibition : prohibitions) {
-                                        prohibitionValues.add(new ProhibitionValue(prohibition).getValue());
-                                    }
+                .returns(returnType)
+                .args(
+                        new FormalArgument("subject", Type.string())
+                )
+                .executor((ctx, pap) -> {
+                            String subject = ctx.scope().getVariable("subject").getStringValue();
+                            Collection<Prohibition> prohibitions = pap.query().prohibitions().getWithSubject(subject);
+                            List<Value> prohibitionValues = new ArrayList<>(prohibitions.size());
+                            for (Prohibition prohibition : prohibitions) {
+                                prohibitionValues.add(new ProhibitionValue(prohibition).getValue());
+                            }
 
-                                    return new ArrayValue(prohibitionValues, returnType);
-                                }
-                      )
-                      .build()
+                            return new ArrayValue(prohibitionValues, returnType);
+                        }
+                )
+                .build()
         );
     }
 

@@ -1,7 +1,6 @@
 package gov.nist.csd.pm.pdp.adjudicator;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.exception.PMRuntimeException;
 import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
@@ -14,9 +13,9 @@ import gov.nist.csd.pm.pap.query.GraphQuery;
 import gov.nist.csd.pm.pdp.exception.UnauthorizedException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.GET_ASSOCIATIONS;
 
@@ -57,8 +56,8 @@ public class GraphQueryAdjudicator implements GraphQuery {
     }
 
     @Override
-    public List<String> search(NodeType type, Map<String, String> properties) throws PMException {
-        List<String> search = pap.query().graph().search(type, properties);
+    public Collection<String> search(NodeType type, Map<String, String> properties) throws PMException {
+        Collection<String> search = pap.query().graph().search(type, properties);
         search.removeIf(node -> {
             try {
                 PrivilegeChecker.check(pap, userCtx, node);
@@ -72,7 +71,7 @@ public class GraphQueryAdjudicator implements GraphQuery {
     }
 
     @Override
-    public List<String> getPolicyClasses() throws PMException {
+    public Collection<String> getPolicyClasses() throws PMException {
         List<String> policyClasses = new ArrayList<>();
         for (String pc : pap.query().graph().getPolicyClasses()) {
             try {
@@ -88,7 +87,7 @@ public class GraphQueryAdjudicator implements GraphQuery {
     }
 
     @Override
-    public List<String> getParents(String node) throws PMException {
+    public Collection<String> getParents(String node) throws PMException {
         List<String> parents = new ArrayList<>();
         for (String parent : pap.query().graph().getParents(node)) {
             try {
@@ -104,7 +103,7 @@ public class GraphQueryAdjudicator implements GraphQuery {
     }
 
     @Override
-    public List<String> getChildren(String node) throws PMException {
+    public Collection<String> getChildren(String node) throws PMException {
         List<String> children = new ArrayList<>();
         for (String child : pap.query().graph().getChildren(node)) {
             try {
@@ -120,24 +119,24 @@ public class GraphQueryAdjudicator implements GraphQuery {
     }
 
     @Override
-    public List<Association> getAssociationsWithSource(String ua) throws PMException {
+    public Collection<Association> getAssociationsWithSource(String ua) throws PMException {
         return getAssociations(pap.query().graph().getAssociationsWithSource(ua));
     }
 
     @Override
-    public List<Association> getAssociationsWithTarget(String target) throws PMException {
+    public Collection<Association> getAssociationsWithTarget(String target) throws PMException {
         return getAssociations(pap.query().graph().getAssociationsWithTarget(target));
     }
 
     @Override
-    public List<String> getAttributeContainers(String node) throws PMException {
+    public Collection<String> getAttributeContainers(String node) throws PMException {
         PrivilegeChecker.check(pap, userCtx, node, AdminAccessRights.REVIEW_POLICY);
 
         return pap.query().graph().getAttributeContainers(node);
     }
 
     @Override
-    public List<String> getPolicyClassContainers(String node) throws PMException {
+    public Collection<String> getPolicyClassContainers(String node) throws PMException {
         PrivilegeChecker.check(pap, userCtx, node, AdminAccessRights.REVIEW_POLICY);
 
         return pap.query().graph().getPolicyClassContainers(node);
@@ -151,7 +150,7 @@ public class GraphQueryAdjudicator implements GraphQuery {
         return pap.query().graph().isContained(subject, container);
     }
 
-    private List<Association> getAssociations(List<Association> associations) {
+    private List<Association> getAssociations(Collection<Association> associations) {
         List<Association> ret = new ArrayList<>();
         for (Association association : associations) {
             try {

@@ -5,10 +5,7 @@ import gov.nist.csd.pm.pap.exception.*;
 import gov.nist.csd.pm.pap.modification.PolicyModifier;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static gov.nist.csd.pm.pap.AdminPolicyNode.*;
 
@@ -72,7 +69,7 @@ public class AdminPolicy {
     }
 
     private static void verifyPolicyClasses(PolicyModifier modifier, PolicyQuery querier) throws PMException {
-        List<String> policyClasses = querier.graph().getPolicyClasses();
+        Collection<String> policyClasses = querier.graph().getPolicyClasses();
         for (String pc : policyClasses) {
             String repOA = policyClassTargetName(pc);
             if (querier.graph().nodeExists(repOA)) {

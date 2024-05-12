@@ -10,6 +10,7 @@ import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -23,8 +24,8 @@ public class PolicyEquals {
         // check nodes
         // assignments
         // associations
-        List<String> aNodes = a.graph().search(NodeType.ANY, NO_PROPERTIES);
-        List<String> bNodes = b.graph().search(NodeType.ANY, NO_PROPERTIES);
+        Collection<String> aNodes = a.graph().search(NodeType.ANY, NO_PROPERTIES);
+        Collection<String> bNodes = b.graph().search(NodeType.ANY, NO_PROPERTIES);
         assertTrue(aNodes.containsAll(bNodes));
         assertTrue(bNodes.containsAll(aNodes));
 
@@ -33,22 +34,22 @@ public class PolicyEquals {
             Node bNode = b.graph().getNode(nodeName);
             assertEquals(aNode, bNode);
 
-            List<String> aChildren = a.graph().getChildren(nodeName);
-            List<String> aParents = a.graph().getParents(nodeName);
+            Collection<String> aChildren = a.graph().getChildren(nodeName);
+            Collection<String> aParents = a.graph().getParents(nodeName);
 
-            List<String> bChildren = b.graph().getChildren(nodeName);
-            List<String> bParents = b.graph().getParents(nodeName);
+            Collection<String> bChildren = b.graph().getChildren(nodeName);
+            Collection<String> bParents = b.graph().getParents(nodeName);
 
             assertTrue(aChildren.containsAll(bChildren));
             assertTrue(bChildren.containsAll(aChildren));
             assertTrue(aParents.containsAll(bParents));
             assertTrue(bParents.containsAll(aParents));
 
-            List<Association> aSourceAssocs = a.graph().getAssociationsWithSource(nodeName);
-            List<Association> aTargetAssocs = a.graph().getAssociationsWithTarget(nodeName);
+            Collection<Association> aSourceAssocs = a.graph().getAssociationsWithSource(nodeName);
+            Collection<Association> aTargetAssocs = a.graph().getAssociationsWithTarget(nodeName);
 
-            List<Association> bSourceAssocs = b.graph().getAssociationsWithSource(nodeName);
-            List<Association> bTargetAssocs = b.graph().getAssociationsWithTarget(nodeName);
+            Collection<Association> bSourceAssocs = b.graph().getAssociationsWithSource(nodeName);
+            Collection<Association> bTargetAssocs = b.graph().getAssociationsWithTarget(nodeName);
 
             assertTrue(aSourceAssocs.containsAll(bSourceAssocs));
             assertTrue(bSourceAssocs.containsAll(aSourceAssocs));
@@ -57,15 +58,15 @@ public class PolicyEquals {
         }
 
         // check prohibitions
-        Map<String, List<Prohibition>> aProhibitions = a.prohibitions().getAll();
-        Map<String, List<Prohibition>> bProhibitions = b.prohibitions().getAll();
+        Map<String, Collection<Prohibition>> aProhibitions = a.prohibitions().getAll();
+        Map<String, Collection<Prohibition>> bProhibitions = b.prohibitions().getAll();
 
         assertTrue(aProhibitions.keySet().containsAll(bProhibitions.keySet()));
         assertTrue(aProhibitions.values().containsAll(bProhibitions.values()));
 
         // check obligations
-        List<Obligation> aObligations = a.obligations().getAll();
-        List<Obligation> bObligations = b.obligations().getAll();
+        Collection<Obligation> aObligations = a.obligations().getAll();
+        Collection<Obligation> bObligations = b.obligations().getAll();
 
         assertTrue(aObligations.containsAll(bObligations));
         assertTrue(bObligations.containsAll(aObligations));

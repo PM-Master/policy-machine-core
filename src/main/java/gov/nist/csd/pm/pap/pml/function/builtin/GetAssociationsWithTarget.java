@@ -9,6 +9,7 @@ import gov.nist.csd.pm.pap.pml.value.ArrayValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class GetAssociationsWithTarget extends FunctionDefinitionStatement {
@@ -23,7 +24,7 @@ public class GetAssociationsWithTarget extends FunctionDefinitionStatement {
                       )
                       .executor((ctx, pap) -> {
                           Value target = ctx.scope().getVariable("target");
-                          List<Association> associations = pap.query().graph().getAssociationsWithTarget(target.getStringValue());
+                          Collection<Association> associations = pap.query().graph().getAssociationsWithTarget(target.getStringValue());
                           List<Value> associationValues = new ArrayList<>(associations.size());
                           for (Association association : associations) {
                               associationValues.add(Value.fromObject(association));

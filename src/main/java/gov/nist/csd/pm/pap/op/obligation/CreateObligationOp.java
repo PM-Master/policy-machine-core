@@ -3,11 +3,12 @@ package gov.nist.csd.pm.pap.op.obligation;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.obligation.Rule;
 
+import java.util.Collection;
 import java.util.List;
 
 public class CreateObligationOp extends ObligationOp {
 
-    public CreateObligationOp(UserContext author, String name, List<Rule> rules) {
+    public CreateObligationOp(UserContext author, String name, Collection<Rule> rules) {
         super(author, name, rules);
     }
 

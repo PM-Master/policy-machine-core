@@ -4,6 +4,8 @@ import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.obligation.Rule;
 
+import java.util.Collection;
+
 /**
  * NGAC obligation methods.
  */
@@ -16,22 +18,22 @@ public interface ObligationsModification {
      * will be executed. <p>
      *
      * @param author The user/process that is creating the obligation.
-     * @param name The name of the obligation.
-     * @param rules The rules of the obligation.
+     * @param name   The name of the obligation.
+     * @param rules  The rules of the obligation.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    void create(UserContext author, String name, Rule... rules) throws PMException;
+    void create(UserContext author, String name, Collection<Rule> rules) throws PMException;
 
     /**
      * Update the author and rules of the obligation with the given name. This will overwrite any existing rules to the rules
      * provided and update the existing author. <p>
      *
      * @param author The user/process that updated the obligation.
-     * @param name The name of the obligation to update.
-     * @param rules The updated obligation rules.
+     * @param name   The name of the obligation to update.
+     * @param rules  The updated obligation rules.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    void update(UserContext author, String name, Rule... rules) throws PMException;
+    void update(UserContext author, String name, Collection<Rule> rules) throws PMException;
 
     /**
      * Delete the obligation with the given name. If the obligation does not exist, no exception is thrown as this is

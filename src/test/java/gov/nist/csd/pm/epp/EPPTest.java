@@ -8,8 +8,6 @@ import gov.nist.csd.pm.common.obligation.Response;
 import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.pap.AdminPolicyNode;
-import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.op.graph.CreateObjectAttributeOp;
@@ -139,7 +137,7 @@ class EPPTest {
 
         pdp.runTx(new UserContext("u1"), (policy) -> {
             policy.modify().obligations().create(new UserContext("u1"), "test",
-                    new Rule("rule1",
+                    List.of(new Rule("rule1",
                             new EventPattern(pAny("subject"), pEquals("op", new StringValue(CREATE_OBJECT_ATTRIBUTE))),
                             new Response("evtCtx", List.of(
                                     new CreateNonPCStatement(
@@ -149,7 +147,7 @@ class EPPTest {
                                     ),
                                     new CreatePolicyStatement(new StringLiteral("pc2"))
                             ))
-                    )
+                    ))
             );
         });
 
@@ -249,14 +247,4 @@ class EPPTest {
                 List.of("oa1")));
         assertFalse(pap.query().graph().nodeExists("test"));
     }
-
-
-    /*
-    TODO
-
-    test order of responses, a response should be fully executed before another another response that is triggered from eithin the first response executes
-            will need a queuq and instead of executing the respnse, add it to the queue
-
-            implement fastutil for memory pap
-     */
 }
