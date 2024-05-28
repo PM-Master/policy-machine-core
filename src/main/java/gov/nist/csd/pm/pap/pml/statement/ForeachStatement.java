@@ -1,16 +1,17 @@
-package gov.nist.csd.pm.policy.pml.statement;
+package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.policy.Policy;
-import gov.nist.csd.pm.policy.pml.model.context.ExecutionContext;
-import gov.nist.csd.pm.policy.pml.model.expression.Value;
-import gov.nist.csd.pm.policy.exceptions.PMException;
-import gov.nist.csd.pm.policy.pml.model.scope.PMLScopeException;
+import com.github.benmanes.caffeine.cache.Policy;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
+import gov.nist.csd.pm.pap.pml.expression.Expression;
+import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
+import gov.nist.csd.pm.pap.pml.value.*;
 
 import java.util.List;
 import java.util.Objects;
 
-import static gov.nist.csd.pm.policy.pml.PMLExecutor.executeStatementBlock;
-import static gov.nist.csd.pm.policy.pml.PMLFormatter.statementsToString;
+import static gov.nist.csd.pm.pap.pml.PMLExecutor.executeStatementBlock;
 
 public class ForeachStatement extends PMLStatement {
 
@@ -27,22 +28,22 @@ public class ForeachStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, Policy policy) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         if (statements.isEmpty()) {
-            return new Value();
+            return new VoidValue();
         }
 
-        Value iterValue = iter.execute(ctx, policy);
-        if (iterValue.isArray()) {
-            return executeArrayIterator(iterValue, ctx, policy);
-        } else if (iterValue.isMap()) {
-            return executeMapIterator(iterValue,ctx,policy);
+        Value iterValue = iter.execute(ctx, pap);
+        if (iterValue instanceof ArrayValue arrayValue) {
+            return executeArrayIterator(iterValue, ctx, pap);
+        } else if (iterValue instanceof MapValue mapValue) {
+            return executeMapIterator(iterValue, ctx, pap);
         }
 
-        return new Value();
+        return new VoidValue();
     }
 
-    private Value executeArrayIterator(Value iterValue,ExecutionContext ctx, Policy policy ) throws PMException{
+    private Value executeArrayIterator(Value iterValue,ExecutionContext ctx, PAP pap) throws PMException{
         for (Value v : iterValue.getArrayValue()) {
             ExecutionContext localExecutionCtx;
             try {
@@ -51,22 +52,22 @@ public class ForeachStatement extends PMLStatement {
                 throw new RuntimeException(e);
             }
 
-            localExecutionCtx.scope().putValue(varName, v);
+            localExecutionCtx.scope().addVariable(varName, v);
 
-            Value value = executeStatementBlock(localExecutionCtx, policy, statements);
+            Value value = executeStatementBlock(localExecutionCtx, pap, statements);
 
-            if (value.isBreak()) {
+            if (value instanceof BreakValue) {
                 break;
-            } else if (value.isReturn()) {
+            } else if (value instanceof ReturnValue) {
                 return value;
             }
 
-            ctx.scope().overwriteValues(localExecutionCtx.scope());
+            ctx.scope().local().overwriteFromLocalScope(localExecutionCtx.scope().local());
         }
-        return new Value();
+        return new VoidValue();
     }
 
-    private Value executeMapIterator(Value iterValue, ExecutionContext ctx, Policy policy ) throws PMException{
+    private Value executeMapIterator(Value iterValue, ExecutionContext ctx, PAP pap) throws PMException{
         for (Value key : iterValue.getMapValue().keySet()) {
             ExecutionContext localExecutionCtx;
             try {
@@ -77,29 +78,30 @@ public class ForeachStatement extends PMLStatement {
 
             Value mapValue = iterValue.getMapValue().get(key);
 
-            localExecutionCtx.scope().putValue(varName, key);
+            localExecutionCtx.scope().addVariable(varName, key);
             if (valueVarName != null) {
-                localExecutionCtx.scope().putValue(valueVarName, mapValue);
+                localExecutionCtx.scope().addVariable(valueVarName, mapValue);
             }
 
-            Value value = executeStatementBlock(localExecutionCtx, policy, statements);
+            Value value = executeStatementBlock(localExecutionCtx, pap, statements);
 
-            if (value.isBreak()) {
+            if (value instanceof BreakValue) {
                 break;
-            } else if (value.isReturn()) {
+            } else if (value instanceof ReturnValue) {
                 return value;
             }
 
-            ctx.scope().overwriteValues(localExecutionCtx.scope());
+            ctx.scope().local().overwriteFromLocalScope(localExecutionCtx.scope().local());
         }
-        return new Value();
+        return new VoidValue();
     }
+
     @Override
-    public String toString() {
-        return String.format("foreach %s in %s {%s}",
-                (valueVarName != null ? String.format("%s, %s", varName, valueVarName) : varName),
+    public String toFormattedString(int indentLevel) {
+        return String.format("%sforeach %s in %s %s",
+                indent(indentLevel), (valueVarName != null ? String.format("%s, %s", varName, valueVarName) : varName),
                 iter,
-                statementsToString(statements)
+                new PMLStatementBlock(statements).toFormattedString(indentLevel)
         );
     }
 

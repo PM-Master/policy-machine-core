@@ -424,10 +424,9 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected boolean checkDissociateInput(String ua, String target) throws PMException {
-        if (!query().graph().nodeExists(ua)) {
-            throw new NodeDoesNotExistException(ua);
-        } else if (!query().graph().nodeExists(target)) {
-            throw new NodeDoesNotExistException(target);
+        boolean nodesNotExist = (!query().graph().nodeExists(ua) || !query().graph().nodeExists(target));
+        if (nodesNotExist) {
+            return false;
         }
 
         Collection<Association> associations = query().graph().getAssociationsWithSource(ua);
