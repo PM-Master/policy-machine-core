@@ -1,6 +1,5 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import com.github.benmanes.caffeine.cache.Policy;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -35,16 +34,16 @@ public class ForeachStatement extends PMLStatement {
 
         Value iterValue = iter.execute(ctx, pap);
         if (iterValue instanceof ArrayValue arrayValue) {
-            return executeArrayIterator(iterValue, ctx, pap);
+            return executeArrayIterator(arrayValue, ctx, pap);
         } else if (iterValue instanceof MapValue mapValue) {
-            return executeMapIterator(iterValue, ctx, pap);
+            return executeMapIterator(mapValue, ctx, pap);
         }
 
         return new VoidValue();
     }
 
-    private Value executeArrayIterator(Value iterValue,ExecutionContext ctx, PAP pap) throws PMException{
-        for (Value v : iterValue.getArrayValue()) {
+    private Value executeArrayIterator(ArrayValue iterValue, ExecutionContext ctx, PAP pap) throws PMException{
+        for (Value v : iterValue.getValue()) {
             ExecutionContext localExecutionCtx;
             try {
                 localExecutionCtx = ctx.copy();
@@ -67,8 +66,8 @@ public class ForeachStatement extends PMLStatement {
         return new VoidValue();
     }
 
-    private Value executeMapIterator(Value iterValue, ExecutionContext ctx, PAP pap) throws PMException{
-        for (Value key : iterValue.getMapValue().keySet()) {
+    private Value executeMapIterator(MapValue iterValue, ExecutionContext ctx, PAP pap) throws PMException{
+        for (Value key : iterValue.getValue().keySet()) {
             ExecutionContext localExecutionCtx;
             try {
                 localExecutionCtx = ctx.copy();
