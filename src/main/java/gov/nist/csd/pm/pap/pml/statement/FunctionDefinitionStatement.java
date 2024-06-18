@@ -1,17 +1,15 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
-import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
 import gov.nist.csd.pm.pap.pml.function.FunctionExecutor;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.exception.PMLExecutionException;
 import gov.nist.csd.pm.pap.pml.type.Type;
-import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,9 +91,9 @@ public class FunctionDefinitionStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMLExecutionException {
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMLExecutionException {
         try {
-            pap.modify().pml().createFunction(this);
+            policy.modify().pml().createFunction(this);
         } catch (PMException e) {
             throw new PMLExecutionException(e);
         }

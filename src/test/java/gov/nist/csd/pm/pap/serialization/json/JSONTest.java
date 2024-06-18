@@ -5,6 +5,7 @@ import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.util.PolicyEquals;
+import gov.nist.csd.pm.util.SamplePolicy;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
@@ -17,10 +18,8 @@ public class JSONTest {
 
     @Test
     void testSerialization() throws PMException, IOException {
-        String json = IOUtils.resourceToString("json/JSONTest.json", StandardCharsets.UTF_8, JSONTest.class.getClassLoader());
-
         PAP pap = new MemoryPAP();
-        pap.deserialize(new UserContext("u1"), json, new JSONDeserializer());
+        SamplePolicy.loadSamplePolicyFromJSON(pap);
 
         String serialize = pap.serialize(new JSONSerializer());
 

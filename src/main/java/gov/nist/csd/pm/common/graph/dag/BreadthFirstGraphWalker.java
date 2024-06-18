@@ -6,7 +6,9 @@ import gov.nist.csd.pm.pap.query.GraphQuery;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class BreadthFirstGraphWalker implements GraphWalker {
 
@@ -64,16 +66,21 @@ public class BreadthFirstGraphWalker implements GraphWalker {
 
     private boolean walkInternal(String start) throws PMException {
         Collection<String> nextLevel = getNextLevel(start);
+        Set<String> skip = new HashSet<>();
         for (String n : nextLevel) {
             visitor.visit(n);
             if (allPathsShortCircuit.evaluate(n)){
                 return true;
             } else if (singlePathShortCircuit.evaluate(n)){
-                return false;
+                skip.add(n);
+                continue;
             }
 
             propagator.propagate(n, start);
         }
+
+        // remove skipped nodes
+        nextLevel.removeIf(skip::contains);
 
         for (String n : nextLevel) {
             if (walkInternal(n)) {

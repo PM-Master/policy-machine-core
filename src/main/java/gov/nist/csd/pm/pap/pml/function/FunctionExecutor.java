@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap.pml.function;
 
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
@@ -11,6 +12,6 @@ import gov.nist.csd.pm.pap.pml.value.Value;
  */
 public interface FunctionExecutor {
 
-    Value exec(ExecutionContext ctx, PAP pap) throws PMException;
+    Value exec(ExecutionContext ctx, PolicyPoint pap) throws PMException;
 
 }

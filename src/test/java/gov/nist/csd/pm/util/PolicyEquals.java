@@ -40,10 +40,10 @@ public class PolicyEquals {
             Collection<String> bChildren = b.graph().getChildren(nodeName);
             Collection<String> bParents = b.graph().getParents(nodeName);
 
-            assertTrue(aChildren.containsAll(bChildren));
-            assertTrue(bChildren.containsAll(aChildren));
-            assertTrue(aParents.containsAll(bParents));
-            assertTrue(bParents.containsAll(aParents));
+            assertTrue(aChildren.containsAll(bChildren), nodeName + ": " + aChildren + " != " + bChildren);
+            assertTrue(bChildren.containsAll(aChildren), nodeName + ": " + bChildren + " != " + aChildren);
+            assertTrue(aParents.containsAll(bParents), nodeName + ": " + aParents + " != " + bParents);
+            assertTrue(bParents.containsAll(aParents), nodeName + ": " + bParents + " != " + aParents);
 
             Collection<Association> aSourceAssocs = a.graph().getAssociationsWithSource(nodeName);
             Collection<Association> aTargetAssocs = a.graph().getAssociationsWithTarget(nodeName);
@@ -51,10 +51,10 @@ public class PolicyEquals {
             Collection<Association> bSourceAssocs = b.graph().getAssociationsWithSource(nodeName);
             Collection<Association> bTargetAssocs = b.graph().getAssociationsWithTarget(nodeName);
 
-            assertTrue(aSourceAssocs.containsAll(bSourceAssocs));
-            assertTrue(bSourceAssocs.containsAll(aSourceAssocs));
-            assertTrue(aTargetAssocs.containsAll(bTargetAssocs));
-            assertTrue(bTargetAssocs.containsAll(aTargetAssocs));
+            assertTrue(aSourceAssocs.containsAll(bSourceAssocs), aSourceAssocs + " != " + bSourceAssocs);
+            assertTrue(bSourceAssocs.containsAll(aSourceAssocs), bSourceAssocs + " != " + aSourceAssocs);
+            assertTrue(aTargetAssocs.containsAll(bTargetAssocs), aTargetAssocs + " != " + bTargetAssocs);
+            assertTrue(bTargetAssocs.containsAll(aTargetAssocs), bTargetAssocs + " != " + aTargetAssocs);
         }
 
         // check prohibitions

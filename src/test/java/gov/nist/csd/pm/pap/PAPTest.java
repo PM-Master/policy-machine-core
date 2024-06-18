@@ -4,6 +4,8 @@ import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.pap.admin.AdminPolicy;
+import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.serialization.json.JSONDeserializer;
 import gov.nist.csd.pm.pap.serialization.json.JSONSerializer;
 import gov.nist.csd.pm.pap.pml.type.Type;
@@ -169,8 +171,8 @@ public abstract class PAPTest {
                     })
                     .build();
 
-            pap.executePML(new UserContext("u1"), "create ua \"ua3\" assign to [\"pc2\"]\ntestfunc()", functionDefinitionStatement);
-            assertTrue(pap.query().graph().nodeExists("ua3"));
+            pap.executePML(new UserContext("u1"), "create ua \"ua4\" assign to [\"pc2\"]\ntestfunc()", functionDefinitionStatement);
+            assertTrue(pap.query().graph().nodeExists("ua4"));
             assertTrue(pap.query().graph().nodeExists("pc3"));
         } catch (IOException e) {
             throw new RuntimeException(e);

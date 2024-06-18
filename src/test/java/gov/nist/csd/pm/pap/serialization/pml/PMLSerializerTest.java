@@ -1,13 +1,15 @@
 package gov.nist.csd.pm.pap.serialization.pml;
 
 import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
-import gov.nist.csd.pm.pap.AdminPolicy;
+import gov.nist.csd.pm.pap.admin.AdminPolicy;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.util.PolicyEquals;
+import gov.nist.csd.pm.util.SamplePolicy;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -68,5 +70,21 @@ class PMLSerializerTest {
 
         PolicyEquals.assertPolicyEquals(pap.query(), testPAP.query());
     }
+
+    @Test
+    void testSerialization2() throws PMException, IOException {
+        MemoryPAP pap = new MemoryPAP();
+        UserContext userContext = new UserContext("u1");
+
+        SamplePolicy.loadSamplePolicyFromPML(pap);
+
+        PAP testPAP = new MemoryPAP();
+        String serialize = pap.serialize(new PMLSerializer());
+        testPAP.deserialize(userContext, serialize, new PMLDeserializer());
+
+        PolicyEquals.assertPolicyEquals(pap.query(), testPAP.query());
+    }
+
+
 
 }

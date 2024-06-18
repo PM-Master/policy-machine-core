@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
@@ -42,8 +42,8 @@ public class NegatedExpression extends Expression {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
-        Value value = expression.execute(ctx, pap);
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+        Value value = expression.execute(ctx, policy);
 
         return new ComplementedValue(value);
     }

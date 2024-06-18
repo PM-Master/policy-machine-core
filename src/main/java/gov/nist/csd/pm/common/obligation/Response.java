@@ -2,6 +2,7 @@ package gov.nist.csd.pm.common.obligation;
 
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
 import gov.nist.csd.pm.pap.pml.value.ReturnValue;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
@@ -37,7 +38,7 @@ public class Response implements Serializable {
         return stmts;
     }
 
-    public Value execute(ExecutionContext executionCtx, PAP pap, EventContext eventCtx) throws PMException {
+    public Value execute(ExecutionContext executionCtx, PolicyPoint pap, EventContext eventCtx) throws PMException {
         executionCtx.scope().local().addVariable(eventCtxVariable, Value.fromObject(eventCtx));
 
         for (PMLStatement stmt : stmts) {

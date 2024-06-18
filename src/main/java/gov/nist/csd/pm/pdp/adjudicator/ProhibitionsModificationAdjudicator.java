@@ -2,7 +2,7 @@ package gov.nist.csd.pm.pdp.adjudicator;
 
 import gov.nist.csd.pm.common.obligation.EventContext;
 import gov.nist.csd.pm.epp.EventEmitter;
-import gov.nist.csd.pm.pap.AdminPolicyNode;
+import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.modification.ProhibitionsModification;
 import gov.nist.csd.pm.common.exception.PMException;
@@ -15,7 +15,6 @@ import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 
 import java.util.Collection;
-import java.util.List;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 

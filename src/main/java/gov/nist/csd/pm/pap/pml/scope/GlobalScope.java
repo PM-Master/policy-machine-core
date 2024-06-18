@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap.pml.scope;
 
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.op.AdminAccessRights;
 import gov.nist.csd.pm.pap.pml.PMLBuiltinFunctions;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
@@ -16,12 +17,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static gov.nist.csd.pm.pap.AdminPolicyNode.*;
-import static gov.nist.csd.pm.pap.AdminPolicyNode.OBLIGATIONS_TARGET;
+import static gov.nist.csd.pm.pap.admin.AdminPolicyNode.*;
+import static gov.nist.csd.pm.pap.admin.AdminPolicyNode.OBLIGATIONS_TARGET;
 
 public class GlobalScope<V, F> implements Serializable {
 
-    public static GlobalScope<Variable, FunctionSignature> forCompile(PAP pap, FunctionDefinitionStatement ... customFunctionStatements)
+    public static GlobalScope<Variable, FunctionSignature> forCompile(PolicyPoint pap, FunctionDefinitionStatement ... customFunctionStatements)
             throws PMException {
         // buitin variables
         Map<String, Variable> builtinConstants = new HashMap<>();
@@ -69,7 +70,7 @@ public class GlobalScope<V, F> implements Serializable {
         return new GlobalScope<>(builtinConstants, persistedConstants, builtinFunctions, persistedFunctions, customFunctions);
     }
 
-    public static GlobalScope<Value, FunctionDefinitionStatement> forExecute(PAP pap, FunctionDefinitionStatement ... customFunctionStatements)
+    public static GlobalScope<Value, FunctionDefinitionStatement> forExecute(PolicyPoint pap, FunctionDefinitionStatement ... customFunctionStatements)
             throws PMException {
         // buitin variables
         Map<String, Value> builtinVariables = new HashMap<>();

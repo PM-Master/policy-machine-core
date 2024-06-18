@@ -1,30 +1,27 @@
 package gov.nist.csd.pm.pap.serialization.json;
 
-import gov.nist.csd.pm.pap.AdminPolicy;
-import gov.nist.csd.pm.pap.AdminPolicyNode;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.graph.relationship.Association;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
+import gov.nist.csd.pm.pap.admin.AdminPolicy;
+import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.serialization.PolicySerializer;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
+import org.neo4j.procedure.Admin;
 
 import java.util.*;
 
 import static gov.nist.csd.pm.common.graph.node.NodeType.*;
-import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
+import static gov.nist.csd.pm.pap.admin.AdminPolicyNode.ADMIN_POLICY;
+import static gov.nist.csd.pm.pap.admin.AdminPolicyNode.POLICY_CLASS_TARGETS;
 
 public class JSONSerializer implements PolicySerializer {
-
-    private Map<Association, List<String>> delayedAssociations;
-    private Set<String> createdPCs;
-    private Set<String> createdAttrs;
-
-    public JSONSerializer() {}
 
     @Override
     public String serialize(PolicyQuery policyQuery) throws PMException {
@@ -33,8 +30,6 @@ public class JSONSerializer implements PolicySerializer {
     }
 
     public JSONPolicy buildJSONPolicy(PolicyQuery policyQuery) throws PMException {
-        resetBuild(policyQuery);
-
         return new JSONPolicy(
                 policyQuery.graph().getResourceAccessRights(),
                 buildGraphJSON(policyQuery),
@@ -44,14 +39,7 @@ public class JSONSerializer implements PolicySerializer {
         );
     }
 
-    private void resetBuild(PolicyQuery policyQuery) throws PMException {
-        this.delayedAssociations = new HashMap<>();
-        this.createdPCs = new HashSet<>();
-        this.createdAttrs = new HashSet<>();
-    }
-
-
-    private JSONUserDefinedPML buildUserDefinedPML(PolicyQuery policyQuery) throws PMException {
+    private JSONPML buildUserDefinedPML(PolicyQuery policyQuery) throws PMException {
         Map<String, FunctionDefinitionStatement> functions = policyQuery.pml().getFunctions();
         Map<String, String> jsonFunctions = new HashMap<>();
         for (Map.Entry<String, FunctionDefinitionStatement> e : functions.entrySet()) {
@@ -61,6 +49,7 @@ public class JSONSerializer implements PolicySerializer {
         Map<String, Value> constants = policyQuery.pml().getConstants();
         Map<String, String> jsonConstants = new HashMap<>();
         for (Map.Entry<String, Value> e : constants.entrySet()) {
+            // do not serialize admin policy constants
             if (AdminPolicy.isAdminPolicyNodeConstantName(e.getKey())) {
                 continue;
             }
@@ -68,7 +57,7 @@ public class JSONSerializer implements PolicySerializer {
             jsonConstants.put(e.getKey(), e.getValue().toString());
         }
 
-        return new JSONUserDefinedPML(jsonFunctions, jsonConstants);
+        return new JSONPML(jsonFunctions, jsonConstants);
     }
 
     private List<String> buildObligationsJSON(PolicyQuery policyQuery) throws PMException {
@@ -97,170 +86,151 @@ public class JSONSerializer implements PolicySerializer {
         return new JSONGraph(
                 buildPolicyClasses(policyQuery),
                 buildUserAttributes(policyQuery),
-                buildObjectAttributes(policyQuery),
-                buildUsersOrObjects(policyQuery, U),
-                buildUsersOrObjects(policyQuery, O)
+                buildNonUANodes(policyQuery, OA),
+                buildNonUANodes(policyQuery, U),
+                buildNonUANodes(policyQuery, O)
         );
     }
 
-    private List<JSONObjectAttribute> buildObjectAttributes(PolicyQuery policyQuery) {
-        return null;
-    }
+    private Map<String, JSONNode> buildNonUANodes(PolicyQuery policyQuery, NodeType type) throws PMException {
+        Map<String, JSONNode> nodes = new HashMap<>();
 
-    private List<JSONUserAttribute> buildUserAttributes(PolicyQuery policyQuery) {
-        return null;
-    }
+        Collection<String> search = policyQuery.graph().search(type, new HashMap<>());
+        for (String node : search) {
+            AdminOrTarget adminOrTarget = isAdminNodeOrTargetNode(policyQuery, node);
 
-    private List<JSONUserOrObject> buildUsersOrObjects(PolicyQuery policyQuery, NodeType type)
-            throws PMException {
-        List<JSONUserOrObject> userOrObjects = new ArrayList<>();
-
-        Collection<String> search = policyQuery.graph().search(type, NO_PROPERTIES);
-        for (String userOrObject : search) {
-            JSONUserOrObject jsonUserOrObject = new JSONUserOrObject();
-            jsonUserOrObject.setName(userOrObject);
-
-            Node node = policyQuery.graph().getNode(userOrObject);
-            if (!node.getProperties().isEmpty()) {
-                jsonUserOrObject.setProperties(node.getProperties());
-            }
-
-            jsonUserOrObject.setAssignments(policyQuery.graph().getParents(userOrObject));
-
-            userOrObjects.add(jsonUserOrObject);
-        }
-
-        return userOrObjects;
-    }
-
-    private List<JSONPolicyClass> buildPolicyClasses(PolicyQuery policyQuery) throws PMException {
-        List<JSONPolicyClass> policyClassesList = new ArrayList<>();
-
-        Collection<String> policyClasses = policyQuery.graph().getPolicyClasses();
-        for (String pc : policyClasses) {
-            JSONPolicyClass jsonPolicyClass = buildJSONPolicyCLass(pc, policyQuery);
-
-            createdPCs.add(pc);
-
-            // ignore the creation of the admin policy class - it is done automatically
-            if (jsonPolicyClass.getName().equals(AdminPolicyNode.ADMIN_POLICY.nodeName())) {
+            if (isUnmodifiedAdminNodeOrTarget(policyQuery, node, adminOrTarget)) {
                 continue;
             }
 
-            policyClassesList.add(jsonPolicyClass);
+            Node n = policyQuery.graph().getNode(node);
+
+            String name = n.getName();
+            Map<String, String> properties = n.getProperties();
+            Collection<String> parents = new ArrayList<>(policyQuery.graph().getParents(name));
+
+            // remove default admin node assignments
+            if (adminOrTarget == AdminOrTarget.TARGET) {
+                parents.remove(POLICY_CLASS_TARGETS.nodeName());
+            } else if (adminOrTarget == AdminOrTarget.ADMIN) {
+                parents.remove(ADMIN_POLICY.nodeName());
+            }
+
+            nodes.put(name, new JSONNode(properties, parents));
+        }
+
+        return nodes;
+    }
+
+    private AdminOrTarget isAdminNodeOrTargetNode(PolicyQuery policyQuery, String node) throws PMException {
+        // check target node first because of the admin policy class target node
+        // which satisfies both conditions
+        boolean isTargetNode = isPolicyClassTarget(policyQuery, node);
+        if (isTargetNode) {
+            return AdminOrTarget.TARGET;
+        }
+
+        boolean isAdminNode = AdminPolicy.isAdminPolicyNodeName(node);
+        if (isAdminNode) {
+            return AdminOrTarget.ADMIN;
+        }
+
+        // return null to denote neither an admin node ot a target node
+        return null;
+    }
+
+    private boolean isUnmodifiedAdminNodeOrTarget(PolicyQuery policyQuery, String node, AdminOrTarget isAdminOrTarget) throws PMException {
+        if (isAdminOrTarget == null) {
+            return false;
+        }
+
+        Collection<String> parents = policyQuery.graph().getParents(node);
+        boolean unmodified;
+
+        // check target node first because of the admin policy class target node
+        // which satisfies both conditions
+        if (isAdminOrTarget == AdminOrTarget.TARGET) {
+            unmodified = parents.contains(POLICY_CLASS_TARGETS.nodeName()) && parents.size() == 1;
+        } else {
+            unmodified = parents.contains(AdminPolicyNode.ADMIN_POLICY.nodeName()) && parents.size() == 1;
+        }
+
+        return unmodified;
+    }
+
+    enum AdminOrTarget {
+        ADMIN,
+        TARGET
+    }
+
+    private boolean isPolicyClassTarget(PolicyQuery query, String name) throws PMException {
+        Collection<String> pcNames = query.graph().getPolicyClasses();
+
+        for (String pcName : pcNames) {
+            pcName = AdminPolicy.policyClassTargetName(pcName);
+            if (pcName.equals(name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    private Map<String, JSONNode> buildUserAttributes(PolicyQuery policyQuery) throws PMException {
+        Map<String, JSONNode> userAttributes = new HashMap<>();
+
+        Collection<String> search = policyQuery.graph().search(UA, new HashMap<>());
+        for (String node : search) {
+            Node n = policyQuery.graph().getNode(node);
+
+            String name = n.getName();
+            Map<String, String> properties = n.getProperties();
+            Collection<String> parents = policyQuery.graph().getParents(name);
+            Collection<Association> assocList = policyQuery.graph().getAssociationsWithSource(name);
+            Map<String, AccessRightSet> assocMap = new HashMap<>();
+
+            for (Association assoc : assocList) {
+                assocMap.put(assoc.getTarget(), assoc.getAccessRightSet());
+            }
+
+            JSONNode jsonNode;
+            if (assocMap.isEmpty()) {
+                jsonNode = new JSONNode(properties, parents);
+            } else {
+                jsonNode = new JSONNode(properties, parents, assocMap);
+            }
+
+            userAttributes.put(name, jsonNode);
+        }
+
+        return userAttributes;
+    }
+
+    private Map<String, JSONPolicyClass> buildPolicyClasses(PolicyQuery policyQuery) throws PMException {
+        Map<String, JSONPolicyClass> policyClassesList = new HashMap<>();
+
+        Collection<String> policyClasses = policyQuery.graph().getPolicyClasses();
+        for (String pc : policyClasses) {
+            if (AdminPolicy.isAdminPolicyNodeName(pc)) {
+                continue;
+            }
+
+            JSONPolicyClass jsonPolicyClass = buildJSONPolicyCLass(pc, policyQuery);
+
+            policyClassesList.put(pc, jsonPolicyClass);
         }
 
         return policyClassesList;
     }
 
     private JSONPolicyClass buildJSONPolicyCLass(String pc, PolicyQuery policyQuery) throws PMException {
-        List<Association> associations = new ArrayList<>();
-
-        // uas
-        List<JSONNode> userAttributes = getAttributes(pc, UA, associations, policyQuery);
-
-        // oas
-        List<JSONNode> objectAttributes = getAttributes(pc, OA, associations, policyQuery);
-
-        // associations
-        Map<String, List<JSONAssociation>> jsonAssociations = new HashMap<>();
-        for (Association association : associations) {
-            List<String> waitingFor = delayedAssociations.getOrDefault(association, new ArrayList<>());
-            waitingFor.removeAll(createdAttrs);
-
-            if (waitingFor.isEmpty()) {
-                List<JSONAssociation> nodeAssociations = jsonAssociations.getOrDefault(association.getSource(), new ArrayList<>());
-                nodeAssociations.add(new JSONAssociation(association.getTarget(), association.getAccessRightSet()));
-                jsonAssociations.put(association.getSource(), nodeAssociations);
-
-                delayedAssociations.remove(association);
-            } else {
-                // update the list of nodes the association is waiting for
-                delayedAssociations.put(association, waitingFor);
-            }
-        }
-
-        // check delayed associations
-        Iterator<Map.Entry<Association, List<String>>> iterator = delayedAssociations.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<Association, List<String>> next = iterator.next();
-            Association association = next.getKey();
-            List<String> waitingFor = next.getValue();
-            waitingFor.removeAll(createdAttrs);
-
-            if (waitingFor.isEmpty()) {
-                List<JSONAssociation> nodeAssociations = jsonAssociations.getOrDefault(association.getSource(), new ArrayList<>());
-                nodeAssociations.add(new JSONAssociation(association.getTarget(), association.getAccessRightSet()));
-                jsonAssociations.put(association.getSource(), nodeAssociations);
-
-                iterator.remove();
-            }
-        }
-
         Node node = policyQuery.graph().getNode(pc);
-        boolean isAdminNode = AdminPolicy.isAdminPolicyNodeName(pc);
-
         JSONPolicyClass jsonPolicyClass = new JSONPolicyClass();
-        jsonPolicyClass.setName(pc);
-        if (!isAdminNode && !node.getProperties().isEmpty()) {
+        if (!node.getProperties().isEmpty()) {
             jsonPolicyClass.setProperties(node.getProperties());
         }
 
         return jsonPolicyClass;
-    }
-
-    private List<JSONNode> getAttributes(String start, NodeType type, List<Association> associations, PolicyQuery policyQuery) throws PMException {
-        List<JSONNode> jsonNodes = new ArrayList<>();
-        Collection<String> children = policyQuery.graph().getChildren(start);
-
-        for(String child : children) {
-            Node node = policyQuery.graph().getNode(child);
-            if (node.getType() != type) {
-                continue;
-            }
-
-            Collection<Association> nodeAssociations = policyQuery.graph().getAssociationsWithTarget(node.getName());
-            for (Association association : nodeAssociations) {
-                List<String> waitingFor = new ArrayList<>(List.of(association.getSource()));
-                if (!AdminPolicy.isAdminPolicyNodeName(association.getTarget())) {
-                    waitingFor.add(association.getTarget());
-                }
-
-                delayedAssociations.put(association, waitingFor);
-            }
-
-            // if the node is a UA, then check for any associations with admin policy nodes, those will be created here
-            // since the admin policy is not serialized
-            if (node.getType() == UA) {
-                Collection<Association> uaAssociations = policyQuery.graph()
-                        .getAssociationsWithSource(node.getName());
-                for (Association association : uaAssociations) {
-                    String target = association.getTarget();
-                    if (AdminPolicy.isAdminPolicyNodeName(target)) {
-                        nodeAssociations.add(association);
-                    }
-                }
-            }
-
-            associations.addAll(nodeAssociations);
-
-            JSONNode jsonNode = new JSONNode();
-            jsonNode.setName(child);
-
-            if (!node.getProperties().isEmpty() && !createdAttrs.contains(child)) {
-                jsonNode.setProperties(node.getProperties());
-            }
-
-            createdAttrs.add(child);
-
-            List<JSONNode> childAttrs = getAttributes(child, type, associations, policyQuery);
-            if (!childAttrs.isEmpty()) {
-                jsonNode.setChildren(childAttrs);
-            }
-
-            jsonNodes.add(jsonNode);
-        }
-
-        return jsonNodes;
     }
 }

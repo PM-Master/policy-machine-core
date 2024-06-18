@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pap.pml;
 
 import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.query.UserContext;
@@ -18,7 +19,7 @@ import java.util.Map;
 
 public class PMLExecutor {
 
-    public static void compileAndExecutePML(PAP pap, UserContext author, String input,
+    public static void compileAndExecutePML(PolicyPoint pap, UserContext author, String input,
                                             FunctionDefinitionStatement ... customFunctions) throws PMException {
         // compile the PML into statements
         CompiledPML compiledPML = PMLCompiler.compilePML(pap, input, customFunctions);
@@ -47,7 +48,7 @@ public class PMLExecutor {
         }
     }
 
-    private static Map<String, Value> evaluateConstantStmts(PAP pap, Map<String, Expression> constants)
+    private static Map<String, Value> evaluateConstantStmts(PolicyPoint pap, Map<String, Expression> constants)
             throws PMException {
         Map<String, Value> constantsMap = new HashMap<>();
 
@@ -61,7 +62,7 @@ public class PMLExecutor {
         return constantsMap;
     }
 
-    public static Value executeStatementBlock(ExecutionContext executionCtx, PAP pap, List<PMLStatement> statements) throws PMException {
+    public static Value executeStatementBlock(ExecutionContext executionCtx, PolicyPoint pap, List<PMLStatement> statements) throws PMException {
         for (PMLStatement statement : statements) {
             Value value = statement.execute(executionCtx, pap);
             if (value instanceof ReturnValue || value instanceof BreakValue || value instanceof ContinueValue) {

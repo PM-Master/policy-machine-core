@@ -1,51 +1,67 @@
-/*
- block comment
-*/
-// constants
-const C1 = "constant1"
-const C2 = "constant1"
-const C3 = "constant1"
-
-// functions
-function f1() string {
-    return "hello world"
+// pml functions and constants
+const TEST_CONST = "hello world"
+function testFunc(string name) {
+    create pc name
 }
 
-function f2(string s) string {
-    return s
-}
-
-// graph
+// resource operations
 set resource access rights ["read", "write"]
 
-// policy class: pm_admin:policy
-create object attribute "pc1:target" assign to [POLICY_CLASS_TARGETS]
-create object attribute "pc2:target" assign to [POLICY_CLASS_TARGETS]
+// GRAPH
+// policy classes
+create PC "pc1"
+create PC "pc2"
+testFunc(TEST_CONST)
 
-// policy class: pc1
-create policy class "pc1"
-create user attribute "ua1" assign to ["pc1"]
-set properties of "ua1" to {"k1": "v1", "k": "v"}
-create object attribute "oa1" assign to ["pc1"]
-associate "ua1" and "oa1" with ["read", "create_policy_class", "write"]
-associate "ua1" and PML_FUNCTIONS_TARGET with [create_function]
-associate "ua1" and "pc2:target" with [create_user_attribute]
+// user attributes
+create UA "ua1" assign to ["pc1"]
+create UA "ua2" assign to ["pc1", "pc2"]
+create UA "ua3" assign to ["ua2"]
 
-// policy class: pc2
-create policy class "pc2"
-create user attribute "ua2" assign to ["pc2"]
-create object attribute "oa2" assign to ["pc2"]
-associate "ua2" and "oa2" with ["read", "write"]
+// object attributes
+create OA "oa1" assign to ["pc1"]
+create OA "oa2" assign to ["pc1", "pc2", pcTargetName(TEST_CONST)]
+
+associate "ua1" and "oa1" with ["write"]
+associate "ua2" and "oa2" with ["read"]
+
+associate "ua1" and POLICY_CLASS_TARGETS with ["*a"]
+associate "ua1" and PML_FUNCTIONS_TARGET with ["*a"]
+associate "ua1" and pcTargetName(TEST_CONST) with ["*a"]
 
 // users
-create user "u1" assign to ["ua1", "ua2"]
-create user "u2" assign to ["ua1", "ua2"]
+create U "u1" assign to ["ua1", "ua2"]
+create U "u2" assign to ["ua2"]
 
 // objects
-create object "o1" assign to ["oa1", "oa2"]
+create O "o1" assign to ["oa1", "oa2"]
 
-// prohibitions
-create prohibition "u2-prohibition" deny user "u2" access rights ["write"] on intersection of ["oa1", "oa2"]
+// PROHIBITIONS
+create prohibition "p1" deny user "u1" access rights ["write"] on intersection of ["oa1", "oa2"]
+create prohibition "p2" deny user "u1" access rights ["write"] on intersection of ["oa1", "oa2"]
 
-// obligations
-create obligation "o1-obligation" {create rule "o1-assignment-rule" when subject => pAny() performs op => pEquals("assign") on operand1 => pEquals("o1") do (evtCtx) {parent := evtCtx["parent"]associate "ua1" and parent with ["read", "write"]associate "ua2" and parent with ["read", "write"] create prohibition "u2-prohibition" deny user "u2" access rights ["write"] on intersection of ["oa1", "oa2"]}}
+// OBLIGATIONS
+create obligation "o1" {
+    create rule "o1-assignment-rule"
+    when subject => pAny()
+    performs op => pEquals("assign")
+    on operand1 => pEquals("o1")
+    do (evtCtx) {
+        parent := evtCtx["parent"]
+        associate "ua1" and parent with ["read", "write"]
+        associate "ua2" and parent with ["read", "write"]
+        create prohibition "u2-prohibition" deny user "u2" access rights ["write"] on intersection of ["oa1", "oa2"]
+    }
+}
+create obligation "o2" {
+    create rule "o1-assignment-rule"
+    when subject => pAny()
+    performs op => pEquals("assign")
+    on operand1 => pEquals("o1")
+    do (evtCtx) {
+        parent := evtCtx["parent"]
+        associate "ua1" and parent with ["read", "write"]
+        associate "ua2" and parent with ["read", "write"]
+        create prohibition "u2-prohibition" deny user "u2" access rights ["write"] on intersection of ["oa1", "oa2"]
+    }
+}

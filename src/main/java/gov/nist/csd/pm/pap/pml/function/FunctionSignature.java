@@ -1,8 +1,7 @@
 package gov.nist.csd.pm.pap.pml.function;
 
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
@@ -49,7 +48,7 @@ public class FunctionSignature extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
         return new VoidValue();
     }
 

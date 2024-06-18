@@ -1,13 +1,11 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
-import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.List;
 import java.util.Objects;
@@ -32,16 +30,16 @@ public class AssignStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
-        Value childValue = this.child.execute(ctx, pap);
-        Value assignToValue = this.assignTo.execute(ctx, pap);
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+        Value childValue = this.child.execute(ctx, policy);
+        Value assignToValue = this.assignTo.execute(ctx, policy);
 
         String childStringValue = childValue.getStringValue();
 
         List<Value> valueArr = assignToValue.getArrayValue();
         for (Value value : valueArr) {
             String parent = value.getStringValue();
-            pap.modify().graph().assign(childStringValue, parent);
+            policy.modify().graph().assign(childStringValue, parent);
         }
 
         return new VoidValue();

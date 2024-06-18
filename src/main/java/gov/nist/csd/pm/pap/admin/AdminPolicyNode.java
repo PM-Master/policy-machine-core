@@ -1,6 +1,6 @@
-package gov.nist.csd.pm.pap;
+package gov.nist.csd.pm.pap.admin;
 
-import static gov.nist.csd.pm.pap.AdminPolicy.policyClassTargetName;
+import static gov.nist.csd.pm.pap.admin.AdminPolicy.policyClassTargetName;
 
 public enum AdminPolicyNode {
     ADMIN_POLICY("PM_ADMIN"),

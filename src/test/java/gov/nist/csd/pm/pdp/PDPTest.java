@@ -2,8 +2,8 @@ package gov.nist.csd.pm.pdp;
 
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
-import gov.nist.csd.pm.pap.AdminPolicy;
-import gov.nist.csd.pm.pap.AdminPolicyNode;
+import gov.nist.csd.pm.pap.admin.AdminPolicy;
+import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.exception.BootstrapExistingPolicyException;
 import gov.nist.csd.pm.pap.exception.NodeNameExistsException;
@@ -141,14 +141,14 @@ class PDPTest {
 
             pdp.runTx(new UserContext("u1"), policy -> {
                 policy.modify().pml().createFunction(functionDefinitionStatement);
-                policy.executePML(new UserContext("u1"), "create ua \"ua3\" assign to [\"pc2\"]");
+                policy.executePML(new UserContext("u1"), "create ua \"ua4\" assign to [\"pc2\"]");
             });
 
             assertTrue(pap.query().graph().nodeExists("ua3"));
 
             UnauthorizedException e = assertThrows(UnauthorizedException.class, () -> {
-                pdp.runTx(new UserContext("u1"), policy -> {
-                    policy.executePML(new UserContext("u1"), "testfunc()");
+                pdp.runTx(new UserContext("u2"), policy -> {
+                    policy.executePML(new UserContext("u2"), "testfunc()");
                 });
             });
 

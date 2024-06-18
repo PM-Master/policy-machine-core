@@ -1,11 +1,11 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.expression.NegatedExpression;
 import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
@@ -68,10 +68,10 @@ public class CreateProhibitionStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
-        Value idValue = this.name .execute(ctx, pap);
-        Value subjectValue = this.subject.execute(ctx, pap);
-        Value permissionsValue = this.accessRights.execute(ctx, pap);
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+        Value idValue = this.name .execute(ctx, policy);
+        Value subjectValue = this.subject.execute(ctx, policy);
+        Value permissionsValue = this.accessRights.execute(ctx, policy);
 
         List<Value> arrayValue = permissionsValue.getArrayValue();
         AccessRightSet ops = new AccessRightSet();
@@ -80,7 +80,7 @@ public class CreateProhibitionStatement extends PMLStatement {
         }
 
         List<ContainerCondition> containerConditions = new ArrayList<>();
-        for (Value container : containers.execute(ctx, pap).getArrayValue()) {
+        for (Value container : containers.execute(ctx, policy).getArrayValue()) {
             boolean isComplement = container instanceof ComplementedValue;
             String containerName = container.getStringValue();
 
@@ -88,7 +88,7 @@ public class CreateProhibitionStatement extends PMLStatement {
         }
 
 
-        pap.modify().prohibitions().create(
+        policy.modify().prohibitions().create(
                 idValue.getStringValue(),
                 new ProhibitionSubject(subjectValue.getStringValue(), subjectType),
                 ops,

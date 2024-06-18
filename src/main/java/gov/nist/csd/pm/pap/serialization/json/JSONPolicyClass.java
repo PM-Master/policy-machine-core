@@ -5,24 +5,14 @@ import java.util.Map;
 
 public class JSONPolicyClass {
 
-    private String name;
     private Map<String, String> properties;
 
     public JSONPolicyClass() {
 
     }
 
-    public JSONPolicyClass(String name, Map<String, String> properties) {
-        this.name = name;
+    public JSONPolicyClass(Map<String, String> properties) {
         this.properties = properties;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Map<String, String> getProperties() {

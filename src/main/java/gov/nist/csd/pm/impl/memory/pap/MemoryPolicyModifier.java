@@ -3,10 +3,7 @@ package gov.nist.csd.pm.impl.memory.pap;
 import gov.nist.csd.pm.pap.modification.*;
 import gov.nist.csd.pm.common.exception.PMException;
 
-import static gov.nist.csd.pm.pap.AdminPolicy.Verifier;
-import static gov.nist.csd.pm.pap.AdminPolicy.verify;
-import static gov.nist.csd.pm.common.graph.node.NodeType.OA;
-import static gov.nist.csd.pm.common.graph.node.NodeType.PC;
+import static gov.nist.csd.pm.pap.admin.AdminPolicy.Verifier;
 
 public class MemoryPolicyModifier extends PolicyModifier implements Verifier {
 

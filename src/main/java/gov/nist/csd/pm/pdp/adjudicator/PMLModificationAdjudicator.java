@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pdp.adjudicator;
 
-import gov.nist.csd.pm.pap.AdminPolicyNode;
+import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.modification.PMLModification;
 import gov.nist.csd.pm.common.exception.PMException;

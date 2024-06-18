@@ -1,5 +1,8 @@
 package gov.nist.csd.pm.pap;
 
+import gov.nist.csd.pm.pap.admin.AdminPolicy;
+import gov.nist.csd.pm.pap.modification.PolicyModifier;
+import gov.nist.csd.pm.pap.query.PolicyQuerier;
 import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.pap.serialization.PolicySerializer;
 import gov.nist.csd.pm.pap.modification.PolicyModification;
@@ -12,13 +15,11 @@ import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.common.tx.Transactional;
 
-public abstract class PAP implements Transactional, PMLExecutable {
+public abstract class PAP implements PolicyPoint {
 
-    public abstract PolicyModification modify();
+    public abstract PolicyModifier modify();
 
-    public abstract PolicyQuery query();
-
-    public abstract void reset() throws PMException;
+    public abstract PolicyQuerier query();
 
     @Override
     public void executePML(UserContext userContext, String input, FunctionDefinitionStatement... functionDefinitionStatements) throws PMException {

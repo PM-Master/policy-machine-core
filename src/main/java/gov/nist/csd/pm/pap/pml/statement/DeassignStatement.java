@@ -1,12 +1,11 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
-import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,16 +30,16 @@ public class DeassignStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
-        Value childValue = child.execute(ctx, pap);
-        Value deassignFromValue = deassignFrom.execute(ctx, pap);
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+        Value childValue = child.execute(ctx, policy);
+        Value deassignFromValue = deassignFrom.execute(ctx, policy);
 
         String childStringValue = childValue.getStringValue();
 
         List<Value> valueArr = deassignFromValue.getArrayValue();
         for (Value value : valueArr) {
             String parent = value.getStringValue();
-            pap.modify().graph().deassign(childStringValue, parent);
+            policy.modify().graph().deassign(childStringValue, parent);
         }
 
         return new VoidValue();

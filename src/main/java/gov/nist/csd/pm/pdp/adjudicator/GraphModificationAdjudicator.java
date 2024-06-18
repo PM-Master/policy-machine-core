@@ -2,8 +2,8 @@ package gov.nist.csd.pm.pdp.adjudicator;
 
 import gov.nist.csd.pm.common.obligation.EventContext;
 import gov.nist.csd.pm.epp.EventEmitter;
-import gov.nist.csd.pm.pap.AdminPolicy;
-import gov.nist.csd.pm.pap.AdminPolicyNode;
+import gov.nist.csd.pm.pap.admin.AdminPolicy;
+import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.modification.GraphModification;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;

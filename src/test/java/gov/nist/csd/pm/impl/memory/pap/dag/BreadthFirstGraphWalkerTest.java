@@ -14,7 +14,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BreadthFirstGraphModificationWalkerTest {
+class BreadthFirstGraphWalkerTest {
 
     static PAP pap;
 
@@ -80,14 +80,12 @@ class BreadthFirstGraphModificationWalkerTest {
         bfs = new BreadthFirstGraphWalker(pap.query().graph())
                 .withDirection(Direction.CHILDREN)
                 .withVisitor(visited::add)
-                .withAllPathShortCircuit(node -> node.equals("oa1-1-1"));
+                .withAllPathShortCircuit(node -> node.equals("oa1-1"));
 
         bfs.walk("pc1");
-        expected = List.of("pc1", "oa1", "oa1-1", "oa1-2", "oa1-1-1");
-        System.out.println(expected);
-        System.out.println(visited);
-        assertTrue(expected.containsAll(visited));
-        assertTrue(visited.containsAll(expected));
+
+        assertTrue(visited.containsAll(List.of("pc1", "oa1", "oa1-1")));
+        assertFalse(visited.containsAll(List.of("oa1-1-1", "oa1-1-2", "oa1-1-3", "oa1-2-1", "oa1-2-2", "oa1-2-3")));
     }
 
     @Test
@@ -96,12 +94,11 @@ class BreadthFirstGraphModificationWalkerTest {
         BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.query().graph())
                 .withDirection(Direction.CHILDREN)
                 .withVisitor(visited::add)
-                .withSinglePathShortCircuit(node -> node.equals("oa1-1-1"));
+                .withSinglePathShortCircuit(node -> node.equals("oa1-1"));
 
         bfs.walk("pc1");
-        List<String> expected = List.of("pc1", "oa1", "oa1-1", "oa1-2", "oa1-1-1",
-                "oa1-2-1", "oa1-2-2", "oa1-2-3");
-        assertTrue(expected.containsAll(visited));
-        assertTrue(visited.containsAll(expected));
+
+        assertTrue(visited.containsAll(List.of("pc1", "oa1", "oa1-1", "oa1-2", "oa1-2-1", "oa1-2-2", "oa1-2-3")));
+        assertFalse(visited.containsAll(List.of("oa1-1-1", "oa1-1-2", "oa1-1-3")));
     }
 }

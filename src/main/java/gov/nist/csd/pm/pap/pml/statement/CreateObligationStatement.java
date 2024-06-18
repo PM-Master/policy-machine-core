@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
 import gov.nist.csd.pm.common.obligation.EventPattern;
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.pattern.PatternExpression;
@@ -38,18 +38,18 @@ public class CreateObligationStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
         UserContext author = ctx.author();
-        String nameStr = name.execute(ctx, pap).getStringValue();
+        String nameStr = name.execute(ctx, policy).getStringValue();
 
         // execute the create rule statements and add to obligation
         List<Rule> rules = new ArrayList<>();
         for (CreateRuleStatement createRuleStmt : ruleStmts) {
-            Rule rule = createRuleStmt.execute(ctx, pap).getRuleValue();
+            Rule rule = createRuleStmt.execute(ctx, policy).getRuleValue();
             rules.add(rule);
         }
 
-        pap.modify().obligations().create(author, nameStr, rules);
+        policy.modify().obligations().create(author, nameStr, rules);
 
         return new VoidValue();
     }

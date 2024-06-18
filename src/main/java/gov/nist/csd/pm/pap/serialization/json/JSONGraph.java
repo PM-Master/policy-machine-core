@@ -1,23 +1,20 @@
 package gov.nist.csd.pm.pap.serialization.json;
 
-import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 public class JSONGraph {
 
-    List<JSONPolicyClass> pcs;
-    List<JSONUserAttribute> uas;
-    List<JSONObjectAttribute> oas;
-    List<JSONUserOrObject> users;
-    List<JSONUserOrObject> objects;
+    Map<String, JSONPolicyClass> pcs;
+    Map<String, JSONNode> uas;
+    Map<String, JSONNode> oas;
+    Map<String, JSONNode> users;
+    Map<String, JSONNode> objects;
 
-    public JSONGraph(List<JSONPolicyClass> pcs,
-                     List<JSONUserAttribute> uas,
-                     List<JSONObjectAttribute> oas,
-                     List<JSONUserOrObject> users,
-                     List<JSONUserOrObject> objects) {
+    public JSONGraph(Map<String, JSONPolicyClass> pcs,
+                     Map<String, JSONNode> uas,
+                     Map<String, JSONNode> oas,
+                     Map<String, JSONNode> users,
+                     Map<String, JSONNode> objects) {
         this.pcs = pcs;
         this.uas = uas;
         this.oas = oas;
@@ -25,43 +22,43 @@ public class JSONGraph {
         this.objects = objects;
     }
 
-    public List<JSONPolicyClass> getPcs() {
+    public Map<String, JSONPolicyClass> getPcs() {
         return pcs;
     }
 
-    public void setPcs(List<JSONPolicyClass> pcs) {
+    public void setPcs(Map<String, JSONPolicyClass> pcs) {
         this.pcs = pcs;
     }
 
-    public List<JSONUserAttribute> getUas() {
+    public Map<String, JSONNode> getUas() {
         return uas;
     }
 
-    public void setUas(List<JSONUserAttribute> uas) {
+    public void setUas(Map<String, JSONNode> uas) {
         this.uas = uas;
     }
 
-    public List<JSONObjectAttribute> getOas() {
+    public Map<String, JSONNode> getOas() {
         return oas;
     }
 
-    public void setOas(List<JSONObjectAttribute> oas) {
+    public void setOas(Map<String, JSONNode> oas) {
         this.oas = oas;
     }
 
-    public List<JSONUserOrObject> getUsers() {
+    public Map<String, JSONNode> getUsers() {
         return users;
     }
 
-    public void setUsers(List<JSONUserOrObject> users) {
+    public void setUsers(Map<String, JSONNode> users) {
         this.users = users;
     }
 
-    public List<JSONUserOrObject> getObjects() {
+    public Map<String, JSONNode> getObjects() {
         return objects;
     }
 
-    public void setObjects(List<JSONUserOrObject> objects) {
+    public void setObjects(Map<String, JSONNode> objects) {
         this.objects = objects;
     }
 }

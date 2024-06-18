@@ -1,12 +1,11 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.node.NodeType;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
-import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 
 import java.util.*;
@@ -49,9 +48,9 @@ public class CreateNonPCStatement extends PMLStatement{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
-        Value nameValue = name.execute(ctx, pap);
-        Value assignToValue = assignTo.execute(ctx, pap);
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+        Value nameValue = name.execute(ctx, policy);
+        Value assignToValue = assignTo.execute(ctx, policy);
 
         List<String> parents = new ArrayList<>();
 
@@ -61,22 +60,22 @@ public class CreateNonPCStatement extends PMLStatement{
         }
 
         switch (type) {
-            case UA -> pap.modify().graph().createUserAttribute(
+            case UA -> policy.modify().graph().createUserAttribute(
                     nameValue.getStringValue(),
                     new HashMap<>(),
                     parents
             );
-            case OA -> pap.modify().graph().createObjectAttribute(
+            case OA -> policy.modify().graph().createObjectAttribute(
                     nameValue.getStringValue(),
                     new HashMap<>(),
                     parents
             );
-            case U -> pap.modify().graph().createUser(
+            case U -> policy.modify().graph().createUser(
                     nameValue.getStringValue(),
                     new HashMap<>(),
                     parents
             );
-            case O -> pap.modify().graph().createObject(
+            case O -> policy.modify().graph().createObject(
                     nameValue.getStringValue(),
                     new HashMap<>(),
                     parents
@@ -84,14 +83,14 @@ public class CreateNonPCStatement extends PMLStatement{
         }
 
         if (withProperties != null) {
-            Value propertiesValue = withProperties.execute(ctx, pap);
+            Value propertiesValue = withProperties.execute(ctx, policy);
 
             Map<String, String> properties = new HashMap<>();
             for (Map.Entry<Value, Value> e : propertiesValue.getMapValue().entrySet()) {
                 properties.put(e.getKey().getStringValue(), e.getValue().getStringValue());
             }
 
-            pap.modify().graph().setNodeProperties(nameValue.getStringValue(), properties);
+            policy.modify().graph().setNodeProperties(nameValue.getStringValue(), properties);
         }
 
         return new VoidValue();

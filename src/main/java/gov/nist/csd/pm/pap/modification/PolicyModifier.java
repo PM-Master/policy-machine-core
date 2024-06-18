@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.modification;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.AdminPolicy;
-import gov.nist.csd.pm.pap.AdminPolicyNode;
+import gov.nist.csd.pm.pap.admin.AdminPolicy;
+import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.exception.PMLConstantAlreadyDefinedException;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
 import gov.nist.csd.pm.common.tx.Transactional;

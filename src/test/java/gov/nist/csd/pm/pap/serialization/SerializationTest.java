@@ -1,7 +1,8 @@
 package gov.nist.csd.pm.pap.serialization;
 
 import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
-import gov.nist.csd.pm.pap.AdminPolicy;
+import gov.nist.csd.pm.pap.PolicyPoint;
+import gov.nist.csd.pm.pap.admin.AdminPolicy;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.pap.serialization.json.JSONDeserializer;
@@ -10,6 +11,7 @@ import gov.nist.csd.pm.pap.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.pap.serialization.pml.PMLSerializer;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.query.UserContext;
+import gov.nist.csd.pm.util.PolicyEquals;
 import gov.nist.csd.pm.util.SamplePolicy;
 import org.junit.jupiter.api.Test;
 
@@ -61,7 +63,6 @@ public class SerializationTest {
 
         assertPolicyEquals(jsonPAP.query(), pmlPAP.query());
         assertPolicyEquals(pap.query(), pmlPAP.query());
-        assertPolicyEquals(pap.query(), pmlPAP.query());
     }
 
     @Test
@@ -94,4 +95,25 @@ public class SerializationTest {
         assertPolicyEquals(pap.query(), pmlPAP.query());
     }
 
+    @Test
+    void testPMLAndJson() throws PMException, IOException {
+        MemoryPAP pml = new MemoryPAP();
+        MemoryPAP json = new MemoryPAP();
+
+        SamplePolicy.loadSamplePolicyFromPML(pml);
+        SamplePolicy.loadSamplePolicyFromJSON(json);
+
+        PolicyEquals.assertPolicyEquals(pml.query(), json.query());
+
+        String pmlStr = pml.serialize(new PMLSerializer());
+        String jsonStr = json.serialize(new JSONSerializer());
+
+        pml.deserialize(new UserContext("u1"), pmlStr, new PMLDeserializer());
+        json.deserialize(new UserContext("u1"), pmlStr, new PMLDeserializer());
+        PolicyEquals.assertPolicyEquals(pml.query(), json.query());
+
+        pml.deserialize(new UserContext("u1"), jsonStr, new JSONDeserializer());
+        json.deserialize(new UserContext("u1"), jsonStr, new JSONDeserializer());
+        PolicyEquals.assertPolicyEquals(pml.query(), json.query());
+    }
 }

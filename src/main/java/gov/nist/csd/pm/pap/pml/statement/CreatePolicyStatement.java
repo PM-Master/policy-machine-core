@@ -1,17 +1,15 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
-import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.type.Type;
-import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.HashMap;
 import java.util.List;
@@ -66,25 +64,25 @@ public class CreatePolicyStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
         Map<String, String> props = new HashMap<>();
 
         if (this.properties != null) {
-            Value propertiesValue = properties.execute(ctx, pap);
+            Value propertiesValue = properties.execute(ctx, policy);
             for (Map.Entry<Value, Value> e : propertiesValue.getMapValue().entrySet()) {
                 props.put(e.getKey().getStringValue(), e.getValue().getStringValue());
             }
         }
 
-        pap.modify().graph().createPolicyClass(name.execute(ctx, pap).getStringValue(), props);
+        policy.modify().graph().createPolicyClass(name.execute(ctx, policy).getStringValue(), props);
 
         // create hierarchy
-        createHierarchy(ctx, pap);
+        createHierarchy(ctx, policy);
 
         return new VoidValue();
     }
 
-    private void createHierarchy(ExecutionContext ctx, PAP pap) throws PMException {
+    private void createHierarchy(ExecutionContext ctx, PolicyPoint pap) throws PMException {
         // create uas
         if (uas != null) {
             createUas(ctx, pap);
@@ -101,19 +99,19 @@ public class CreatePolicyStatement extends PMLStatement {
         }
     }
 
-    private void createUas(ExecutionContext ctx, PAP pap) throws PMException {
+    private void createUas(ExecutionContext ctx, PolicyPoint pap) throws PMException {
         for (CreateOrAssignAttributeStatement stmt : uas) {
             stmt.execute(ctx, pap);
         }
     }
 
-    private void createOas(ExecutionContext ctx, PAP pap) throws PMException {
+    private void createOas(ExecutionContext ctx, PolicyPoint pap) throws PMException {
         for (CreateOrAssignAttributeStatement stmt : oas) {
             stmt.execute(ctx, pap);
         }
     }
 
-    private void createAssocs(ExecutionContext ctx, PAP pap) throws PMException {
+    private void createAssocs(ExecutionContext ctx, PolicyPoint pap) throws PMException {
         for (AssociateStatement associateStatement : assocs) {
             associateStatement.execute(ctx, pap);
         }
@@ -236,15 +234,15 @@ public class CreatePolicyStatement extends PMLStatement {
         }
 
         @Override
-        public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
-            Value nameValue = getName().execute(ctx, pap);
+        public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+            Value nameValue = getName().execute(ctx, policy);
             
-            if (!pap.query().graph().nodeExists(nameValue.getStringValue())) {
-                return super.execute(ctx, pap);
+            if (!policy.query().graph().nodeExists(nameValue.getStringValue())) {
+                return super.execute(ctx, policy);
             }
 
             AssignStatement assignStatement = new AssignStatement(getName(), getAssignTo());
-            return assignStatement.execute(ctx, pap);
+            return assignStatement.execute(ctx, policy);
         }
 
         @Override

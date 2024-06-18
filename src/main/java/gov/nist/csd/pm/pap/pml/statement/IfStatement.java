@@ -1,13 +1,12 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
-import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.io.Serializable;
 import java.util.List;
@@ -39,22 +38,22 @@ public class IfStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
-        boolean condition = ifBlock.condition.execute(ctx, pap).getBooleanValue();
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+        boolean condition = ifBlock.condition.execute(ctx, policy).getBooleanValue();
 
         if (condition) {
-            return executeBlock(ctx, pap, ifBlock.block);
+            return executeBlock(ctx, policy, ifBlock.block);
         }
 
         // check else ifs
         for (ConditionalBlock conditionalBlock : ifElseBlocks) {
-            condition = conditionalBlock.condition.execute(ctx, pap).getBooleanValue();
+            condition = conditionalBlock.condition.execute(ctx, policy).getBooleanValue();
             if (condition) {
-                return executeBlock(ctx, pap, conditionalBlock.block);
+                return executeBlock(ctx, policy, conditionalBlock.block);
             }
         }
 
-        return executeBlock(ctx, pap, elseBlockStatements);
+        return executeBlock(ctx, policy, elseBlockStatements);
     }
 
     @Override
@@ -88,7 +87,7 @@ public class IfStatement extends PMLStatement {
         return String.format("%sif %s %s", indent(indentLevel), ifBlock.condition, new PMLStatementBlock(ifBlock.block).toFormattedString(indentLevel));
     }
 
-    private Value executeBlock(ExecutionContext ctx, PAP pap, List<PMLStatement> block) throws PMException {
+    private Value executeBlock(ExecutionContext ctx, PolicyPoint pap, List<PMLStatement> block) throws PMException {
         ExecutionContext copy = ctx.copy();
 
         Value value = PMLExecutor.executeStatementBlock(copy, pap, block);

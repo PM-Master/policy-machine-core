@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pdp;
 
 import gov.nist.csd.pm.common.obligation.EventContext;
+import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.pap.serialization.PolicySerializer;
 import gov.nist.csd.pm.epp.EventEmitter;
@@ -24,7 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static gov.nist.csd.pm.pap.AdminPolicy.ALL_NODE_NAMES;
+import static gov.nist.csd.pm.pap.admin.AdminPolicy.ALL_NODE_NAMES;
 import static gov.nist.csd.pm.common.graph.node.NodeType.ANY;
 import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
@@ -106,7 +107,7 @@ public class PDP implements EventEmitter, AccessAdjudication {
         void run(PDPTx policy) throws PMException;
     }
 
-    public static class PDPTx extends PAP {
+    public static class PDPTx implements PolicyPoint {
 
         private final UserContext userCtx;
         private final PAP pap;
@@ -123,12 +124,10 @@ public class PDP implements EventEmitter, AccessAdjudication {
             this.pdpQuerier = new PolicyQueryAdjudicator(userCtx, pap);
         }
 
-        @Override
         public PolicyModificationAdjudicator modify() {
             return pdpModifier;
         }
 
-        @Override
         public PolicyQueryAdjudicator query() {
             return pdpQuerier;
         }

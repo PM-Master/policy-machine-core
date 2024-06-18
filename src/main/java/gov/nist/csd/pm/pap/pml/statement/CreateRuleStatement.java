@@ -1,6 +1,6 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.obligation.Response;
@@ -58,14 +58,14 @@ public class CreateRuleStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
-        StringValue nameValue = (StringValue) name.execute(ctx, pap);
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+        StringValue nameValue = (StringValue) name.execute(ctx, policy);
 
-        Pattern subject = subjectExpr.execute(ctx, pap).getPatternValue();
-        Pattern operation = operationExpr.execute(ctx, pap).getPatternValue();
+        Pattern subject = subjectExpr.execute(ctx, policy).getPatternValue();
+        Pattern operation = operationExpr.execute(ctx, policy).getPatternValue();
         List<Pattern> operands = new ArrayList<>();
         for (Expression operandExpr : operandExprs) {
-            Value patternValue = operandExpr.execute(ctx, pap);
+            Value patternValue = operandExpr.execute(ctx, policy);
             operands.add(patternValue.getPatternValue());
         }
 

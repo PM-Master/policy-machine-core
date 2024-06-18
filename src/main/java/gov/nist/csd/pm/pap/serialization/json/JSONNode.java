@@ -1,24 +1,33 @@
 package gov.nist.csd.pm.pap.serialization.json;
 
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class JSONNode {
 
-    private String name;
     private Map<String, String> properties;
-    private List<JSONNode> children;
+    private Collection<String> assignments;
+    private Map<String, AccessRightSet> associations;
 
-    public JSONNode() {
+    public JSONNode(Map<String, String> properties, Collection<String> assignments) {
+        if (!properties.isEmpty()) {
+            this.properties = properties;
+        }
+
+        if (!assignments.isEmpty()) {
+            this.assignments = assignments;
+        }
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public JSONNode(Map<String, String> properties,
+                    Collection<String> assignments,
+                    Map<String, AccessRightSet> associations) {
+        this(properties, assignments);
+        this.associations = associations;
     }
 
     public Map<String, String> getProperties() {
@@ -29,12 +38,20 @@ public class JSONNode {
         this.properties = properties;
     }
 
-    public List<JSONNode> getChildren() {
-        return children;
+    public Collection<String> getAssignments() {
+        return assignments;
     }
 
-    public void setChildren(List<JSONNode> children) {
-        this.children = children;
+    public void setAssignments(Collection<String> assignments) {
+        this.assignments = assignments;
+    }
+
+    public Map<String, AccessRightSet> getAssociations() {
+        return associations;
+    }
+
+    public void setAssociations(Map<String, AccessRightSet> associations) {
+        this.associations = associations;
     }
 
     @Override
@@ -46,11 +63,14 @@ public class JSONNode {
             return false;
         }
         JSONNode jsonNode = (JSONNode) o;
-        return Objects.equals(name, jsonNode.name);
+        return Objects.equals(properties, jsonNode.properties) && Objects.equals(
+                assignments,
+                jsonNode.assignments
+        );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(properties, assignments);
     }
 }

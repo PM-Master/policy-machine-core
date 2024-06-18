@@ -1,0 +1,67 @@
+{
+  "resourceAccessRights": ["read", "write"],
+  "graph": {
+    "pcs": {
+      "pc1": {},
+      "pc2": {},
+      "hello world": {}
+    },
+    "oas": {
+      "oa1": {
+        "assignments": ["pc1"]
+      },
+      "oa2": {
+        "assignments": ["pc1", "pc2", "hello world:target"]
+      }
+    },
+    "uas": {
+      "ua1": {
+        "assignments": ["pc1"],
+        "associations": {
+          "oa1": ["write"],
+          "PM_ADMIN:POLICY_CLASS_TARGETS": ["*a"],
+          "hello world:target": ["*a"],
+          "PM_ADMIN:FUNCTIONS": ["*a"]
+        }
+      },
+      "ua2": {
+        "assignments": ["pc1", "pc2"],
+        "associations": {
+          "oa2": ["read"]
+        }
+      },
+      "ua3": {
+        "assignments": ["ua2"]
+      }
+    },
+    "users": {
+      "u1": {
+        "assignments": ["ua1", "ua2"]
+      },
+      "u2": {
+        "assignments": ["ua2"]
+      }
+    },
+    "objects": {
+      "o1": {
+        "assignments": ["oa1", "oa2"]
+      }
+    }
+  },
+  "prohibitions": [
+    "create prohibition \"p1\" deny user \"u1\" access rights [\"write\"] on intersection of [\"oa1\", \"oa2\"]",
+    "create prohibition \"p2\" deny user \"u1\" access rights [\"write\"] on intersection of [\"oa1\", \"oa2\"]"
+  ],
+  "obligations": [
+    "create obligation \"o1\" {\n    create rule \"o1-assignment-rule\"\n    when subject => pAny()\n    performs op => pEquals(\"assign\")\n    on operand1 => pEquals(\"o1\")\n    do (evtCtx) {\n        parent := evtCtx[\"parent\"]\n        associate \"ua1\" and parent with [\"read\", \"write\"]\n        associate \"ua2\" and parent with [\"read\", \"write\"]\n        create prohibition \"u2-prohibition\" deny user \"u2\" access rights [\"write\"] on intersection of [\"oa1\", \"oa2\"]\n    }\n}",
+    "create obligation \"o2\" {\n    create rule \"o1-assignment-rule\"\n    when subject => pAny()\n    performs op => pEquals(\"assign\")\n    on operand1 => pEquals(\"o1\")\n    do (evtCtx) {\n        parent := evtCtx[\"parent\"]\n        associate \"ua1\" and parent with [\"read\", \"write\"]\n        associate \"ua2\" and parent with [\"read\", \"write\"]\n        create prohibition \"u2-prohibition\" deny user \"u2\" access rights [\"write\"] on intersection of [\"oa1\", \"oa2\"]\n    }\n}"
+  ],
+  "pml": {
+    "constants": {
+      "TEST_CONST": "\"hello world\""
+    },
+    "functions": {
+      "testFunc": "function testFunc(string name) {\n    create pc name\n}"
+    }
+  }
+}

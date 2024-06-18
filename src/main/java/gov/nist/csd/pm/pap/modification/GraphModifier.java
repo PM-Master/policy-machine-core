@@ -12,7 +12,7 @@ import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
-import gov.nist.csd.pm.pap.AdminPolicy;
+import gov.nist.csd.pm.pap.admin.AdminPolicy;
 import gov.nist.csd.pm.pap.exception.*;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static gov.nist.csd.pm.common.graph.node.NodeType.*;
-import static gov.nist.csd.pm.pap.AdminPolicyNode.POLICY_CLASS_TARGETS;
+import static gov.nist.csd.pm.pap.admin.AdminPolicyNode.POLICY_CLASS_TARGETS;
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.wildcardAccessRights;
 
@@ -424,9 +424,10 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected boolean checkDissociateInput(String ua, String target) throws PMException {
-        boolean nodesNotExist = (!query().graph().nodeExists(ua) || !query().graph().nodeExists(target));
-        if (nodesNotExist) {
-            return false;
+        if (!query().graph().nodeExists(ua)) {
+            throw new NodeDoesNotExistException(ua);
+        } else if (!query().graph().nodeExists(target)) {
+            throw new NodeDoesNotExistException(target);
         }
 
         Collection<Association> associations = query().graph().getAssociationsWithSource(ua);

@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.pap.pml.expression.reference;
 
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
@@ -14,14 +14,14 @@ public class ReferenceByBracketIndex extends ReferenceByIndex{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
-        Value value = varRef.execute(ctx, pap);
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+        Value value = varRef.execute(ctx, policy);
         if (!value.getType().isMap()) {
             return value;
         }
 
         Map<Value, Value> mapValue = value.getMapValue();
-        Value indexValue = index.execute(ctx, pap);
+        Value indexValue = index.execute(ctx, policy);
 
         return mapValue.get(indexValue);
     }

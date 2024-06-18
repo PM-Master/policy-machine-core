@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.pap.pml.pattern;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
@@ -33,7 +33,7 @@ public class PatternExpression extends Expression {
     }
 
     @Override
-    public PatternValue execute(ExecutionContext ctx, PAP pap) throws PMException {
+    public PatternValue execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
         FunctionDefinitionStatement function = ctx.scope().getFunction(invokeExpr.getFunctionName());
         if (!(function instanceof PMLPatternFunctionStmt pmlFunc)) {
             throw new PMException("Function '" + invokeExpr.getFunctionName() + "' is not a PMLPatternFunctionStmt");
@@ -43,9 +43,9 @@ public class PatternExpression extends Expression {
         List<Value> args = new ArrayList<>();
         for (Expression expr : actualArgs) {
             if (expr instanceof PatternFunctionInvokeExpression funcExpr){
-                args.add(new PatternExpression(varName, funcExpr).execute(ctx, pap));
+                args.add(new PatternExpression(varName, funcExpr).execute(ctx, policy));
             } else {
-                args.add(expr.execute(ctx, pap));
+                args.add(expr.execute(ctx, policy));
             }
         }
 

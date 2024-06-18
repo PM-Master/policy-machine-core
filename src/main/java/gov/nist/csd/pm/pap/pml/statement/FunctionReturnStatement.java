@@ -1,8 +1,7 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
@@ -41,12 +40,12 @@ public class FunctionReturnStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
         if (expr == null) {
             return new ReturnValue(new VoidValue());
         }
 
-        return new ReturnValue(expr.execute(ctx, pap));
+        return new ReturnValue(expr.execute(ctx, policy));
     }
 
     @Override

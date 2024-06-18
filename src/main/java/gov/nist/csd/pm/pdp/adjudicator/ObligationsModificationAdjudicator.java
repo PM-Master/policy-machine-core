@@ -3,7 +3,7 @@ package gov.nist.csd.pm.pdp.adjudicator;
 import gov.nist.csd.pm.common.obligation.EventContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.epp.EventEmitter;
-import gov.nist.csd.pm.pap.AdminPolicyNode;
+import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.modification.ObligationsModification;
 import gov.nist.csd.pm.common.exception.PMException;
@@ -14,7 +14,6 @@ import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.obligation.Rule;
 
 import java.util.Collection;
-import java.util.List;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 

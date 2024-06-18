@@ -1,13 +1,12 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
-import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.Objects;
 
@@ -21,14 +20,14 @@ public class SetResourceAccessRightsStatement extends PMLStatement{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
-        Value arValue = arExpr.execute(ctx, pap);
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+        Value arValue = arExpr.execute(ctx, policy);
         AccessRightSet accessRightSet = new AccessRightSet();
         for (Value v : arValue.getArrayValue()) {
             accessRightSet.add(v.getStringValue());
         }
 
-        pap.modify().graph().setResourceAccessRights(accessRightSet);
+        policy.modify().graph().setResourceAccessRights(accessRightSet);
 
         return new VoidValue();
     }

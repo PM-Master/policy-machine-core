@@ -1,9 +1,12 @@
 package gov.nist.csd.pm.pdp.adjudicator;
 
-import gov.nist.csd.pm.pap.AdminPolicyNode;
+import gov.nist.csd.pm.pap.PolicyPoint;
+import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.modification.PolicyModification;
+import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
@@ -12,7 +15,7 @@ import gov.nist.csd.pm.pdp.PDPEventEmitter;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 
-public class Adjudicator extends PAP {
+public class Adjudicator implements PolicyPoint {
 
     private final UserContext userCtx;
     private final PAP pap;
@@ -72,5 +75,17 @@ public class Adjudicator extends PAP {
     @Override
     public void rollback() throws PMException {
         pap.rollback();
+    }
+
+    @Override
+    public void executePML(UserContext userContext,
+                           String input,
+                           FunctionDefinitionStatement... functionDefinitionStatements) throws PMException {
+
+    }
+
+    @Override
+    public void executePMLFunction(UserContext userContext, String functionName, Value... args) throws PMException {
+
     }
 }

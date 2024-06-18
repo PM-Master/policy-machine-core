@@ -3,7 +3,7 @@ package gov.nist.csd.pm.pdp.adjudicator;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
-import gov.nist.csd.pm.pap.AdminPolicyNode;
+import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.AdminAccessRights;
 import gov.nist.csd.pm.pap.query.UserContext;
@@ -12,7 +12,6 @@ import gov.nist.csd.pm.pap.query.ProhibitionsQuery;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.GET_PROCESS_PROHIBITIONS;

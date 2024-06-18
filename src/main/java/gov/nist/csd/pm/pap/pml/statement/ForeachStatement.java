@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap.pml.statement;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
@@ -27,22 +28,22 @@ public class ForeachStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
         if (statements.isEmpty()) {
             return new VoidValue();
         }
 
-        Value iterValue = iter.execute(ctx, pap);
+        Value iterValue = iter.execute(ctx, policy);
         if (iterValue instanceof ArrayValue arrayValue) {
-            return executeArrayIterator(arrayValue, ctx, pap);
+            return executeArrayIterator(arrayValue, ctx, policy);
         } else if (iterValue instanceof MapValue mapValue) {
-            return executeMapIterator(mapValue, ctx, pap);
+            return executeMapIterator(mapValue, ctx, policy);
         }
 
         return new VoidValue();
     }
 
-    private Value executeArrayIterator(ArrayValue iterValue, ExecutionContext ctx, PAP pap) throws PMException{
+    private Value executeArrayIterator(ArrayValue iterValue, ExecutionContext ctx, PolicyPoint pap) throws PMException{
         for (Value v : iterValue.getValue()) {
             ExecutionContext localExecutionCtx;
             try {
@@ -66,7 +67,7 @@ public class ForeachStatement extends PMLStatement {
         return new VoidValue();
     }
 
-    private Value executeMapIterator(MapValue iterValue, ExecutionContext ctx, PAP pap) throws PMException{
+    private Value executeMapIterator(MapValue iterValue, ExecutionContext ctx, PolicyPoint pap) throws PMException{
         for (Value key : iterValue.getValue().keySet()) {
             ExecutionContext localExecutionCtx;
             try {

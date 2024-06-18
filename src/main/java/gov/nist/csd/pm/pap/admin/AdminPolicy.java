@@ -1,14 +1,11 @@
-package gov.nist.csd.pm.pap;
+package gov.nist.csd.pm.pap.admin;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.exception.*;
-import gov.nist.csd.pm.pap.modification.PolicyModifier;
-import gov.nist.csd.pm.pap.query.PolicyQuerier;
-import gov.nist.csd.pm.pap.query.PolicyQuery;
 
 import java.util.*;
 
-import static gov.nist.csd.pm.pap.AdminPolicyNode.*;
+import static gov.nist.csd.pm.pap.admin.AdminPolicyNode.*;
 
 public class AdminPolicy {
 

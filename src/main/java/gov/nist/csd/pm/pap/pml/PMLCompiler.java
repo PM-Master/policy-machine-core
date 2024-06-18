@@ -2,6 +2,7 @@ package gov.nist.csd.pm.pap.pml;
 
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.antlr.PMLLexer;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
@@ -19,7 +20,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 
 public class PMLCompiler {
 
-    public static CompiledPML compilePML(PAP pap, String input, FunctionDefinitionStatement... customBuiltinFunctions) throws PMException {
+    public static CompiledPML compilePML(PolicyPoint pap, String input, FunctionDefinitionStatement... customBuiltinFunctions) throws PMException {
         ErrorLog errorLog = new ErrorLog();
 
         GlobalScope<Variable, FunctionSignature> globalScope = GlobalScope.forCompile(pap, customBuiltinFunctions);

@@ -30,6 +30,8 @@ public class PMLBuiltinFunctions {
     private static final FunctionDefinitionStatement search = new Search();
     private static final FunctionDefinitionStatement append = new Append();
     private static final FunctionDefinitionStatement appendAll = new AppendAll();
+    private static final FunctionDefinitionStatement pcTargetName = new PcTargetName();
+
     private static final PMLPatternFunctionStmt pEquals = new EqualsPatternFunction();
     private static final PMLPatternFunctionStmt pOr = new OrPatternFunction();
     private static final PMLPatternFunctionStmt pAnd = new AndPatternFunction();
@@ -60,6 +62,7 @@ public class PMLBuiltinFunctions {
         BUILTIN_FUNCTIONS.put(search.getSignature().getFunctionName(), search);
         BUILTIN_FUNCTIONS.put(append.getSignature().getFunctionName(), append);
         BUILTIN_FUNCTIONS.put(appendAll.getSignature().getFunctionName(), appendAll);
+        BUILTIN_FUNCTIONS.put(pcTargetName.getSignature().getFunctionName(), pcTargetName);
 
         // pattern functions
         BUILTIN_FUNCTIONS.put(pEquals.getSignature().getFunctionName(), pEquals);

@@ -3,9 +3,7 @@ package gov.nist.csd.pm.pap.serialization.json;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.common.prohibition.Prohibition;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class JSONPolicy {
@@ -14,18 +12,18 @@ public class JSONPolicy {
     private JSONGraph graph;
     private List<String> prohibitions;
     private List<String> obligations;
-    private JSONUserDefinedPML userDefinedPML;
+    private JSONPML pml;
 
     public JSONPolicy(AccessRightSet resourceAccessRights,
                       JSONGraph graph,
                       List<String> prohibitions,
                       List<String> obligations,
-                      JSONUserDefinedPML userDefinedPML) {
+                      JSONPML pml) {
         this.resourceAccessRights = resourceAccessRights;
         this.graph = graph;
         this.prohibitions = prohibitions;
         this.obligations = obligations;
-        this.userDefinedPML = userDefinedPML;
+        this.pml = pml;
     }
 
     public AccessRightSet getResourceAccessRights() {
@@ -60,12 +58,12 @@ public class JSONPolicy {
         this.obligations = obligations;
     }
 
-    public JSONUserDefinedPML getUserDefinedPML() {
-        return userDefinedPML;
+    public JSONPML getPml() {
+        return pml;
     }
 
-    public void setUserDefinedPML(JSONUserDefinedPML userDefinedPML) {
-        this.userDefinedPML = userDefinedPML;
+    public void setPml(JSONPML pml) {
+        this.pml = pml;
     }
 
     @Override

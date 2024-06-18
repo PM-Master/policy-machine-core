@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
-import gov.nist.csd.pm.pap.query.AccessQuery;
 import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.pap.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.pap.PAP;
@@ -17,8 +16,8 @@ import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.graph.node.NodeType;
-import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.serialization.pml.PMLSerializer;
 
 import java.util.*;
 
@@ -34,43 +33,38 @@ public class JSONDeserializer implements PolicyDeserializer {
                 {
                 	"resourceAccessRights": ["read", "write"],
                 	"graph": {
-                		"pcs": [
-                			{
-                				"name": "pc1",
+                		"pcs": {
+                			"pc1": {
                 				"properties": {}
                 			}
-                		],
-                		"uas": [
-                			{
-                				"name": "ua1",
+                		},
+                		"uas": {
+                			"ua1": {
                 				"properties": {},
                 				"assignments": ["pc1"],
                 				"associations": {
                 					"oa1": ["read", "write"]
                 				}
                 			}
-                		],
-                		"oas": [
-                			{
-                				"name": "oa1",
+                		},
+                		"oas": {
+                			"oa1": {
                 				"properties": {},
                 				"assignments": ["pc1"]
                 			}
-                		],
-                		"users": [
-                			{
-                				"name": "u1",
+                		},
+                		"users": {
+                			"u1": {
                 				"properties": {},
                 				"assignments": ["ua1"]
                 			}
-                		],
-                		"objects": [
-                			{
-                				"name": "o1",
+                		},
+                		"objects": {
+                			"o1": {
                 				"properties": {},
                 				"assignments": ["oa1"]
                 			}
-                		]
+                		}
                 	},
                 	"pml": {
                 		"constants": [
@@ -86,6 +80,8 @@ public class JSONDeserializer implements PolicyDeserializer {
                 }
                 """);
         System.out.println(pap.query().graph().search(ANY, new HashMap<>()));
+        String serialize = pap.serialize(new PMLSerializer());
+        System.out.println(serialize);
     }
 
 
@@ -106,14 +102,14 @@ public class JSONDeserializer implements PolicyDeserializer {
 
         pap.modify().graph().setResourceAccessRights(jsonPolicy.getResourceAccessRights());
 
-        createUserDefinedPML(pap, author, customPMLFunctions, jsonPolicy.getUserDefinedPML());
+        createUserDefinedPML(pap, author, customPMLFunctions, jsonPolicy.getPml());
         createGraph(pap, jsonPolicy.getGraph());
         createProhibitionsAndObligations(pap, author, customPMLFunctions, jsonPolicy.getProhibitions(), jsonPolicy.getObligations());
     }
 
     private void createUserDefinedPML(PAP pap, UserContext author,
                                       FunctionDefinitionStatement[] customPMLFunctions,
-                                      JSONUserDefinedPML userDefinedPML)
+                                      JSONPML userDefinedPML)
             throws PMException {
         if (userDefinedPML == null) {
             return;
@@ -173,128 +169,116 @@ public class JSONDeserializer implements PolicyDeserializer {
         }
 
         // create all policy class nodes first
-        for (JSONPolicyClass policyClass : graph.pcs) {
-            pap.modify().graph().createPolicyClass(policyClass.getName(), policyClass.getProperties());
+        for (Map.Entry<String, JSONPolicyClass> policyClass : graph.pcs.entrySet()) {
+            Map<String, String> properties = policyClass.getValue().getProperties();
+            if (properties == null) {
+                properties = new HashMap<>();
+            }
+
+            pap.modify().graph().createPolicyClass(policyClass.getKey(), properties);
         }
 
-        Map<String, Map<String, AccessRightSet>> assocs = createUserAttributes(pap, graph.uas);
-        createObjectAttributes(pap, graph.oas);
+        // create uas
+        Map<String, Map<String, AccessRightSet>> assocs = createNodes(pap, UA, graph.uas);
 
+        // create oas
+        createNodes(pap, OA, graph.oas);
+
+        // associate uas and uas/oas
         for (Map.Entry<String, Map<String, AccessRightSet>> entry : assocs.entrySet()) {
             for (Map.Entry<String, AccessRightSet> target : entry.getValue().entrySet()) {
                 pap.modify().graph().associate(entry.getKey(), target.getKey(), target.getValue());
             }
         }
 
-        createUserOrObjects(pap, graph.users, U);
-        createUserOrObjects(pap, graph.objects, O);
+        // create u and o
+        createNodes(pap, U, graph.users);
+        createNodes(pap, O, graph.objects);
     }
 
-    private Map<String, Map<String, AccessRightSet>> createUserAttributes(PAP pap, List<JSONUserAttribute> uas) throws PMException {
-        Map<String, List<String>> waitingAssignments = new HashMap<>();
-        Map<String, Map<String, AccessRightSet>> associations = new HashMap<>();
-
-        if (uas == null) {
+    private Map<String, Map<String, AccessRightSet>> createNodes(PAP pap, NodeType type, Map<String, JSONNode> nodes)
+            throws PMException {
+        if (nodes == null) {
             return new HashMap<>();
         }
 
-        int i = 0;
-        while (!uas.isEmpty()) {
-            JSONUserAttribute ua = uas.get(i);
+        Map<String, List<String>> waitingAssignments = new HashMap<>();
+        Map<String, Map<String, AccessRightSet>> associations = new HashMap<>();
 
-            // determine the existing nodes to initally assign the node to
+        Iterator<Map.Entry<String, JSONNode>> iterator = nodes.entrySet().iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, JSONNode> entry = iterator.next();
+
+            String key = entry.getKey();
+            JSONNode value = entry.getValue();
+
+            // determine the existing nodes to initially assign the node to
             List<String> existingAssignmentNodes = new ArrayList<>();
-            for (String end : ua.getAssignments()) {
+            for (String end : value.getAssignments()) {
                 if (pap.query().graph().nodeExists(end)) {
                     existingAssignmentNodes.add(end);
                 } else {
                     List<String> waitingAssignmentsForEnd = waitingAssignments.getOrDefault(end, new ArrayList<>());
-                    waitingAssignmentsForEnd.add(ua.getName());
+                    waitingAssignmentsForEnd.add(key);
                     waitingAssignments.put(end, waitingAssignmentsForEnd);
                 }
             }
 
-            // create node
-            pap.modify().graph().createUserAttribute(ua.getName(), ua.getProperties(), existingAssignmentNodes);
+            if (existingAssignmentNodes.isEmpty()) {
+                continue;
+            }
+
+            // create node or assign to parents if already exists (in the case of admin nodes)
+            if (!pap.query().graph().nodeExists(key)) {
+                createNode(pap, type, key, value, existingAssignmentNodes);
+            } else {
+                assignNode(pap, type, key, value, existingAssignmentNodes);
+            }
+
+            iterator.remove();
 
             // once created, check if any other nodes were waiting on it and assign
-            List<String> waitingAssignmentsForUA = waitingAssignments.getOrDefault(ua.getName(), new ArrayList<>());
+            List<String> waitingAssignmentsForUA = waitingAssignments.getOrDefault(key, new ArrayList<>());
             for (String waiting : waitingAssignmentsForUA) {
-                pap.modify().graph().assign(waiting, ua.getName());
+                if (!pap.query().graph().nodeExists(waiting)) {
+                    createNode(pap, type, waiting, nodes.get(waiting), List.of(key));
+                } else {
+                    pap.modify().graph().assign(waiting, key);
+                }
             }
-            waitingAssignments.remove(ua.getName());
+
+            waitingAssignments.remove(key);
 
             // store associations
-            associations.put(ua.getName(), ua.getAssociations());
-
-            uas.remove(i);
-
-            if (i == uas.size()-1) {
-                i = 0;
-            } else {
-                i++;
+            if (value.getAssociations() != null) {
+                associations.put(key, value.getAssociations());
             }
         }
 
         return associations;
     }
 
+    private void assignNode(PAP pap, NodeType type, String key, JSONNode value, List<String> existingAssignmentNodes)
+            throws PMException {
+        Collection<String> assigns = existingAssignmentNodes;
 
-    private void createObjectAttributes(PAP pap, List<JSONObjectAttribute> oas) throws PMException {
-        Map<String, List<String>> waitingAssignments = new HashMap<>();
-
-        if (oas == null) {
-            return;
+        // if O or U, it is assumed all attrs are already created and we dont need to worry about a node not existing yet
+        if (type == O || type == U) {
+            assigns = value.getAssignments();
         }
 
-        int i = 0;
-        while (!oas.isEmpty()) {
-            JSONObjectAttribute oa = oas.get(i);
-
-            // determine the existing nodes to initally assign the node to
-            List<String> existingAssignmentNodes = new ArrayList<>();
-            for (String end : oa.getAssignments()) {
-                if (pap.query().graph().nodeExists(end)) {
-                    existingAssignmentNodes.add(end);
-                } else {
-                    List<String> waitingAssignmentsForEnd = waitingAssignments.getOrDefault(end, new ArrayList<>());
-                    waitingAssignmentsForEnd.add(oa.getName());
-                    waitingAssignments.put(end, waitingAssignmentsForEnd);
-                }
-            }
-
-            // create node
-            pap.modify().graph().createObjectAttribute(oa.getName(), oa.getProperties(), existingAssignmentNodes);
-
-            // once created, check if any other nodes were waiting on it and assign
-            List<String> waitingAssignmentsForUA = waitingAssignments.getOrDefault(oa.getName(), new ArrayList<>());
-            for (String waiting : waitingAssignmentsForUA) {
-                pap.modify().graph().assign(waiting, oa.getName());
-            }
-
-            waitingAssignments.remove(oa.getName());
-            oas.remove(i);
-
-            if (i == oas.size() - 1) {
-                i = 0;
-            } else {
-                i++;
-            }
+        for (String assign : assigns) {
+            pap.modify().graph().assign(key, assign);
         }
     }
 
-    private void createUserOrObjects(PAP pap, List<JSONUserOrObject> usersOrObjects, NodeType type) throws PMException {
-        for (JSONUserOrObject userOrObject : usersOrObjects) {
-            Collection<String> parents = userOrObject.getAssignments();
-            if (parents.isEmpty()) {
-                throw new PMException("node " + userOrObject.getName() + " does not have any parents");
-            }
-
-            if (type == U) {
-                pap.modify().graph().createUser(userOrObject.getName(), userOrObject.getProperties(), parents);
-            } else {
-                pap.modify().graph().createObject(userOrObject.getName(), userOrObject.getProperties(), parents);
-            }
+    private void createNode(PAP pap, NodeType type, String key, JSONNode value, List<String> existingAssignmentNodes)
+            throws PMException {
+        switch (type) {
+            case OA -> pap.modify().graph().createObjectAttribute(key, value.getProperties(), existingAssignmentNodes);
+            case UA -> pap.modify().graph().createUserAttribute(key, value.getProperties(), existingAssignmentNodes);
+            case O -> pap.modify().graph().createObject(key, value.getProperties(), value.getAssignments());
+            case U -> pap.modify().graph().createUser(key, value.getProperties(), value.getAssignments());
         }
     }
 }
