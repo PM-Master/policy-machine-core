@@ -76,8 +76,8 @@ public abstract class GraphModifierTest extends ModificationTest {
             String rep = AdminPolicy.policyClassTargetName("pc1");
             assertTrue(pap.query().graph().nodeExists("pc1"));
             assertTrue(pap.query().graph().nodeExists(rep));
-            assertTrue(pap.query().graph().getParents(rep).contains(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName()));
-            assertTrue(pap.query().graph().getChildren(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName()).contains(rep));
+            assertTrue(pap.query().graph().getAdjacentDescendants(rep).contains(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName()));
+            assertTrue(pap.query().graph().getAdjacentAscendants(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName()).contains(rep));
         }
     }
 
@@ -139,15 +139,15 @@ public abstract class GraphModifierTest extends ModificationTest {
             assertTrue(pap.query().graph().nodeExists("oa2"));
             assertEquals("v", pap.query().graph().getNode("oa2").getProperties().get("k"));
 
-            assertTrue(pap.query().graph().getChildren("pc1").contains("oa1"));
-            assertTrue(pap.query().graph().getChildren("oa1").contains("oa2"));
+            assertTrue(pap.query().graph().getAdjacentAscendants("pc1").contains("oa1"));
+            assertTrue(pap.query().graph().getAdjacentAscendants("oa1").contains("oa2"));
 
-            assertTrue(pap.query().graph().getParents("oa1").contains("pc1"));
-            assertTrue(pap.query().graph().getParents("oa2").contains("oa1"));
+            assertTrue(pap.query().graph().getAdjacentDescendants("oa1").contains("pc1"));
+            assertTrue(pap.query().graph().getAdjacentDescendants("oa2").contains("oa1"));
         }
 
         @Test
-        void testNoParents() throws PMException {
+        void testNoAssignments() throws PMException {
             pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
             assertThrows(DisconnectedNodeException.class, () -> pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of()));
         }
@@ -208,11 +208,11 @@ public abstract class GraphModifierTest extends ModificationTest {
             assertTrue(pap.query().graph().nodeExists("ua2"));
             assertEquals("v", pap.query().graph().getNode("ua2").getProperties().get("k"));
 
-            assertTrue(pap.query().graph().getChildren("pc1").contains("ua1"));
-            assertTrue(pap.query().graph().getParents("ua1").contains("pc1"));
+            assertTrue(pap.query().graph().getAdjacentAscendants("pc1").contains("ua1"));
+            assertTrue(pap.query().graph().getAdjacentDescendants("ua1").contains("pc1"));
 
-            assertTrue(pap.query().graph().getChildren("ua1").contains("ua2"));
-            assertTrue(pap.query().graph().getParents("ua2").contains("ua1"));
+            assertTrue(pap.query().graph().getAdjacentAscendants("ua1").contains("ua2"));
+            assertTrue(pap.query().graph().getAdjacentDescendants("ua2").contains("ua1"));
         }
     }
 
@@ -272,9 +272,9 @@ public abstract class GraphModifierTest extends ModificationTest {
             assertTrue(pap.query().graph().nodeExists("o1"));
             assertEquals("v", pap.query().graph().getNode("o1").getProperties().get("k"));
 
-            assertTrue(pap.query().graph().getChildren("oa1").contains("o1"));
-            assertTrue(pap.query().graph().getParents("o1").contains("oa1"));
-            assertTrue(pap.query().graph().getChildren("oa1").contains("o1"));
+            assertTrue(pap.query().graph().getAdjacentAscendants("oa1").contains("o1"));
+            assertTrue(pap.query().graph().getAdjacentDescendants("o1").contains("oa1"));
+            assertTrue(pap.query().graph().getAdjacentAscendants("oa1").contains("o1"));
         }
     }
 
@@ -334,9 +334,9 @@ public abstract class GraphModifierTest extends ModificationTest {
             assertTrue(pap.query().graph().nodeExists("u1"));
             assertEquals("v", pap.query().graph().getNode("u1").getProperties().get("k"));
 
-            assertTrue(pap.query().graph().getChildren("ua1").contains("u1"));
-            assertTrue(pap.query().graph().getParents("u1").contains("ua1"));
-            assertTrue(pap.query().graph().getChildren("ua1").contains("u1"));
+            assertTrue(pap.query().graph().getAdjacentAscendants("ua1").contains("u1"));
+            assertTrue(pap.query().graph().getAdjacentDescendants("u1").contains("ua1"));
+            assertTrue(pap.query().graph().getAdjacentAscendants("ua1").contains("u1"));
         }
     }
 
@@ -466,11 +466,12 @@ public abstract class GraphModifierTest extends ModificationTest {
         }
 
         @Test
-        void testNodeHasChildrenException() throws PMException {
+        void testNodeHasAscendantsException() throws PMException {
             pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
             pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
-            assertThrows(NodeHasChildrenException.class,
+            assertThrows(
+                    NodeHasAscendantsException.class,
                     () -> pap.modify().graph().deleteNode("pc1"));
         }
 
@@ -537,13 +538,13 @@ public abstract class GraphModifierTest extends ModificationTest {
     class AssignTest {
 
         @Test
-        void testChildNodeDoesNotExistException() {
+        void testAscNodeDoesNotExistException() {
             assertThrows(NodeDoesNotExistException.class,
                     () -> pap.modify().graph().assign("oa1", "pc1"));
         }
 
         @Test
-        void testParentNodeDoesNotExistException() throws PMException {
+        void testDescNodeDoesNotExistException() throws PMException {
             pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
             pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
             assertThrows(NodeDoesNotExistException.class,
@@ -588,8 +589,8 @@ public abstract class GraphModifierTest extends ModificationTest {
             pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
             pap.modify().graph().createObjectAttribute("oa2", new HashMap<>(), List.of("pc1"));
             pap.modify().graph().assign("oa2", "oa1");
-            assertTrue(pap.query().graph().getParents("oa2").contains("oa1"));
-            assertTrue(pap.query().graph().getChildren("oa1").contains("oa2"));
+            assertTrue(pap.query().graph().getAdjacentDescendants("oa2").contains("oa1"));
+            assertTrue(pap.query().graph().getAdjacentAscendants("oa1").contains("oa2"));
         }
     }
 
@@ -597,13 +598,13 @@ public abstract class GraphModifierTest extends ModificationTest {
     class DeassignTest {
 
         @Test
-        void testChildNodeDoesNotExistException() {
+        void testAscNodeDoesNotExistException() {
             assertThrows(NodeDoesNotExistException.class, () ->
                     pap.modify().graph().deassign("oa1", "pc1"));
         }
 
         @Test
-        void testParentNodeDoesNotExistException() throws PMException{
+        void testDescNodeDoesNotExistException() throws PMException{
             pap.modify().graph().createPolicyClass("pc1", new HashMap<>());
             pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1"));
 
@@ -634,20 +635,20 @@ public abstract class GraphModifierTest extends ModificationTest {
             pap.modify().graph().createPolicyClass("pc2", new HashMap<>());
             pap.modify().graph().createObjectAttribute("oa1", new HashMap<>(), List.of("pc1", "pc2"));
             pap.modify().graph().deassign("oa1", "pc1");
-            assertTrue(pap.query().graph().getParents("oa1").contains("pc2"));
-            assertFalse(pap.query().graph().getParents("oa1").contains("pc1"));
-            assertFalse(pap.query().graph().getChildren("pc1").contains("oa1"));
+            assertTrue(pap.query().graph().getAdjacentDescendants("oa1").contains("pc2"));
+            assertFalse(pap.query().graph().getAdjacentDescendants("oa1").contains("pc1"));
+            assertFalse(pap.query().graph().getAdjacentAscendants("pc1").contains("oa1"));
         }
 
     }
 
     @Nested
-    class GetChildrenTest {
+    class GetAdjacentAscendantsTest {
 
         @Test
         void NodeDoesNotExist() {
             assertThrows(NodeDoesNotExistException.class,
-                    () -> pap.query().graph().getChildren("oa1"));
+                    () -> pap.query().graph().getAdjacentAscendants("oa1"));
         }
 
         @Test
@@ -658,17 +659,17 @@ public abstract class GraphModifierTest extends ModificationTest {
             pap.modify().graph().createObjectAttribute("oa3", new HashMap<>(), List.of("pc1"));
 
 
-            assertTrue(pap.query().graph().getChildren("pc1").containsAll(List.of("oa1", "oa2", "oa3")));
+            assertTrue(pap.query().graph().getAdjacentAscendants("pc1").containsAll(List.of("oa1", "oa2", "oa3")));
         }
     }
 
     @Nested
-    class GetParentsTest {
+    class GetAdjacentDescendantsTest {
 
         @Test
         void NodeDoesNotExist() {
             assertThrows(NodeDoesNotExistException.class,
-                    () -> pap.query().graph().getParents("oa1"));
+                    () -> pap.query().graph().getAdjacentDescendants("oa1"));
         }
 
         @Test
@@ -681,7 +682,7 @@ public abstract class GraphModifierTest extends ModificationTest {
             pap.modify().graph().assign("o1", "oa2");
             pap.modify().graph().assign("o1", "oa3");
 
-            assertTrue(pap.query().graph().getParents("o1").containsAll(List.of("oa1", "oa2", "oa3")));
+            assertTrue(pap.query().graph().getAdjacentDescendants("o1").containsAll(List.of("oa1", "oa2", "oa3")));
         }
     }
 

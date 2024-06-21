@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * This class will serve as a parent class for Assignments and Associations.  Both types of relations have a source node
+ * This class will serve as a descendant class for Assignments and Associations.  Both types of relations have a source node
  * and a target node.
  */
 public class Relationship implements Serializable {

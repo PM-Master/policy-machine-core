@@ -58,22 +58,22 @@ public interface GraphQuery {
     Collection<String> getPolicyClasses() throws PMException;
 
     /**
-     * Get the parents of the given node.
+     * Get the adjacent descendants of the given node.
      *
-     * @param node The node to get the parents of.
-     * @return The names of the parents of the given node.
+     * @param node The node to get the descendants of.
+     * @return The names of the descendants of the given node.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    Collection<String> getParents(String node) throws PMException;
+    Collection<String> getAdjacentDescendants(String node) throws PMException;
 
     /**
-     * Get the children of the given node.
+     * Get the adjacent ascendants of the given node.
      *
-     * @param node The node to get the children of.
-     * @return The names of the children of the given node.
+     * @param node The node to get the ascendants of.
+     * @return The names of the ascendants of the given node.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    Collection<String> getChildren(String node) throws PMException;
+    Collection<String> getAdjacentAscendants(String node) throws PMException;
 
     /**
      * Get the associations in which the given user attribute is the source.
@@ -94,8 +94,32 @@ public interface GraphQuery {
     Collection<Association> getAssociationsWithTarget(String target) throws PMException;
 
 
-    Collection<String> getAttributeContainers(String node) throws PMException;
-    Collection<String> getPolicyClassContainers(String node) throws PMException;
-    boolean isContained(String subject, String container) throws PMException;
+    /**
+     * Get the descendants of the given node that are attributes.
+     *
+     * @param node The node to get the attribute descendants of.
+     * @return A Collection of attribute names.
+     * @throws PMException If any PM related exceptions occur in the implementing class.
+     */
+    Collection<String> getAttributeDescendants(String node) throws PMException;
+
+    /**
+     * Get the descendants of the given node that are policy classes.
+     *
+     * @param node The node to get the policy class descendants of.
+     * @return A Collection of policy class names.
+     * @throws PMException If any PM related exceptions occur in the implementing class.
+     */
+    Collection<String> getPolicyClassDescendants(String node) throws PMException;
+
+    /**
+     * Return true if the node is an ascendant of the container.
+     *
+     * @param node The node.
+     * @param container The container.
+     * @return True if the node is an ascendant of the container.
+     * @throws PMException If any PM related exceptions occur in the implementing class.
+     */
+    boolean isAscendant(String node, String container) throws PMException;
 
 }

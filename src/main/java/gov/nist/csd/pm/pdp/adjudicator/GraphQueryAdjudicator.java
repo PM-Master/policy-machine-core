@@ -87,35 +87,35 @@ public class GraphQueryAdjudicator implements GraphQuery {
     }
 
     @Override
-    public Collection<String> getParents(String node) throws PMException {
-        List<String> parents = new ArrayList<>();
-        for (String parent : pap.query().graph().getParents(node)) {
+    public Collection<String> getAdjacentDescendants(String node) throws PMException {
+        List<String> descendants = new ArrayList<>();
+        for (String descendant : pap.query().graph().getAdjacentDescendants(node)) {
             try {
-                PrivilegeChecker.check(pap, userCtx, parent);
+                PrivilegeChecker.check(pap, userCtx, descendant);
             } catch (UnauthorizedException e) {
                 continue;
             }
 
-            parents.add(parent);
+            descendants.add(descendant);
         }
 
-        return parents;
+        return descendants;
     }
 
     @Override
-    public Collection<String> getChildren(String node) throws PMException {
-        List<String> children = new ArrayList<>();
-        for (String child : pap.query().graph().getChildren(node)) {
+    public Collection<String> getAdjacentAscendants(String node) throws PMException {
+        List<String> ascendants = new ArrayList<>();
+        for (String ascendant : pap.query().graph().getAdjacentAscendants(node)) {
             try {
-                PrivilegeChecker.check(pap, userCtx, child);
+                PrivilegeChecker.check(pap, userCtx, ascendant);
             } catch (UnauthorizedException e) {
                 continue;
             }
 
-            children.add(child);
+            ascendants.add(ascendant);
         }
 
-        return children;
+        return ascendants;
     }
 
     @Override
@@ -129,25 +129,25 @@ public class GraphQueryAdjudicator implements GraphQuery {
     }
 
     @Override
-    public Collection<String> getAttributeContainers(String node) throws PMException {
+    public Collection<String> getAttributeDescendants(String node) throws PMException {
         PrivilegeChecker.check(pap, userCtx, node, AdminAccessRights.REVIEW_POLICY);
 
-        return pap.query().graph().getAttributeContainers(node);
+        return pap.query().graph().getAttributeDescendants(node);
     }
 
     @Override
-    public Collection<String> getPolicyClassContainers(String node) throws PMException {
+    public Collection<String> getPolicyClassDescendants(String node) throws PMException {
         PrivilegeChecker.check(pap, userCtx, node, AdminAccessRights.REVIEW_POLICY);
 
-        return pap.query().graph().getPolicyClassContainers(node);
+        return pap.query().graph().getPolicyClassDescendants(node);
     }
 
     @Override
-    public boolean isContained(String subject, String container) throws PMException {
-        PrivilegeChecker.check(pap, userCtx, subject, AdminAccessRights.REVIEW_POLICY);
+    public boolean isAscendant(String node, String container) throws PMException {
+        PrivilegeChecker.check(pap, userCtx, node, AdminAccessRights.REVIEW_POLICY);
         PrivilegeChecker.check(pap, userCtx, container, AdminAccessRights.REVIEW_POLICY);
 
-        return pap.query().graph().isContained(subject, container);
+        return pap.query().graph().isAscendant(node, container);
     }
 
     private List<Association> getAssociations(Collection<Association> associations) {

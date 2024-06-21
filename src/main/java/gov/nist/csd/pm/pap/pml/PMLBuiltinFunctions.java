@@ -18,8 +18,8 @@ public class PMLBuiltinFunctions {
     // policy functions
     private static final FunctionDefinitionStatement getAssociationsWithSource = new GetAssociationsWithSource();
     private static final FunctionDefinitionStatement getAssociationsWithTarget = new GetAssociationsWithTarget();
-    private static final FunctionDefinitionStatement getChildren = new GetChildren();
-    private static final FunctionDefinitionStatement getParents = new GetParents();
+    private static final FunctionDefinitionStatement getAdjacentAscendants = new GetAdjacentAscendants();
+    private static final FunctionDefinitionStatement getAdjacentDescendants = new GetAdjacentDescendants();
     private static final FunctionDefinitionStatement getNodeProperties = new GetNodeProperties();
     private static final FunctionDefinitionStatement getNodeType = new GetNodeType();
     private static final FunctionDefinitionStatement getProhibitionsFor = new GetProhibitionsFor();
@@ -50,8 +50,8 @@ public class PMLBuiltinFunctions {
 
         BUILTIN_FUNCTIONS.put(getAssociationsWithSource.getSignature().getFunctionName(), getAssociationsWithSource);
         BUILTIN_FUNCTIONS.put(getAssociationsWithTarget.getSignature().getFunctionName(), getAssociationsWithTarget);
-        BUILTIN_FUNCTIONS.put(getChildren.getSignature().getFunctionName(), getChildren);
-        BUILTIN_FUNCTIONS.put(getParents.getSignature().getFunctionName(), getParents);
+        BUILTIN_FUNCTIONS.put(getAdjacentAscendants.getSignature().getFunctionName(), getAdjacentAscendants);
+        BUILTIN_FUNCTIONS.put(getAdjacentDescendants.getSignature().getFunctionName(), getAdjacentDescendants);
         BUILTIN_FUNCTIONS.put(getNodeProperties.getSignature().getFunctionName(), getNodeProperties);
         BUILTIN_FUNCTIONS.put(getNodeType.getSignature().getFunctionName(), getNodeType);
         BUILTIN_FUNCTIONS.put(getProhibitionsFor.getSignature().getFunctionName(), getProhibitionsFor);

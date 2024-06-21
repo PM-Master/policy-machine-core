@@ -14,7 +14,7 @@ public class ContinueStmtVisitor extends PMLBaseVisitor<ContinueStatement> {
 
     @Override
     public ContinueStatement visitContinueStatement(PMLParser.ContinueStatementContext ctx) {
-        // check that there is a for loop parent
+        // check that there is a for loop descendant
         if (!inFor(ctx)) {
             throw new PMLCompilationRuntimeException(
                     ctx,

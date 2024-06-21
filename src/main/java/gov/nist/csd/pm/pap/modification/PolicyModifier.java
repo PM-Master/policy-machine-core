@@ -38,13 +38,13 @@ public abstract class PolicyModifier extends Modifier implements PolicyModificat
     }
 
     @Override
-    public void verifyAdminPolicyAttribute(AdminPolicyNode node, AdminPolicyNode parent) throws PMException {
+    public void verifyAdminPolicyAttribute(AdminPolicyNode node, AdminPolicyNode assignment) throws PMException {
         if (!query().graph().nodeExists(node.nodeName())) {
             graph().createNodeInternal(node.nodeName(), OA, new HashMap<>());
         }
 
-        if (!query().graph().getParents(node.nodeName()).contains(parent.nodeName())) {
-            graph().createAssignmentInternal(node.nodeName(), parent.nodeName());
+        if (!query().graph().getAdjacentDescendants(node.nodeName()).contains(assignment.nodeName())) {
+            graph().createAssignmentInternal(node.nodeName(), assignment.nodeName());
         }
     }
 
@@ -71,7 +71,7 @@ public abstract class PolicyModifier extends Modifier implements PolicyModificat
                 graph().createNodeInternal(target, OA, new HashMap<>());
             }
 
-            if (!query().graph().getParents(target).contains(pc)) {
+            if (!query().graph().getAdjacentDescendants(target).contains(pc)) {
                 graph().createAssignmentInternal(target, pc);
             }
         }

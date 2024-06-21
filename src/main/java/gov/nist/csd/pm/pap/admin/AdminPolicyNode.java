@@ -17,8 +17,8 @@ public enum AdminPolicyNode {
         this.value = value;
     }
 
-    public static AdminPolicyNode fromNodeName(String child) {
-        switch (child) {
+    public static AdminPolicyNode fromNodeName(String ascendant) {
+        switch (ascendant) {
             case "PM_ADMIN" -> {
                 return ADMIN_POLICY;
             }
@@ -42,7 +42,7 @@ public enum AdminPolicyNode {
             }
         }
 
-        throw new IllegalArgumentException("unknown admin policy node " + child);
+        throw new IllegalArgumentException("unknown admin policy node " + ascendant);
     }
 
     public String constantName() {

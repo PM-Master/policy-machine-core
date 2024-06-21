@@ -81,7 +81,7 @@ class ValueTest {
                 Map.of(new StringValue("name"), new StringValue("testOA"),
                         new StringValue("type"), new StringValue("OA"),
                         new StringValue("properties"), new MapValue(new HashMap<>(), Type.string(), Type.string()),
-                        new StringValue("parents"), new ArrayValue(List.of(new StringValue("pc1")), Type.string())
+                        new StringValue("descendants"), new ArrayValue(List.of(new StringValue("pc1")), Type.string())
                 ),
                 value.getMapValue()
         );

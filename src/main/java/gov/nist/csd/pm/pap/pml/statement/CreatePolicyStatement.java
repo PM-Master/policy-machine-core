@@ -175,22 +175,22 @@ public class CreatePolicyStatement extends PMLStatement {
     private String getAttrStr(int indentLevel, List<CreateOrAssignAttributeStatement> attrs, String label) {
         indentLevel++;
 
-        Map<Expression, Integer> parentIndents = new HashMap<>();
-        parentIndents.put(name, indentLevel);
+        Map<Expression, Integer> descendantIndents = new HashMap<>();
+        descendantIndents.put(name, indentLevel);
 
         StringBuilder uaStr = new StringBuilder();
         for (CreateOrAssignAttributeStatement stmt : attrs) {
             String propertiesStr = (stmt.getWithProperties() == null ? "" : " " + stmt.getWithProperties());
 
-            int parentIndent = parentIndents.get(stmt.parent);
-            int indent = parentIndent+1;
+            int descendantIndent = descendantIndents.get(stmt.descendant);
+            int indent = descendantIndent+1;
 
             uaStr.append("\n")
                  .append(indent(indent))
                  .append(stmt.getName())
                  .append(propertiesStr);
 
-            parentIndents.put(stmt.getName(), indent);
+            descendantIndents.put(stmt.getName(), indent);
         }
 
         String rootIndent = indent(indentLevel);
@@ -219,18 +219,18 @@ public class CreatePolicyStatement extends PMLStatement {
 
     public static class CreateOrAssignAttributeStatement extends CreateNonPCStatement {
 
-        private Expression parent;
+        private Expression descendant;
 
         public CreateOrAssignAttributeStatement(Expression name, NodeType type, Expression assignTo) {
             super(name, type, new ArrayLiteral(Type.string(), assignTo));
 
-            this.parent = assignTo;
+            this.descendant = assignTo;
         }
 
         public CreateOrAssignAttributeStatement(Expression name, NodeType type, Expression assignTo, Expression withProperties) {
             super(name, type, new ArrayLiteral(Type.string(), assignTo), withProperties);
 
-            this.parent = assignTo;
+            this.descendant = assignTo;
         }
 
         @Override
@@ -263,12 +263,12 @@ public class CreatePolicyStatement extends PMLStatement {
                 return false;
             }
             CreateOrAssignAttributeStatement that = (CreateOrAssignAttributeStatement) o;
-            return Objects.equals(parent, that.parent);
+            return Objects.equals(descendant, that.descendant);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(super.hashCode(), parent);
+            return Objects.hash(super.hashCode(), descendant);
         }
     }
 }

@@ -9,20 +9,20 @@ import java.util.Map;
 
 class VertexLeaf extends Vertex {
 
-    private ObjectOpenHashSet<String> parents;
+    private ObjectOpenHashSet<String> descendants;
 
     public VertexLeaf(String name, NodeType type, Map<String, String> properties) {
         super(name, type, properties);
-        this.parents = new ObjectOpenHashSet<>();
+        this.descendants = new ObjectOpenHashSet<>();
     }
 
     @Override
-    protected ObjectOpenHashSet<String> getParents() {
-        return parents;
+    protected ObjectOpenHashSet<String> getDescendants() {
+        return descendants;
     }
 
     @Override
-    protected ObjectOpenHashSet<String> getChildren() {
+    protected ObjectOpenHashSet<String> getAscendants() {
         return new ObjectOpenHashSet<>();
     }
 
@@ -37,13 +37,13 @@ class VertexLeaf extends Vertex {
     }
 
     @Override
-    public void addAssignment(String child, String parent) {
-        parents.add(parent);
+    public void addAssignment(String ascendant, String descendant) {
+        descendants.add(descendant);
     }
 
     @Override
-    public void deleteAssignment(String child, String parent) {
-        parents.remove(parent);
+    public void deleteAssignment(String ascendant, String descendant) {
+        descendants.remove(descendant);
     }
 
     @Override

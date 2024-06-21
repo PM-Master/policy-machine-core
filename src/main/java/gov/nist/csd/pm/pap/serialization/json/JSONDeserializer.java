@@ -228,7 +228,7 @@ public class JSONDeserializer implements PolicyDeserializer {
                 continue;
             }
 
-            // create node or assign to parents if already exists (in the case of admin nodes)
+            // create node or assign to descs if already exists (in the case of admin nodes)
             if (!pap.query().graph().nodeExists(key)) {
                 createNode(pap, type, key, value, existingAssignmentNodes);
             } else {

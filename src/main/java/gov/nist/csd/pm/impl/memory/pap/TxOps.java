@@ -50,8 +50,8 @@ public class TxOps {
 
         private Node node;
 
-        public MemoryDeleteNodeOp(String name, Node node, Collection<String> parents) {
-            super(name, parents);
+        public MemoryDeleteNodeOp(String name, Node node, Collection<String> descendants) {
+            super(name, descendants);
             this.node = node;
         }
 

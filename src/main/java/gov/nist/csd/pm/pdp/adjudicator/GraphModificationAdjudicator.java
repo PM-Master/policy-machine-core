@@ -53,49 +53,49 @@ public class GraphModificationAdjudicator implements GraphModification {
     }
 
     @Override
-    public String createUserAttribute(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
-        if (!parents.isEmpty()) {
-            checkParents(CREATE_USER_ATTRIBUTE, parents);
+    public String createUserAttribute(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
+        if (!assignments.isEmpty()) {
+            checkAssignments(CREATE_USER_ATTRIBUTE, assignments);
         } else {
-            checkParents(CREATE_USER_ATTRIBUTE, List.of(AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName()));
+            checkAssignments(CREATE_USER_ATTRIBUTE, List.of(AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName()));
         }
 
-        pap.modify().graph().createUserAttribute(name, properties, parents);
+        pap.modify().graph().createUserAttribute(name, properties, assignments);
 
-        eventEmitter.emitEvent(new EventContext(userCtx, new CreateUserAttributeOp(name, new HashMap<>(), parents)));
-
-        return name;
-    }
-
-    @Override
-    public String createObjectAttribute(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
-        checkParents(CREATE_OBJECT_ATTRIBUTE, parents);
-
-        pap.modify().graph().createObjectAttribute(name, properties, parents);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new CreateObjectAttributeOp(name, new HashMap<>(), parents)));
+        eventEmitter.emitEvent(new EventContext(userCtx, new CreateUserAttributeOp(name, new HashMap<>(), assignments)));
 
         return name;
     }
 
     @Override
-    public String createObject(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
-        checkParents(CREATE_OBJECT, parents);
+    public String createObjectAttribute(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
+        checkAssignments(CREATE_OBJECT_ATTRIBUTE, assignments);
 
-        pap.modify().graph().createObject(name, properties, parents);
+        pap.modify().graph().createObjectAttribute(name, properties, assignments);
 
-        eventEmitter.emitEvent(new EventContext(userCtx, new CreateObjectOp(name, new HashMap<>(), parents)));
+        eventEmitter.emitEvent(new EventContext(userCtx, new CreateObjectAttributeOp(name, new HashMap<>(), assignments)));
 
         return name;
     }
 
     @Override
-    public String createUser(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
-        checkParents(CREATE_USER, parents);
+    public String createObject(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
+        checkAssignments(CREATE_OBJECT, assignments);
 
-        pap.modify().graph().createUser(name, properties, parents);
+        pap.modify().graph().createObject(name, properties, assignments);
 
-        eventEmitter.emitEvent(new EventContext(userCtx, new CreateUserOp(name, new HashMap<>(), parents)));
+        eventEmitter.emitEvent(new EventContext(userCtx, new CreateObjectOp(name, new HashMap<>(), assignments)));
+
+        return name;
+    }
+
+    @Override
+    public String createUser(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
+        checkAssignments(CREATE_USER, assignments);
+
+        pap.modify().graph().createUser(name, properties, assignments);
+
+        eventEmitter.emitEvent(new EventContext(userCtx, new CreateUserOp(name, new HashMap<>(), assignments)));
 
         return name;
     }
@@ -129,49 +129,49 @@ public class GraphModificationAdjudicator implements GraphModification {
         // check the user can delete the node
         PrivilegeChecker.check(pap, userCtx, name, op);
 
-        // check that the user can delete the node from the node's parents
-        Collection<String> parents = pap.query().graph().getParents(name);
+        // check that the user can delete the node from the node's descendants
+        Collection<String> descendants = pap.query().graph().getAdjacentDescendants(name);
 
-        for(String parent : parents) {
-            PrivilegeChecker.check(pap, userCtx, parent, op);
+        for(String descendant : descendants) {
+            PrivilegeChecker.check(pap, userCtx, descendant, op);
         }
 
         pap.modify().graph().deleteNode(name);
 
-        eventEmitter.emitEvent(new EventContext(userCtx, new DeleteNodeOp(name, parents)));
+        eventEmitter.emitEvent(new EventContext(userCtx, new DeleteNodeOp(name, descendants)));
     }
 
     @Override
-    public void assign(String child, String parent) throws PMException {
-        pap.query().graph().getNode(child);
-        pap.query().graph().getNode(parent);
+    public void assign(String ascendant, String descendant) throws PMException {
+        pap.query().graph().getNode(ascendant);
+        pap.query().graph().getNode(descendant);
 
-        //check the user can assign the child
-        PrivilegeChecker.check(pap, userCtx, child, ASSIGN);
+        //check the user can assign the ascendant
+        PrivilegeChecker.check(pap, userCtx, ascendant, ASSIGN);
 
-        // check that the user can assign to the parent node
-        PrivilegeChecker.check(pap, userCtx, parent, ASSIGN_TO);
+        // check that the user can assign to the descendant node
+        PrivilegeChecker.check(pap, userCtx, descendant, ASSIGN_TO);
 
-        pap.modify().graph().assign(child, parent);
+        pap.modify().graph().assign(ascendant, descendant);
 
         eventEmitter.emitEvent(new EventContext(userCtx,
-                new AssignOp(child, parent)));
+                new AssignOp(ascendant, descendant)));
     }
 
     @Override
-    public void deassign(String child, String parent) throws PMException {
-        pap.query().graph().getNode(child);
-        pap.query().graph().getNode(parent);
+    public void deassign(String ascendant, String descendant) throws PMException {
+        pap.query().graph().getNode(ascendant);
+        pap.query().graph().getNode(descendant);
 
-        //check the user can deassign the child
-        PrivilegeChecker.check(pap, userCtx, child, DEASSIGN);
+        //check the user can deassign the ascendant
+        PrivilegeChecker.check(pap, userCtx, ascendant, DEASSIGN);
 
-        // check that the user can deassign from the parent node
-        PrivilegeChecker.check(pap, userCtx, parent, DEASSIGN_FROM);
+        // check that the user can deassign from the descendant node
+        PrivilegeChecker.check(pap, userCtx, descendant, DEASSIGN_FROM);
 
-        pap.modify().graph().deassign(child, parent);
+        pap.modify().graph().deassign(ascendant, descendant);
 
-        eventEmitter.emitEvent(new EventContext(userCtx, new DeassignOp(child, parent)));
+        eventEmitter.emitEvent(new EventContext(userCtx, new DeassignOp(ascendant, descendant)));
     }
 
     @Override
@@ -194,9 +194,9 @@ public class GraphModificationAdjudicator implements GraphModification {
         eventEmitter.emitEvent(new EventContext(userCtx, new DissociateOp(ua, target)));
     }
 
-    private void checkParents(String accessRight, Collection<String> parents) throws PMException {
-        for (String parent : parents) {
-            PrivilegeChecker.check(pap, userCtx, parent, accessRight);
+    private void checkAssignments(String accessRight, Collection<String> descendants) throws PMException {
+        for (String descendant : descendants) {
+            PrivilegeChecker.check(pap, userCtx, descendant, accessRight);
         }
     }
 }

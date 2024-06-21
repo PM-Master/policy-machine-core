@@ -36,50 +36,48 @@ public interface GraphModification {
     String createPolicyClass(String name, Map<String, String> properties) throws PMException;
 
     /**
-     * Create a new user attribute and assign it to the provided parents. User attributes must be assigned to at
-     * least one parent node initially.
+     * Create a new user attribute and assign it to the provided assignments. User attributes must have at
+     * least one assignment initially.
      *
      * @param name    the name of the user attribute
-     * @param parents A list of parents to assign the new node to.
+     * @param assignments A list of assignments to assign the new node to.
      *
      * @return the name of the user attribute.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    String createUserAttribute(String name, Map<String, String> properties, Collection<String> parents) throws PMException;
+    String createUserAttribute(String name, Map<String, String> properties, Collection<String> assignments) throws PMException;
 
     /**
-     * Create a new object attribute and assign it to the provided parents. Object attributes must be assigned to at
-     * least one parent node initially.
+     * Create a new object attribute and assign it to the provided assignments. Object attributes must have at
+     * least one assignment initially.
      *
      * @param name    The name of the object attribute
-     * @param parents A list of 0 or more parents to assign the new node to.
+     * @param assignments A list of 0 or more assignments to assign the new node to.
      *
      * @return The name of the object attribute.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    String createObjectAttribute(String name, Map<String, String> properties, Collection<String> parents) throws PMException;
+    String createObjectAttribute(String name, Map<String, String> properties, Collection<String> assignments) throws PMException;
 
     /**
-     * Create a new object and assign it to the provided parents. Objects must be assigned to at least one parent node
-     * initially.
+     * Create a new object and assign it to the provided assignments. Objects must have a least one assignment initially.
      *
      * @param name    The name of the object attribute
-     * @param parents A list of 0 or more parents to assign the new node to.
+     * @param assignments A list of 0 or more assignments to assign the new node to.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    String createObject(String name, Map<String, String> properties, Collection<String> parents) throws PMException;
+    String createObject(String name, Map<String, String> properties, Collection<String> assignments) throws PMException;
 
     /**
-     * Create a new user and assign it to the provided parents. Users must be assigned to at least one parent node
-     * initially.
+     * Create a new user and assign it to the provided assignments. Users must have a least one assignment initially.
      *
      * @param name    The name of the object attribute
-     * @param parents A list of 0 or more parents to assign the new node to.
+     * @param assignments A list of 0 or more assignments to assign the new node to.
      *
      * @return The name of the object attribute.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    String createUser(String name, Map<String, String> properties, Collection<String> parents) throws PMException;
+    String createUser(String name, Map<String, String> properties, Collection<String> assignments) throws PMException;
 
     /**
      * Update the properties of the node with the given name. The given properties overwrite any existing properties.
@@ -102,22 +100,22 @@ public interface GraphModification {
     void deleteNode(String name) throws PMException;
 
     /**
-     * Assign the child node to the parent node.
+     * Assign the ascendant node to the descendant node.
      *
-     * @param child  The name of the child node.
-     * @param parent The name of the parent node.
+     * @param ascendant  The name of the ascendant node.
+     * @param descendant The name of the descendant node.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    void assign(String child, String parent) throws PMException;
+    void assign(String ascendant, String descendant) throws PMException;
 
     /**
-     * Delete the assignment between the child and parent nodes.
+     * Delete the assignment between the ascendant and descendant nodes.
      *
-     * @param child  The name of the child node.
-     * @param parent The name of the parent node.
+     * @param ascendant  The name of the ascendant node.
+     * @param descendant The name of the descendant node.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    void deassign(String child, String parent) throws PMException;
+    void deassign(String ascendant, String descendant) throws PMException;
 
     /**
      * Create an association between the user attribute and the target node with the provided access rights.

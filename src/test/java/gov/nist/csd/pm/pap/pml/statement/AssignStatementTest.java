@@ -31,7 +31,7 @@ class AssignStatementTest {
         ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(new MemoryPAP()));
         stmt.execute(execCtx, pap);
 
-        assertTrue(pap.query().graph().getParents("u1").containsAll(List.of("ua1", "ua2", "ua3")));
+        assertTrue(pap.query().graph().getAdjacentDescendants("u1").containsAll(List.of("ua1", "ua2", "ua3")));
     }
 
     @Test

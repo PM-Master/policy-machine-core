@@ -9,20 +9,20 @@ public abstract class CreateNodeOp extends GraphOp {
     protected final String name;
     protected final NodeType type;
     protected final Map<String, String> properties;
-    protected Collection<String> parents;
+    protected Collection<String> descendants;
 
-    protected CreateNodeOp(String name, NodeType type, Map<String, String> properties, Collection<String> parents) {
+    protected CreateNodeOp(String name, NodeType type, Map<String, String> properties, Collection<String> descendants) {
         this.name = name;
         this.type = type;
         this.properties = properties;
-        this.parents = parents;
+        this.descendants = descendants;
     }
 
     protected CreateNodeOp(String name, NodeType type, Map<String, String> properties) {
         this.name = name;
         this.type = type;
         this.properties = properties;
-        this.parents = new ArrayList<>();
+        this.descendants = new ArrayList<>();
     }
 
     public String getName() {
@@ -37,13 +37,13 @@ public abstract class CreateNodeOp extends GraphOp {
         return properties;
     }
 
-    public Collection<String> getParents() {
-        return parents;
+    public Collection<String> getDescendants() {
+        return descendants;
     }
 
     @Override
     public Object[] getOperands() {
-        return operands(name, parents);
+        return operands(name, descendants);
     }
 
     @Override
@@ -58,12 +58,12 @@ public abstract class CreateNodeOp extends GraphOp {
         return Objects.equals(name, that.name) && type == that.type && Objects.equals(
                 properties,
                 that.properties
-        ) && Objects.equals(parents, that.parents);
+        ) && Objects.equals(descendants, that.descendants);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, type, properties, parents);
+        return Objects.hash(name, type, properties, descendants);
     }
 
 }

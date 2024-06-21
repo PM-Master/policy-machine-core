@@ -52,33 +52,33 @@ public class CreateNonPCStatement extends PMLStatement{
         Value nameValue = name.execute(ctx, policy);
         Value assignToValue = assignTo.execute(ctx, policy);
 
-        List<String> parents = new ArrayList<>();
+        List<String> descendants = new ArrayList<>();
 
         List<Value> arrayValue = assignToValue.getArrayValue();
-        for (Value parentValue : arrayValue) {
-            parents.add(parentValue.getStringValue());
+        for (Value descValue : arrayValue) {
+            descendants.add(descValue.getStringValue());
         }
 
         switch (type) {
             case UA -> policy.modify().graph().createUserAttribute(
                     nameValue.getStringValue(),
                     new HashMap<>(),
-                    parents
+                    descendants
             );
             case OA -> policy.modify().graph().createObjectAttribute(
                     nameValue.getStringValue(),
                     new HashMap<>(),
-                    parents
+                    descendants
             );
             case U -> policy.modify().graph().createUser(
                     nameValue.getStringValue(),
                     new HashMap<>(),
-                    parents
+                    descendants
             );
             case O -> policy.modify().graph().createObject(
                     nameValue.getStringValue(),
                     new HashMap<>(),
-                    parents
+                    descendants
             );
         }
 

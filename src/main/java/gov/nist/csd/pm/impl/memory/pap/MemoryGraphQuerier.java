@@ -34,13 +34,13 @@ public class MemoryGraphQuerier extends GraphQuerier implements GraphQuery {
     }
 
     @Override
-    public Collection<String> getParentsInternal(String name) {
-        return memoryPolicy.graph.get(name).getParents();
+    public Collection<String> getDescendantsInternal(String name) {
+        return memoryPolicy.graph.get(name).getDescendants();
     }
 
     @Override
-    public Collection<String> getChildrenInternal(String name) throws PMException {
-        return memoryPolicy.graph.get(name).getChildren();
+    public Collection<String> getAscendantsInternal(String name) throws PMException {
+        return memoryPolicy.graph.get(name).getAscendants();
     }
 
     @Override
@@ -58,7 +58,7 @@ public class MemoryGraphQuerier extends GraphQuerier implements GraphQuery {
         List<String> attrs = new ArrayList<>();
 
         new DepthFirstGraphWalker(this)
-                .withDirection(Direction.PARENTS)
+                .withDirection(Direction.DESCENDANTS)
                 .withVisitor((n) -> {
                     Node visitedNode;
                     visitedNode = getNode(n);
@@ -77,7 +77,7 @@ public class MemoryGraphQuerier extends GraphQuerier implements GraphQuery {
         List<String> attrs = new ArrayList<>();
 
         new DepthFirstGraphWalker(this)
-                .withDirection(Direction.PARENTS)
+                .withDirection(Direction.DESCENDANTS)
                 .withVisitor((n) -> {
                     Node visitedNode;
                     visitedNode = getNode(n);
@@ -95,7 +95,7 @@ public class MemoryGraphQuerier extends GraphQuerier implements GraphQuery {
         AtomicBoolean found = new AtomicBoolean(false);
 
         new DepthFirstGraphWalker(this)
-                .withDirection(Direction.PARENTS)
+                .withDirection(Direction.DESCENDANTS)
                 .withVisitor((n) -> {
                     if (n.equals(container)) {
                         found.set(true);

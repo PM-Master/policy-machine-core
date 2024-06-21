@@ -14,9 +14,9 @@ public class AssignStmtVisitor extends PMLBaseVisitor<AssignStatement> {
 
     @Override
     public AssignStatement visitAssignStatement(PMLParser.AssignStatementContext ctx) {
-        Expression child = Expression.compile(visitorCtx, ctx.childNode, Type.string());
-        Expression parents = Expression.compile(visitorCtx, ctx.parentNodes, Type.array(Type.string()));
+        Expression ascendant = Expression.compile(visitorCtx, ctx.ascendantNode, Type.string());
+        Expression descendants = Expression.compile(visitorCtx, ctx.descendantNodes, Type.array(Type.string()));
 
-        return new AssignStatement(child, parents);
+        return new AssignStatement(ascendant, descendants);
     }
 }

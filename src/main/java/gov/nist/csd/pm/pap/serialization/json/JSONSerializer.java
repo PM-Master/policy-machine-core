@@ -13,7 +13,6 @@ import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.serialization.PolicySerializer;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
-import org.neo4j.procedure.Admin;
 
 import java.util.*;
 
@@ -107,16 +106,16 @@ public class JSONSerializer implements PolicySerializer {
 
             String name = n.getName();
             Map<String, String> properties = n.getProperties();
-            Collection<String> parents = new ArrayList<>(policyQuery.graph().getParents(name));
+            Collection<String> descs = new ArrayList<>(policyQuery.graph().getAdjacentDescendants(name));
 
             // remove default admin node assignments
             if (adminOrTarget == AdminOrTarget.TARGET) {
-                parents.remove(POLICY_CLASS_TARGETS.nodeName());
+                descs.remove(POLICY_CLASS_TARGETS.nodeName());
             } else if (adminOrTarget == AdminOrTarget.ADMIN) {
-                parents.remove(ADMIN_POLICY.nodeName());
+                descs.remove(ADMIN_POLICY.nodeName());
             }
 
-            nodes.put(name, new JSONNode(properties, parents));
+            nodes.put(name, new JSONNode(properties, descs));
         }
 
         return nodes;
@@ -144,15 +143,15 @@ public class JSONSerializer implements PolicySerializer {
             return false;
         }
 
-        Collection<String> parents = policyQuery.graph().getParents(node);
+        Collection<String> descendants = policyQuery.graph().getAdjacentDescendants(node);
         boolean unmodified;
 
         // check target node first because of the admin policy class target node
         // which satisfies both conditions
         if (isAdminOrTarget == AdminOrTarget.TARGET) {
-            unmodified = parents.contains(POLICY_CLASS_TARGETS.nodeName()) && parents.size() == 1;
+            unmodified = descendants.contains(POLICY_CLASS_TARGETS.nodeName()) && descendants.size() == 1;
         } else {
-            unmodified = parents.contains(AdminPolicyNode.ADMIN_POLICY.nodeName()) && parents.size() == 1;
+            unmodified = descendants.contains(AdminPolicyNode.ADMIN_POLICY.nodeName()) && descendants.size() == 1;
         }
 
         return unmodified;
@@ -186,7 +185,7 @@ public class JSONSerializer implements PolicySerializer {
 
             String name = n.getName();
             Map<String, String> properties = n.getProperties();
-            Collection<String> parents = policyQuery.graph().getParents(name);
+            Collection<String> descendants = policyQuery.graph().getAdjacentDescendants(name);
             Collection<Association> assocList = policyQuery.graph().getAssociationsWithSource(name);
             Map<String, AccessRightSet> assocMap = new HashMap<>();
 
@@ -196,9 +195,9 @@ public class JSONSerializer implements PolicySerializer {
 
             JSONNode jsonNode;
             if (assocMap.isEmpty()) {
-                jsonNode = new JSONNode(properties, parents);
+                jsonNode = new JSONNode(properties, descendants);
             } else {
-                jsonNode = new JSONNode(properties, parents, assocMap);
+                jsonNode = new JSONNode(properties, descendants, assocMap);
             }
 
             userAttributes.put(name, jsonNode);

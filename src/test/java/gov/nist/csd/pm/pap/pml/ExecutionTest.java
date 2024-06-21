@@ -37,8 +37,8 @@ public class ExecutionTest {
                 create object attribute "oa2" assign to ["pc1"]
                 create object attribute "oa3" assign to ["pc1"]
                 
-                var parents = ["oa1", "oa2", "oa3"]
-                create object "o1" assign to parents
+                var descendants = ["oa1", "oa2", "oa3"]
+                create object "o1" assign to descendants
                 
                 create user attribute "ua1" assign to ["pc1"]
                 create user attribute "ua2" assign to ["pc1"]
@@ -66,19 +66,19 @@ public class ExecutionTest {
 
         assertEquals("v", pap.query().graph().getNode("pc1").getProperties().get("k"));
 
-        Collection<String> children = pap.query().graph().getChildren("pc1");
-        assertTrue(children.containsAll(Arrays.asList("ua1", "ua2", "ua3")));
-        children = pap.query().graph().getChildren("pc1");
-        assertTrue(children.containsAll(Arrays.asList("oa1", "oa2", "oa3")));
+        Collection<String> ascendants = pap.query().graph().getAdjacentAscendants("pc1");
+        assertTrue(ascendants.containsAll(Arrays.asList("ua1", "ua2", "ua3")));
+        ascendants = pap.query().graph().getAdjacentAscendants("pc1");
+        assertTrue(ascendants.containsAll(Arrays.asList("oa1", "oa2", "oa3")));
 
-        assertTrue(pap.query().graph().getParents("ua1").contains("pc1"));
-        assertTrue(pap.query().graph().getParents("ua2").contains("pc1"));
-        assertTrue(pap.query().graph().getParents("ua3").contains("pc1"));
-        assertTrue(pap.query().graph().getParents("oa1").contains("pc1"));
-        assertTrue(pap.query().graph().getParents("oa2").contains("pc1"));
-        assertTrue(pap.query().graph().getParents("oa3").contains("pc1"));
-        assertTrue(pap.query().graph().getParents("u1").containsAll(Arrays.asList("ua1", "ua2", "ua3")));
-        assertTrue(pap.query().graph().getParents("o1").containsAll(Arrays.asList("oa1", "oa2", "oa3")));
+        assertTrue(pap.query().graph().getAdjacentDescendants("ua1").contains("pc1"));
+        assertTrue(pap.query().graph().getAdjacentDescendants("ua2").contains("pc1"));
+        assertTrue(pap.query().graph().getAdjacentDescendants("ua3").contains("pc1"));
+        assertTrue(pap.query().graph().getAdjacentDescendants("oa1").contains("pc1"));
+        assertTrue(pap.query().graph().getAdjacentDescendants("oa2").contains("pc1"));
+        assertTrue(pap.query().graph().getAdjacentDescendants("oa3").contains("pc1"));
+        assertTrue(pap.query().graph().getAdjacentDescendants("u1").containsAll(Arrays.asList("ua1", "ua2", "ua3")));
+        assertTrue(pap.query().graph().getAdjacentDescendants("o1").containsAll(Arrays.asList("oa1", "oa2", "oa3")));
 
         assertEquals(new Association("ua1", "oa1", new AccessRightSet("read", "write")),
                 pap.query().graph().getAssociationsWithSource("ua1").iterator().next());
@@ -98,9 +98,9 @@ public class ExecutionTest {
                 deassign "u1" from ["ua1", "ua2"]
                 """;
         PMLExecutor.compileAndExecutePML(pap, superUser, input);
-        assertFalse(pap.query().graph().getParents("u1").containsAll(Arrays.asList("ua1", "ua2")));
-        assertFalse(pap.query().graph().getChildren("ua1").contains("u1"));
-        assertFalse(pap.query().graph().getChildren("ua2").contains("u1"));
+        assertFalse(pap.query().graph().getAdjacentDescendants("u1").containsAll(Arrays.asList("ua1", "ua2")));
+        assertFalse(pap.query().graph().getAdjacentAscendants("ua1").contains("u1"));
+        assertFalse(pap.query().graph().getAdjacentAscendants("ua2").contains("u1"));
 
         input =
                 """
@@ -114,8 +114,8 @@ public class ExecutionTest {
                 deassign "o1" from ["oa1"]
                 """;
         PMLExecutor.compileAndExecutePML(pap, superUser, input);
-        assertFalse(pap.query().graph().getParents("oa1").contains("oa1"));
-        assertFalse(pap.query().graph().getChildren("oa1").contains("o1"));
+        assertFalse(pap.query().graph().getAdjacentDescendants("oa1").contains("oa1"));
+        assertFalse(pap.query().graph().getAdjacentAscendants("oa1").contains("o1"));
 
         input =
                 """

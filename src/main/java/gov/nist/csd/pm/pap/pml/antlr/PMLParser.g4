@@ -78,10 +78,10 @@ setNodePropertiesStatement:
     SET_PROPERTIES OF name=expression TO properties=expression ;
 
 assignStatement:
-    ASSIGN childNode=expression TO parentNodes=expression ;
+    ASSIGN ascendantNode=expression TO descendantNodes=expression ;
 
 deassignStatement:
-    DEASSIGN childNode=expression FROM parentNodes=expression ;
+    DEASSIGN ascendantNode=expression FROM descendantNodes=expression ;
 
 associateStatement:
     ASSOCIATE ua=expression AND target=expression WITH accessRights=expression ;

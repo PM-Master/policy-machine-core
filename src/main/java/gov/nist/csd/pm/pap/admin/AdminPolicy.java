@@ -86,7 +86,7 @@ public class AdminPolicy {
     public interface Verifier {
         void verifyAdminPolicyClassNode() throws PMException;
 
-        void verifyAdminPolicyAttribute(AdminPolicyNode node, AdminPolicyNode parent) throws PMException;
+        void verifyAdminPolicyAttribute(AdminPolicyNode node, AdminPolicyNode descendant) throws PMException;
 
         void verifyAdminPolicyConstant(AdminPolicyNode constant) throws PMException;
 

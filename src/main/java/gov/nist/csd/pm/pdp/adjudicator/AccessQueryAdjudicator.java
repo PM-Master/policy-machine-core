@@ -48,31 +48,31 @@ public class AccessQueryAdjudicator implements AccessQuery {
     }
 
     @Override
-    public Map<String, AccessRightSet> buildCapabilityList(UserContext userCtx) throws PMException {
+    public Map<String, AccessRightSet> computeCapabilityList(UserContext userCtx) throws PMException {
         PrivilegeChecker.check(pap, userCtx, userCtx.getUser(), AdminAccessRights.REVIEW_POLICY);
 
-        return pap.query().access().buildCapabilityList(userCtx);
+        return pap.query().access().computeCapabilityList(userCtx);
     }
 
     @Override
-    public Map<String, AccessRightSet> buildACL(String target) throws PMException {
+    public Map<String, AccessRightSet> computeACL(String target) throws PMException {
         PrivilegeChecker.check(pap, userCtx, target, AdminAccessRights.REVIEW_POLICY);
 
-        return pap.query().access().buildACL(target);
+        return pap.query().access().computeACL(target);
     }
 
     @Override
-    public Map<String, AccessRightSet> findBorderAttributes(String user) throws PMException {
+    public Map<String, AccessRightSet> computeDestinationAttributes(String user) throws PMException {
         PrivilegeChecker.check(pap, userCtx, user, AdminAccessRights.REVIEW_POLICY);
 
-        return pap.query().access().findBorderAttributes(user);
+        return pap.query().access().computeDestinationAttributes(user);
     }
 
     @Override
-    public Map<String, AccessRightSet> computeSubgraphPrivileges(UserContext userCtx, String root) throws PMException {
+    public Map<String, AccessRightSet> computeAscendantPrivileges(UserContext userCtx, String root) throws PMException {
         PrivilegeChecker.check(pap, userCtx, userCtx.getUser(), AdminAccessRights.REVIEW_POLICY);
 
-        return pap.query().access().computeSubgraphPrivileges(userCtx, root);
+        return pap.query().access().computeAscendantPrivileges(userCtx, root);
     }
 
     @Override
@@ -84,25 +84,25 @@ public class AccessQueryAdjudicator implements AccessQuery {
     }
 
     @Override
-    public Set<String> buildPOS(UserContext userCtx) throws PMException {
+    public Set<String> computePersonalObjectSystem(UserContext userCtx) throws PMException {
         PrivilegeChecker.check(pap, userCtx, userCtx.getUser(), AdminAccessRights.REVIEW_POLICY);
 
-        return pap.query().access().buildPOS(userCtx);
+        return pap.query().access().computePersonalObjectSystem(userCtx);
     }
 
     @Override
-    public Collection<String> computeAccessibleChildren(UserContext userCtx, String root) throws PMException {
+    public Collection<String> computeAccessibleAscendants(UserContext userCtx, String root) throws PMException {
         PrivilegeChecker.check(pap, userCtx, userCtx.getUser(), AdminAccessRights.REVIEW_POLICY);
         PrivilegeChecker.check(pap, userCtx, root, AdminAccessRights.REVIEW_POLICY);
 
-        return pap.query().access().computeAccessibleChildren(userCtx, root);
+        return pap.query().access().computeAccessibleAscendants(userCtx, root);
     }
 
     @Override
-    public Collection<String> computeAccessibleParents(UserContext userCtx, String root) throws PMException {
+    public Collection<String> computeAccessibleDescendants(UserContext userCtx, String root) throws PMException {
         PrivilegeChecker.check(pap, userCtx, userCtx.getUser(), AdminAccessRights.REVIEW_POLICY);
         PrivilegeChecker.check(pap, userCtx, root, AdminAccessRights.REVIEW_POLICY);
 
-        return pap.query().access().computeAccessibleParents(userCtx, root);
+        return pap.query().access().computeAccessibleDescendants(userCtx, root);
     }
 }

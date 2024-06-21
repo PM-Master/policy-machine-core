@@ -82,7 +82,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
     }
 
     @Override
-    public Map<String, AccessRightSet> buildCapabilityList(UserContext userCtx) throws PMException {
+    public Map<String, AccessRightSet> computeCapabilityList(UserContext userCtx) throws PMException {
         Map<String, AccessRightSet> results = new HashMap<>();
 
         //get border nodes.  Can be OA or UA.  Return empty set if no attrs are reachable
@@ -110,7 +110,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
     }
 
     @Override
-    public Map<String, AccessRightSet> buildACL(String target) throws PMException {
+    public Map<String, AccessRightSet> computeACL(String target) throws PMException {
         Map<String, AccessRightSet> acl = new HashMap<>();
         Collection<String> search = graphQuerier.search(U, NO_PROPERTIES);
         for (String user : search) {
@@ -122,13 +122,13 @@ public class MemoryAccessQuerier extends AccessQuerier {
     }
 
     @Override
-    public Map<String, AccessRightSet> findBorderAttributes(String user) throws PMException {
+    public Map<String, AccessRightSet> computeDestinationAttributes(String user) throws PMException {
         return processUserDAG(user, UserContext.NO_PROCESS)
                 .borderTargets();
     }
 
     @Override
-    public Map<String, AccessRightSet> computeSubgraphPrivileges(UserContext userCtx, String root) throws PMException {
+    public Map<String, AccessRightSet> computeAscendantPrivileges(UserContext userCtx, String root) throws PMException {
         Map<String, AccessRightSet> results = new HashMap<>();
 
         UserDagResult userDagResult = processUserDAG(userCtx.getUser(), userCtx.getProcess());
@@ -169,7 +169,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
     }
 
     @Override
-    public Set<String> buildPOS(UserContext userCtx) throws PMException {
+    public Set<String> computePersonalObjectSystem(UserContext userCtx) throws PMException {
         // Prepare the hashset to return.
         HashSet<String> hsOa = new HashSet<>();
 
@@ -205,33 +205,33 @@ public class MemoryAccessQuerier extends AccessQuerier {
     }
 
     @Override
-    public Collection<String> computeAccessibleChildren(UserContext userCtx, String root) throws PMException {
-        List<String> children = new ArrayList<>(graphQuerier.getChildren(root));
-        children.removeIf(child -> {
+    public Collection<String> computeAccessibleAscendants(UserContext userCtx, String root) throws PMException {
+        List<String> ascendants = new ArrayList<>(graphQuerier.getAdjacentAscendants(root));
+        ascendants.removeIf(ascendant -> {
             try {
-                return computePrivileges(userCtx, child).isEmpty();
+                return computePrivileges(userCtx, ascendant).isEmpty();
             } catch (PMException e) {
                 e.printStackTrace();
                 return true;
             }
         });
 
-        return children;
+        return ascendants;
     }
 
     @Override
-    public Collection<String> computeAccessibleParents(UserContext userCtx, String root) throws PMException {
-        List<String> parents = new ArrayList<>(graphQuerier.getParents(root));
-        parents.removeIf(parent -> {
+    public Collection<String> computeAccessibleDescendants(UserContext userCtx, String root) throws PMException {
+        List<String> descs = new ArrayList<>(graphQuerier.getAdjacentDescendants(root));
+        descs.removeIf(desc -> {
             try {
-                return computePrivileges(userCtx, parent).isEmpty();
+                return computePrivileges(userCtx, desc).isEmpty();
             } catch (PMException e) {
                 e.printStackTrace();
                 return true;
             }
         });
 
-        return parents;
+        return descs;
     }
 
     private void getAndStorePrivileges(Map<String, AccessRightSet> arsetMap, UserDagResult userDagResult, String target) throws PMException {
@@ -281,19 +281,19 @@ public class MemoryAccessQuerier extends AccessQuerier {
             }
         };
 
-        Propagator propagator = (parent, child) -> {
-            Map<String, AccessRightSet> parentCtx = visitedNodes.get(parent);
-            Map<String, AccessRightSet> nodeCtx = visitedNodes.getOrDefault(child, new HashMap<>());
-            for (String name : parentCtx.keySet()) {
+        Propagator propagator = (desc, asc) -> {
+            Map<String, AccessRightSet> descCtx = visitedNodes.get(desc);
+            Map<String, AccessRightSet> nodeCtx = visitedNodes.getOrDefault(asc, new HashMap<>());
+            for (String name : descCtx.keySet()) {
                 AccessRightSet ops = nodeCtx.getOrDefault(name, new AccessRightSet());
-                ops.addAll(parentCtx.get(name));
+                ops.addAll(descCtx.get(name));
                 nodeCtx.put(name, ops);
             }
-            visitedNodes.put(child, nodeCtx);
+            visitedNodes.put(asc, nodeCtx);
         };
 
         new DepthFirstGraphWalker(graphQuerier)
-                .withDirection(Direction.PARENTS)
+                .withDirection(Direction.DESCENDANTS)
                 .withVisitor(visitor)
                 .withPropagator(propagator)
                 .walk(target);
@@ -341,7 +341,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
 
         // start the bfs
         new BreadthFirstGraphWalker(graphQuerier)
-                .withDirection(Direction.PARENTS)
+                .withDirection(Direction.DESCENDANTS)
                 .withVisitor(visitor)
                 .walk(subject);
 
@@ -362,15 +362,15 @@ public class MemoryAccessQuerier extends AccessQuerier {
     private Set<String> getDescendants(String vNode) throws PMException {
         Set<String> descendants = new HashSet<>();
 
-        Collection<String> children = graphQuerier.getChildren(vNode);
-        if (children.isEmpty()) {
+        Collection<String> ascendants = graphQuerier.getAdjacentAscendants(vNode);
+        if (ascendants.isEmpty()) {
             return descendants;
         }
 
-        descendants.addAll(children);
-        for (String child : children) {
-            descendants.add(child);
-            descendants.addAll(getDescendants(child));
+        descendants.addAll(ascendants);
+        for (String ascendant : ascendants) {
+            descendants.add(ascendant);
+            descendants.addAll(getDescendants(ascendant));
         }
 
         return descendants;
@@ -389,7 +389,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
         String crtNode;
 
         // Get u's directly assigned attributes and put them into the queue.
-        Collection<String> hsAttrs = graphQuerier.getParents(userCtx.getUser());
+        Collection<String> hsAttrs = graphQuerier.getAdjacentDescendants(userCtx.getUser());
         List<String> queue = new ArrayList<>(hsAttrs);
 
         // While the queue has elements, extract an element from the queue
@@ -457,7 +457,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
                 }
                 visited.add(crtNode);
 
-                Collection<String> hsDescs = graphQuerier.getParents(crtNode);
+                Collection<String> hsDescs = graphQuerier.getAdjacentDescendants(crtNode);
                 queue.addAll(hsDescs);
             }
         }
@@ -511,7 +511,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
                 // Extract its direct descendants. If a descendant is an attribute,
                 // insert it into the queue. If it is a pc, add it to reachable,
                 // if not already there
-                Collection<String> hsContainers = graphQuerier.getParents(crtNode);
+                Collection<String> hsContainers = graphQuerier.getAdjacentDescendants(crtNode);
                 for (String n : hsContainers) {
                     if (policyClasses.contains(n)) {
                         reachable.add(n);
@@ -628,22 +628,22 @@ public class MemoryAccessQuerier extends AccessQuerier {
             Node node = graphQuerier.getNode(nodeName);
             List<EdgePath> nodePaths = new ArrayList<>();
 
-            for(String parent : graphQuerier.getParents(nodeName)) {
-                Relationship edge = new Relationship(node.getName(), parent);
-                List<EdgePath> parentPaths = propPaths.get(parent);
-                if(parentPaths.isEmpty()) {
+            for(String desc : graphQuerier.getAdjacentDescendants(nodeName)) {
+                Relationship edge = new Relationship(node.getName(), desc);
+                List<EdgePath> descPaths = propPaths.get(desc);
+                if(descPaths.isEmpty()) {
                     EdgePath path = new EdgePath();
                     path.addEdge(edge);
                     nodePaths.add(0, path);
                 } else {
-                    for(EdgePath p : parentPaths) {
-                        EdgePath parentPath = new EdgePath();
+                    for(EdgePath p : descPaths) {
+                        EdgePath descPath = new EdgePath();
                         for(Relationship e : p.getEdges()) {
-                            parentPath.addEdge(new Relationship(e.getSource(), e.getTarget(), e.getAccessRightSet()));
+                            descPath.addEdge(new Relationship(e.getSource(), e.getTarget(), e.getAccessRightSet()));
                         }
 
-                        parentPath.getEdges().add(0, edge);
-                        nodePaths.add(parentPath);
+                        descPath.getEdges().addFirst(edge);
+                        nodePaths.add(descPath);
                     }
                 }
             }
@@ -667,13 +667,13 @@ public class MemoryAccessQuerier extends AccessQuerier {
             }
         };
 
-        Propagator propagator = (parentNodeName, childNodeName) -> {
-            Node parentNode = graphQuerier.getNode(parentNodeName);
-            Node childNode = graphQuerier.getNode(childNodeName);
-            List<EdgePath> childPaths = propPaths.computeIfAbsent(childNode.getName(), k -> new ArrayList<>());
-            List<EdgePath> parentPaths = propPaths.get(parentNode.getName());
+        Propagator propagator = (desc, asc) -> {
+            Node descNode = graphQuerier.getNode(desc);
+            Node ascNode = graphQuerier.getNode(asc);
+            List<EdgePath> ascPaths = propPaths.computeIfAbsent(ascNode.getName(), k -> new ArrayList<>());
+            List<EdgePath> descPaths = propPaths.get(descNode.getName());
 
-            for(EdgePath p : parentPaths) {
+            for(EdgePath p : descPaths) {
                 EdgePath path = new EdgePath();
                 for(Relationship edge : p.getEdges()) {
                     path.addEdge(new Relationship(edge.getSource(), edge.getTarget(), edge.getAccessRightSet()));
@@ -681,22 +681,22 @@ public class MemoryAccessQuerier extends AccessQuerier {
 
                 EdgePath newPath = new EdgePath();
                 newPath.getEdges().addAll(path.getEdges());
-                Relationship edge = new Relationship(childNode.getName(), parentNode.getName(), null);
+                Relationship edge = new Relationship(ascNode.getName(), descNode.getName(), null);
                 newPath.getEdges().add(0, edge);
-                childPaths.add(newPath);
-                propPaths.put(childNode.getName(), childPaths);
+                ascPaths.add(newPath);
+                propPaths.put(ascNode.getName(), ascPaths);
             }
 
-            if (childNode.getName().equals(start)) {
+            if (ascNode.getName().equals(start)) {
                 paths.clear();
-                paths.addAll(propPaths.get(childNode.getName()));
+                paths.addAll(propPaths.get(ascNode.getName()));
             }
         };
 
         new DepthFirstGraphWalker(graphQuerier)
                 .withVisitor(visitor)
                 .withPropagator(propagator)
-                .withDirection(Direction.PARENTS)
+                .withDirection(Direction.DESCENDANTS)
                 .walk(start);
 
         return paths;

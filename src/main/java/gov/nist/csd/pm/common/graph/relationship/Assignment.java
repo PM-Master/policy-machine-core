@@ -27,18 +27,21 @@ public class Assignment extends Relationship implements Serializable {
     /**
      * Check if the assignment provided, is valid under NGAC.
      *
-     * @param childType  The type of the child.
-     * @param parentType The type of the parent.
-     * @throws InvalidAssignmentException if the child type is not allowed to be assigned to the parent type.
+     * @param ascType The type of the ascendant node.
+     * @param dscType The type of the descendant node.
+     * @throws InvalidAssignmentException if the ascendant type is not allowed to be assigned to the descendant type.
      */
-    public static void checkAssignment(NodeType childType, NodeType parentType) throws InvalidAssignmentException {
-        NodeType[] check = validAssignments.get(childType);
+    public static void checkAssignment(NodeType ascType, NodeType dscType) throws InvalidAssignmentException {
+        NodeType[] check = validAssignments.get(ascType);
         for (NodeType nt : check) {
-            if (nt.equals(parentType)) {
+            if (nt.equals(dscType)) {
                 return;
             }
         }
 
-        throw new InvalidAssignmentException(String.format("cannot assign a node of type %s to a node of type %s", childType, parentType));
+        throw new InvalidAssignmentException(String.format("cannot assign a node of type %s to a node of type %s",
+                ascType,
+                dscType
+        ));
     }
 }

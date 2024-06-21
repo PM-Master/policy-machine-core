@@ -47,9 +47,9 @@ create obligation "o1" {
     performs op => pEquals("assign")
     on operand1 => pEquals("o1")
     do (evtCtx) {
-        parent := evtCtx["parent"]
-        associate "ua1" and parent with ["read", "write"]
-        associate "ua2" and parent with ["read", "write"]
+        descendant := evtCtx["descendant"]
+        associate "ua1" and descendant with ["read", "write"]
+        associate "ua2" and descendant with ["read", "write"]
         create prohibition "u2-prohibition" deny user "u2" access rights ["write"] on intersection of ["oa1", "oa2"]
     }
 }
@@ -59,9 +59,22 @@ create obligation "o2" {
     performs op => pEquals("assign")
     on operand1 => pEquals("o1")
     do (evtCtx) {
-        parent := evtCtx["parent"]
-        associate "ua1" and parent with ["read", "write"]
-        associate "ua2" and parent with ["read", "write"]
+        descendant := evtCtx["descendant"]
+        associate "ua1" and descendant with ["read", "write"]
+        associate "ua2" and descendant with ["read", "write"]
         create prohibition "u2-prohibition" deny user "u2" access rights ["write"] on intersection of ["oa1", "oa2"]
     }
+}
+
+operation myOperation(arg1) {
+    ...
+    ...
+    ...
+}
+
+routine myRoutine(arg1 string[]) {
+ create
+ assign
+ assign
+ ...
 }

@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 public class CreateUserOp extends CreateNodeOp{
-    public CreateUserOp(String name, Map<String, String> properties, Collection<String> parents) {
-        super(name, NodeType.U, properties, parents);
+    public CreateUserOp(String name, Map<String, String> properties, Collection<String> descendants) {
+        super(name, NodeType.U, properties, descendants);
     }
 
     @Override

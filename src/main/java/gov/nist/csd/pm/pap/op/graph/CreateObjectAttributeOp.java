@@ -9,8 +9,8 @@ import java.util.Map;
 public class CreateObjectAttributeOp extends CreateNodeOp{
     public CreateObjectAttributeOp(String name,
                                    Map<String, String> properties,
-                                   Collection<String> parents) {
-        super(name, NodeType.OA, properties, parents);
+                                   Collection<String> descendants) {
+        super(name, NodeType.OA, properties, descendants);
     }
 
     @Override

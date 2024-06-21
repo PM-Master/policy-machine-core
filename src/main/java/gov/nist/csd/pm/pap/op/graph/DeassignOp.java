@@ -1,16 +1,14 @@
 package gov.nist.csd.pm.pap.op.graph;
 
-import gov.nist.csd.pm.pap.op.Operation;
-
 import java.util.Objects;
 
 public class DeassignOp extends GraphOp {
-    private final String child;
-    private final String parent;
+    private final String ascendant;
+    private final String descendant;
 
-    public DeassignOp(String child, String parent) {
-        this.child = child;
-        this.parent = parent;
+    public DeassignOp(String ascendant, String descendant) {
+        this.ascendant = ascendant;
+        this.descendant = descendant;
     }
 
     @Override
@@ -20,15 +18,15 @@ public class DeassignOp extends GraphOp {
 
     @Override
     public Object[] getOperands() {
-        return operands(child, parent);
+        return operands(ascendant, descendant);
     }
 
-    public String getChild() {
-        return child;
+    public String getAscendant() {
+        return ascendant;
     }
 
-    public String getParent() {
-        return parent;
+    public String getDescendant() {
+        return descendant;
     }
 
     @Override
@@ -40,20 +38,20 @@ public class DeassignOp extends GraphOp {
             return false;
         }
         var that = (DeassignOp) obj;
-        return Objects.equals(this.child, that.child) &&
-                Objects.equals(this.parent, that.parent);
+        return Objects.equals(this.ascendant, that.ascendant) &&
+                Objects.equals(this.descendant, that.descendant);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(child, parent);
+        return Objects.hash(ascendant, descendant);
     }
 
     @Override
     public String toString() {
         return "DeassignOp[" +
-                "child=" + child + ", " +
-                "parent=" + parent + ']';
+                "ascendant=" + ascendant + ", " +
+                "descendant=" + descendant + ']';
     }
 
 

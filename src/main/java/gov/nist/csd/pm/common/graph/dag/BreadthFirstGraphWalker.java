@@ -1,13 +1,10 @@
 package gov.nist.csd.pm.common.graph.dag;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.modification.GraphModification;
 import gov.nist.csd.pm.pap.query.GraphQuery;
-import gov.nist.csd.pm.pap.query.PolicyQuery;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class BreadthFirstGraphWalker implements GraphWalker {
@@ -23,7 +20,7 @@ public class BreadthFirstGraphWalker implements GraphWalker {
         this.graphQuery = graphQuery;
         this.visitor = new NoopVisitor();
         this.propagator = new NoopPropagator();
-        this.direction = Direction.PARENTS;
+        this.direction = Direction.DESCENDANTS;
         this.allPathsShortCircuit = new NoopShortCircuit();
         this.singlePathShortCircuit = new NoopShortCircuit();
     }
@@ -92,10 +89,10 @@ public class BreadthFirstGraphWalker implements GraphWalker {
     }
 
     private Collection<String> getNextLevel(String node) throws PMException {
-        if (direction == Direction.PARENTS) {
-            return graphQuery.getParents(node);
+        if (direction == Direction.DESCENDANTS) {
+            return graphQuery.getAdjacentDescendants(node);
         } else {
-            return graphQuery.getChildren(node);
+            return graphQuery.getAdjacentAscendants(node);
         }
     }
 }

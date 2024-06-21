@@ -13,16 +13,16 @@ import java.util.Objects;
 
 public class DeassignStatement extends PMLStatement {
 
-    private Expression child;
+    private Expression ascendant;
     private Expression deassignFrom;
 
-    public DeassignStatement(Expression child, Expression deassignFrom) {
-        this.child = child;
+    public DeassignStatement(Expression ascendant, Expression deassignFrom) {
+        this.ascendant = ascendant;
         this.deassignFrom = deassignFrom;
     }
 
-    public Expression getChild() {
-        return child;
+    public Expression getAscendant() {
+        return ascendant;
     }
 
     public Expression getDeassignFrom() {
@@ -31,15 +31,15 @@ public class DeassignStatement extends PMLStatement {
 
     @Override
     public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
-        Value childValue = child.execute(ctx, policy);
+        Value ascValue = ascendant.execute(ctx, policy);
         Value deassignFromValue = deassignFrom.execute(ctx, policy);
 
-        String childStringValue = childValue.getStringValue();
+        String ascStringValue = ascValue.getStringValue();
 
         List<Value> valueArr = deassignFromValue.getArrayValue();
         for (Value value : valueArr) {
-            String parent = value.getStringValue();
-            policy.modify().graph().deassign(childStringValue, parent);
+            String descendant = value.getStringValue();
+            policy.modify().graph().deassign(ascStringValue, descendant);
         }
 
         return new VoidValue();
@@ -47,7 +47,7 @@ public class DeassignStatement extends PMLStatement {
 
     @Override
     public String toFormattedString(int indentLevel) {
-        return indent(indentLevel) + String.format("deassign %s from %s", child, deassignFrom);
+        return indent(indentLevel) + String.format("deassign %s from %s", ascendant, deassignFrom);
     }
 
     @Override
@@ -55,11 +55,11 @@ public class DeassignStatement extends PMLStatement {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DeassignStatement that = (DeassignStatement) o;
-        return Objects.equals(child, that.child) && Objects.equals(deassignFrom, that.deassignFrom);
+        return Objects.equals(ascendant, that.ascendant) && Objects.equals(deassignFrom, that.deassignFrom);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(child, deassignFrom);
+        return Objects.hash(ascendant, deassignFrom);
     }
 }

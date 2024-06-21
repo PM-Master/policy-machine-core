@@ -9,27 +9,27 @@ import java.util.Map;
 
 class VertexAttribute extends Vertex {
 
-    private ObjectOpenHashSet<String> parents;
-    private ObjectOpenHashSet<String> children;
+    private ObjectOpenHashSet<String> descendants;
+    private ObjectOpenHashSet<String> ascendants;
     private ObjectOpenHashSet<Association> outgoingAssociations;
     private ObjectOpenHashSet<Association> incomingAssociations;
 
     public VertexAttribute(String name, NodeType type, Map<String, String> properties) {
         super(name, type, properties);
-        this.parents = new ObjectOpenHashSet<>();
-        this.children = new ObjectOpenHashSet<>();
+        this.descendants = new ObjectOpenHashSet<>();
+        this.ascendants = new ObjectOpenHashSet<>();
         this.outgoingAssociations = new ObjectOpenHashSet<>();
         this.incomingAssociations = new ObjectOpenHashSet<>();
     }
 
     @Override
-    public ObjectOpenHashSet<String> getParents() {
-        return parents;
+    public ObjectOpenHashSet<String> getDescendants() {
+        return descendants;
     }
 
     @Override
-    public ObjectOpenHashSet<String> getChildren() {
-        return children;
+    public ObjectOpenHashSet<String> getAscendants() {
+        return ascendants;
     }
 
     @Override
@@ -43,20 +43,20 @@ class VertexAttribute extends Vertex {
     }
 
     @Override
-    protected void addAssignment(String child, String parent) {
-        if (child.equals(name)) {
-            parents.add(parent);
+    protected void addAssignment(String ascendant, String descendant) {
+        if (ascendant.equals(name)) {
+            descendants.add(descendant);
         } else {
-            children.add(child);
+            ascendants.add(ascendant);
         }
     }
 
     @Override
-    protected void deleteAssignment(String child, String parent) {
-        if (child.equals(name)) {
-            parents.remove(parent);
+    protected void deleteAssignment(String ascendant, String descendant) {
+        if (ascendant.equals(name)) {
+            descendants.remove(descendant);
         } else {
-            children.remove(child);
+            ascendants.remove(ascendant);
         }
     }
 

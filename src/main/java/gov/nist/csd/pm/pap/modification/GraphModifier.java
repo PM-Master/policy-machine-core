@@ -59,8 +59,8 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
                 createNodeInternal(pcTarget, OA, new HashMap<>());
             }
 
-            Collection<String> parents = query().graph().getParents(pcTarget);
-            if (!parents.contains(POLICY_CLASS_TARGETS.nodeName())) {
+            Collection<String> descendants = query().graph().getAdjacentDescendants(pcTarget);
+            if (!descendants.contains(POLICY_CLASS_TARGETS.nodeName())) {
                 createAssignmentInternal(pcTarget, POLICY_CLASS_TARGETS.nodeName());
             }
 
@@ -69,25 +69,25 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
     }
 
     @Override
-    public String createUserAttribute(String name, Map<String, String> properties, Collection<String> parents)
+    public String createUserAttribute(String name, Map<String, String> properties, Collection<String> assignments)
             throws PMException {
-        return createNonPolicyClassNode(name, UA, properties, parents);
+        return createNonPolicyClassNode(name, UA, properties, assignments);
     }
 
     @Override
-    public String createObjectAttribute(String name, Map<String, String> properties, Collection<String> parents)
+    public String createObjectAttribute(String name, Map<String, String> properties, Collection<String> assignments)
             throws PMException {
-        return createNonPolicyClassNode(name, OA, properties, parents);
+        return createNonPolicyClassNode(name, OA, properties, assignments);
     }
 
     @Override
-    public String createObject(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
-        return createNonPolicyClassNode(name, O, properties, parents);
+    public String createObject(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
+        return createNonPolicyClassNode(name, O, properties, assignments);
     }
 
     @Override
-    public String createUser(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
-        return createNonPolicyClassNode(name, U, properties, parents);
+    public String createUser(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
+        return createNonPolicyClassNode(name, U, properties, assignments);
     }
 
     @Override
@@ -115,21 +115,21 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
     }
 
     @Override
-    public void assign(String child, String parent) throws PMException {
-        if(!checkAssignInput(child, parent)) {
+    public void assign(String ascendant, String descendant) throws PMException {
+        if(!checkAssignInput(ascendant, descendant)) {
             return;
         }
 
-        createAssignmentInternal(child, parent);
+        createAssignmentInternal(ascendant, descendant);
     }
 
     @Override
-    public void deassign(String child, String parent) throws PMException {
-        if(!checkDeassignInput(child, parent)) {
+    public void deassign(String ascendant, String descendant) throws PMException {
+        if(!checkDeassignInput(ascendant, descendant)) {
             return;
         }
 
-        deleteAssignmentInternal(child, parent);
+        deleteAssignmentInternal(ascendant, descendant);
     }
 
     @Override
@@ -151,27 +151,27 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
     /**
      * Check if a proposed assignment causes a loop.
      *
-     * @param child  The child of the assignment.
-     * @param parent The parent of the assignment.
+     * @param ascendant  The ascendant of the assignment.
+     * @param descendant The descendant of the assignment.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    protected void checkAssignmentDoesNotCreateLoop(String child, String parent) throws PMException {
+    protected void checkAssignmentDoesNotCreateLoop(String ascendant, String descendant) throws PMException {
         AtomicBoolean loop = new AtomicBoolean(false);
 
         new DepthFirstGraphWalker(this.query().graph())
                 .withVisitor((node -> {
-                    if (!node.equals(child)) {
+                    if (!node.equals(ascendant)) {
                         return;
                     }
 
                     loop.set(true);
                 }))
-                .withDirection(Direction.PARENTS)
-                .withAllPathShortCircuit(node -> node.equals(child))
-                .walk(parent);
+                .withDirection(Direction.DESCENDANTS)
+                .withAllPathShortCircuit(node -> node.equals(ascendant))
+                .walk(descendant);
 
         if (loop.get()) {
-            throw new AssignmentCausesLoopException(child, parent);
+            throw new AssignmentCausesLoopException(ascendant, descendant);
         }
     }
 
@@ -202,37 +202,37 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
     }
 
     /**
-     * Check the node name does not already exist and ensure the give parent nodes exist and make up a valid assignment.
+     * Check the node name does not already exist and ensure the given descendant nodes exist and form a valid assignment.
      *
      * @param name    The name of the new node.
      * @param type    The type of the new node.
-     * @param parents Parents to assign the new node to.
+     * @param assignments Nodes to assign the new node to.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      * assignment.
      */
-    protected void checkCreateNodeInput(String name, NodeType type, Collection<String> parents) throws PMException {
+    protected void checkCreateNodeInput(String name, NodeType type, Collection<String> assignments) throws PMException {
         if (query().graph().nodeExists(name)) {
             throw new NodeNameExistsException(name);
         }
 
         // when creating a node the only loop that can occur is to itself
-        if (parents.contains(name)) {
+        if (assignments.contains(name)) {
             throw new AssignmentCausesLoopException(name, name);
         }
 
         // need to be assigned to at least one node to avoid a disconnected graph
-        if (parents.isEmpty()) {
+        if (assignments.isEmpty()) {
             throw new DisconnectedNodeException(name, type);
         }
 
         // check assign inputs
-        for (String p : parents) {
+        for (String p : assignments) {
             if (name.equals(p)) {
                 throw new AssignmentCausesLoopException(name, p);
             }
 
-            Node parentNode = query().graph().getNode(p);
-            Assignment.checkAssignment(type, parentNode.getType());
+            Node assignNode = query().graph().getNode(p);
+            Assignment.checkAssignment(type, assignNode.getType());
         }
     }
 
@@ -260,16 +260,16 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
     protected boolean checkDeleteNodeInput(String name) throws PMException {
-        Collection<String> children;
+        Collection<String> ascendants;
         try {
-            children = query().graph().getChildren(name);
+            ascendants = query().graph().getAdjacentAscendants(name);
         } catch (NodeDoesNotExistException e) {
             // quietly return if the nodes already does not exist as this is the desired state
             return false;
         }
 
-        if (!children.isEmpty()) {
-            throw new NodeHasChildrenException(name);
+        if (!ascendants.isEmpty()) {
+            throw new NodeHasAscendantsException(name);
         }
 
         checkIfNodeInProhibition(name);
@@ -341,26 +341,26 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * occur but
      * return false to indicate to the caller that execution should not proceed.
      *
-     * @param child  The child node.
-     * @param parent The parent node.
+     * @param ascendant  The ascendant node.
+     * @param descendant The descendant node.
      * @return True if the execution should proceed, false otherwise.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    protected boolean checkAssignInput(String child, String parent) throws PMException {
+    protected boolean checkAssignInput(String ascendant, String descendant) throws PMException {
         // ignore if assignment already exists
-        if (query().graph().getParents(child).contains(parent)) {
+        if (query().graph().getAdjacentDescendants(ascendant).contains(descendant)) {
             return false;
         }
 
         // getting both nodes will check if they exist
-        Node childNode = query().graph().getNode(child);
-        Node parentNode = query().graph().getNode(parent);
+        Node ascNode = query().graph().getNode(ascendant);
+        Node descNode = query().graph().getNode(descendant);
 
         // check node types make a valid assignment relation
-        Assignment.checkAssignment(childNode.getType(), parentNode.getType());
+        Assignment.checkAssignment(ascNode.getType(), descNode.getType());
 
         // check the assignment won't create a loop
-        checkAssignmentDoesNotCreateLoop(child, parent);
+        checkAssignmentDoesNotCreateLoop(ascendant, descendant);
 
         return true;
     }
@@ -369,25 +369,25 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
      * Check if both nodes exist. If the assignment does not exist an error does not occur but return false to indicate
      * to the caller that execution should not proceed.
      *
-     * @param child  The child node.
-     * @param parent The parent node.
+     * @param ascendant  The ascendant node.
+     * @param descendant The descendant node.
      * @return True if the execution should proceed, false otherwise.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    protected boolean checkDeassignInput(String child, String parent) throws PMException {
-        if (!query().graph().nodeExists(child)) {
-            throw new NodeDoesNotExistException(child);
-        } else if (!query().graph().nodeExists(parent)) {
-            throw new NodeDoesNotExistException(parent);
+    protected boolean checkDeassignInput(String ascendant, String descendant) throws PMException {
+        if (!query().graph().nodeExists(ascendant)) {
+            throw new NodeDoesNotExistException(ascendant);
+        } else if (!query().graph().nodeExists(descendant)) {
+            throw new NodeDoesNotExistException(descendant);
         }
 
-        Collection<String> parents = query().graph().getParents(child);
-        if (!parents.contains(parent)) {
+        Collection<String> descs = query().graph().getAdjacentDescendants(ascendant);
+        if (!descs.contains(descendant)) {
             return false;
         }
 
-        if (parents.size() == 1) {
-            throw new DisconnectedNodeException(child, parent);
+        if (descs.size() == 1) {
+            throw new DisconnectedNodeException(ascendant, descendant);
         }
 
         return true;
@@ -464,15 +464,15 @@ public abstract class GraphModifier extends Modifier implements GraphModificatio
         return false;
     }
 
-    private String createNonPolicyClassNode(String name, NodeType type, Map<String, String> properties, Collection<String> parents)
+    private String createNonPolicyClassNode(String name, NodeType type, Map<String, String> properties, Collection<String> assignments)
             throws PMException {
         return runTx(() -> {
-            checkCreateNodeInput(name, type, parents);
+            checkCreateNodeInput(name, type, assignments);
 
             createNodeInternal(name, type, properties);
 
-            for (String parent : parents) {
-                createAssignmentInternal(name, parent);
+            for (String assignmentNode : assignments) {
+                createAssignmentInternal(name, assignmentNode);
             }
 
             return name;

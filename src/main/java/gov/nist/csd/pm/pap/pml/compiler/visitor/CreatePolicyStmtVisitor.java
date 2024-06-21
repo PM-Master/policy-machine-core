@@ -98,26 +98,26 @@ public class CreatePolicyStmtVisitor extends PMLBaseVisitor<CreatePolicyStatemen
     private List<CreatePolicyStatement.CreateOrAssignAttributeStatement> buildHierarchy(Expression pc, List<HierarchyLine> hierarchyLines, NodeType type) {
         List<CreatePolicyStatement.CreateOrAssignAttributeStatement> attrs = new ArrayList<>();
 
-        Map<Integer, Expression> currentParentIndexes = new HashMap<>();
-        currentParentIndexes.put(0, pc);
+        Map<Integer, Expression> currentDescendantIndexes = new HashMap<>();
+        currentDescendantIndexes.put(0, pc);
 
         for (HierarchyLine line : hierarchyLines) {
             int indent = line.indent();
-            int parentIndent = indent-1;
+            int descIndent = indent-1;
 
             PMLParser.HierarchyStatementContext hierarchyStatementContext = hierarchyStatementFromString(line.stmt);
-            Expression parentExpr = currentParentIndexes.get(parentIndent);
-            CreatePolicyStatement.CreateOrAssignAttributeStatement stmt = buildStatementFromCtx(hierarchyStatementContext, type, parentExpr);
+            Expression descExpr = currentDescendantIndexes.get(descIndent);
+            CreatePolicyStatement.CreateOrAssignAttributeStatement stmt = buildStatementFromCtx(hierarchyStatementContext, type, descExpr);
 
             attrs.add(stmt);
 
-            currentParentIndexes.put(indent, stmt.getName());
+            currentDescendantIndexes.put(indent, stmt.getName());
         }
 
         return attrs;
     }
 
-    private CreatePolicyStatement.CreateOrAssignAttributeStatement buildStatementFromCtx(PMLParser.HierarchyStatementContext ctx, NodeType type, Expression parentExpr) {
+    private CreatePolicyStatement.CreateOrAssignAttributeStatement buildStatementFromCtx(PMLParser.HierarchyStatementContext ctx, NodeType type, Expression descExpr) {
         Expression propertiesExpr = null;
         if (ctx.properties != null) {
             propertiesExpr = Expression.compile(visitorCtx, ctx.properties, Type.map(Type.string(), Type.string()));
@@ -126,7 +126,7 @@ public class CreatePolicyStmtVisitor extends PMLBaseVisitor<CreatePolicyStatemen
         return new CreatePolicyStatement.CreateOrAssignAttributeStatement(
                 Expression.compile(visitorCtx, ctx.name, Type.string()),
                 type,
-                parentExpr,
+                descExpr,
                 propertiesExpr
         );
     }

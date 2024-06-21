@@ -12,13 +12,13 @@ import java.util.Objects;
 
 public class Attribute extends PMLStatement {
 
-    private String parent;
+    private String descendant;
     private Expression nameExpr;
-    private List<Attribute> childAttrs;
+    private List<Attribute> ascendantAttrs;
 
-    public Attribute(Expression nameExpr, List<Attribute> childAttrs) {
+    public Attribute(Expression nameExpr, List<Attribute> ascendantAttrs) {
         this.nameExpr = nameExpr;
-        this.childAttrs = childAttrs;
+        this.ascendantAttrs = ascendantAttrs;
     }
 
     public Expression getNameExpr() {
@@ -29,31 +29,30 @@ public class Attribute extends PMLStatement {
         this.nameExpr = nameExpr;
     }
 
-    public List<Attribute> getChildAttrs() {
-        return childAttrs;
+    public List<Attribute> getAscendantAttrs() {
+        return ascendantAttrs;
     }
 
-    public void setChildAttrs(
-            List<Attribute> childAttrs) {
-        this.childAttrs = childAttrs;
+    public void setAscendantAttrs(List<Attribute> ascendantAttrs) {
+        this.ascendantAttrs = ascendantAttrs;
     }
 
-    public String getParent() {
-        return parent;
+    public String getDescendant() {
+        return descendant;
     }
 
-    public void setParent(String parent) {
-        this.parent = parent;
+    public void setDescendant(String descendant) {
+        this.descendant = descendant;
     }
 
     @Override
     public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
         String name = nameExpr.execute(ctx, policy).getStringValue();
 
-        for (Attribute child : childAttrs) {
-            child.setParent(name);
+        for (Attribute ascendant : ascendantAttrs) {
+            ascendant.setDescendant(name);
 
-            child.execute(ctx, policy);
+            ascendant.execute(ctx, policy);
         }
 
         return new VoidValue();
@@ -68,13 +67,13 @@ public class Attribute extends PMLStatement {
             return false;
         }
         Attribute attribute = (Attribute) o;
-        return Objects.equals(parent, attribute.parent) && Objects.equals(
-                nameExpr, attribute.nameExpr) && Objects.equals(childAttrs, attribute.childAttrs);
+        return Objects.equals(descendant, attribute.descendant) && Objects.equals(
+                nameExpr, attribute.nameExpr) && Objects.equals(ascendantAttrs, attribute.ascendantAttrs);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(parent, nameExpr, childAttrs);
+        return Objects.hash(descendant, nameExpr, ascendantAttrs);
     }
 
     @Override

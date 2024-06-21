@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import static gov.nist.csd.pm.pap.pml.PMLUtil.buildArrayLiteral;
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,7 +35,7 @@ class DeassignStatementTest {
         ExecutionContext execCtx = new ExecutionContext(new UserContext("u1"), GlobalScope.forExecute(pap));
         stmt.execute(execCtx, pap);
 
-        assertTrue(pap.query().graph().getParents("ua3").contains("pc1"));
+        assertTrue(pap.query().graph().getAdjacentDescendants("ua3").contains("pc1"));
     }
 
     @Test

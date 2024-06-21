@@ -13,16 +13,16 @@ import java.util.Objects;
 
 public class AssignStatement extends PMLStatement {
 
-    private Expression child;
+    private Expression ascendant;
     private Expression assignTo;
 
-    public AssignStatement(Expression child, Expression assignTo) {
-        this.child = child;
+    public AssignStatement(Expression ascendant, Expression assignTo) {
+        this.ascendant = ascendant;
         this.assignTo = assignTo;
     }
 
-    public Expression getChild() {
-        return child;
+    public Expression getAscendant() {
+        return ascendant;
     }
 
     public Expression getAssignTo() {
@@ -31,15 +31,15 @@ public class AssignStatement extends PMLStatement {
 
     @Override
     public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
-        Value childValue = this.child.execute(ctx, policy);
+        Value ascValue = this.ascendant.execute(ctx, policy);
         Value assignToValue = this.assignTo.execute(ctx, policy);
 
-        String childStringValue = childValue.getStringValue();
+        String ascStringValue = ascValue.getStringValue();
 
         List<Value> valueArr = assignToValue.getArrayValue();
         for (Value value : valueArr) {
-            String parent = value.getStringValue();
-            policy.modify().graph().assign(childStringValue, parent);
+            String descendant = value.getStringValue();
+            policy.modify().graph().assign(ascStringValue, descendant);
         }
 
         return new VoidValue();
@@ -50,16 +50,16 @@ public class AssignStatement extends PMLStatement {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AssignStatement that = (AssignStatement) o;
-        return Objects.equals(child, that.child) && Objects.equals(assignTo, that.assignTo);
+        return Objects.equals(ascendant, that.ascendant) && Objects.equals(assignTo, that.assignTo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(child, assignTo);
+        return Objects.hash(ascendant, assignTo);
     }
 
     @Override
     public String toFormattedString(int indentLevel) {
-        return indent(indentLevel) + String.format("assign %s to %s", child, assignTo);
+        return indent(indentLevel) + String.format("assign %s to %s", ascendant, assignTo);
     }
 }

@@ -40,7 +40,7 @@ class BreadthFirstGraphWalkerTest {
     void testWalk() throws PMException {
         List<String> visited = new ArrayList<>();
         BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.query().graph())
-                .withDirection(Direction.CHILDREN)
+                .withDirection(Direction.ASCENDANTS)
                 .withVisitor(node -> {
                     visited.add(node);
                 });
@@ -66,7 +66,7 @@ class BreadthFirstGraphWalkerTest {
     void testAllPathsShortCircuit() throws PMException {
         List<String> visited = new ArrayList<>();
         BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.query().graph())
-                .withDirection(Direction.CHILDREN)
+                .withDirection(Direction.ASCENDANTS)
                 .withVisitor(node -> {
                     visited.add(node);
                 })
@@ -78,7 +78,7 @@ class BreadthFirstGraphWalkerTest {
 
         visited.clear();
         bfs = new BreadthFirstGraphWalker(pap.query().graph())
-                .withDirection(Direction.CHILDREN)
+                .withDirection(Direction.ASCENDANTS)
                 .withVisitor(visited::add)
                 .withAllPathShortCircuit(node -> node.equals("oa1-1"));
 
@@ -92,7 +92,7 @@ class BreadthFirstGraphWalkerTest {
     void testSinglePathShortCircuit() throws PMException {
         List<String> visited = new ArrayList<>();
         BreadthFirstGraphWalker bfs = new BreadthFirstGraphWalker(pap.query().graph())
-                .withDirection(Direction.CHILDREN)
+                .withDirection(Direction.ASCENDANTS)
                 .withVisitor(visited::add)
                 .withSinglePathShortCircuit(node -> node.equals("oa1-1"));
 

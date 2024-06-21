@@ -32,7 +32,7 @@ public class AscendantOfPatternFunction extends PMLPatternFunctionStmt {
                 String node = argValues.get(0).getStringValue();
                 String toMatch = Value.fromObject(value).getStringValue();
 
-                return pap.query().graph().isContained(node, toMatch);
+                return pap.query().graph().isAscendant(node, toMatch);
             }
 
             @Override

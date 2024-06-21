@@ -163,12 +163,12 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         protected void deleteNodeInternal(String name) throws PMException {
             Vertex vertex = graph.get(name);
 
-            Collection<String> parents = vertex.getParents();
+            Collection<String> descs = vertex.getDescendants();
             Collection<Association> incomingAssociations = vertex.getIncomingAssociations();
             Collection<Association> outgoingAssociations = vertex.getOutgoingAssociations();
 
-            for (String parent : parents) {
-                graph.get(parent).deleteAssignment(name, parent);
+            for (String desc : descs) {
+                graph.get(desc).deleteAssignment(name, desc);
             }
 
             for (Association association : incomingAssociations) {
@@ -246,33 +246,33 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         }
 
         @Override
-        public String createUserAttribute(String name, Map<String, String> properties, Collection<String> parents)
+        public String createUserAttribute(String name, Map<String, String> properties, Collection<String> assignments)
                 throws PMException {
-            String ret = super.createUserAttribute(name, properties, parents);
-            txOpTracker.trackOp(tx, new CreateUserAttributeOp(name, properties, parents));
+            String ret = super.createUserAttribute(name, properties, assignments);
+            txOpTracker.trackOp(tx, new CreateUserAttributeOp(name, properties, assignments));
             return ret;
         }
 
         @Override
-        public String createObjectAttribute(String name, Map<String, String> properties, Collection<String> parents)
+        public String createObjectAttribute(String name, Map<String, String> properties, Collection<String> assignments)
                 throws PMException {
-            String ret = super.createObjectAttribute(name, properties, parents);
-            txOpTracker.trackOp(tx, new CreateObjectAttributeOp(name, properties, parents));
+            String ret = super.createObjectAttribute(name, properties, assignments);
+            txOpTracker.trackOp(tx, new CreateObjectAttributeOp(name, properties, assignments));
             return ret;
         }
 
         @Override
-        public String createObject(String name, Map<String, String> properties, Collection<String> parents)
+        public String createObject(String name, Map<String, String> properties, Collection<String> assignments)
                 throws PMException {
-            String ret = super.createObject(name, properties, parents);
-            txOpTracker.trackOp(tx, new CreateObjectOp(name, properties, parents));
+            String ret = super.createObject(name, properties, assignments);
+            txOpTracker.trackOp(tx, new CreateObjectOp(name, properties, assignments));
             return ret;
         }
 
         @Override
-        public String createUser(String name, Map<String, String> properties, Collection<String> parents) throws PMException {
-            String ret = super.createUser(name, properties, parents);
-            txOpTracker.trackOp(tx, new CreateUserOp(name, properties, parents));
+        public String createUser(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
+            String ret = super.createUser(name, properties, assignments);
+            txOpTracker.trackOp(tx, new CreateUserOp(name, properties, assignments));
             return ret;
         }
 
@@ -301,21 +301,21 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
                 txOpTracker.trackOp(tx, new TxOps.MemoryDeleteNodeOp(
                         name,
                         new Node(vertex.name, vertex.type, vertex.properties),
-                        vertex.getParents()
+                        vertex.getDescendants()
                 ));
             }
         }
 
         @Override
-        public void assign(String child, String parent) throws PMException {
-            super.assign(child, parent);
-            txOpTracker.trackOp(tx, new AssignOp(child, parent));
+        public void assign(String ascendant, String descendant) throws PMException {
+            super.assign(ascendant, descendant);
+            txOpTracker.trackOp(tx, new AssignOp(ascendant, descendant));
         }
 
         @Override
-        public void deassign(String child, String parent) throws PMException {
-            super.deassign(child, parent);
-            txOpTracker.trackOp(tx, new DeassignOp(child, parent));
+        public void deassign(String ascendant, String descendant) throws PMException {
+            super.deassign(ascendant, descendant);
+            txOpTracker.trackOp(tx, new DeassignOp(ascendant, descendant));
         }
 
         @Override

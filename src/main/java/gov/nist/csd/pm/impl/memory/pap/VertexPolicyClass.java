@@ -8,21 +8,21 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Map;
 
 class VertexPolicyClass extends Vertex {
-    private ObjectOpenHashSet<String> children;
+    private ObjectOpenHashSet<String> ascendants;
 
     public VertexPolicyClass(String name, Map<String, String> properties) {
         super(name, NodeType.PC, properties);
-        this.children = new ObjectOpenHashSet<>();
+        this.ascendants = new ObjectOpenHashSet<>();
     }
 
     @Override
-    protected ObjectOpenHashSet<String> getParents() {
+    protected ObjectOpenHashSet<String> getDescendants() {
         return new ObjectOpenHashSet<>();
     }
 
     @Override
-    protected ObjectOpenHashSet<String> getChildren() {
-        return children;
+    protected ObjectOpenHashSet<String> getAscendants() {
+        return ascendants;
     }
 
     @Override
@@ -36,13 +36,13 @@ class VertexPolicyClass extends Vertex {
     }
 
     @Override
-    public void addAssignment(String child, String parent) {
-        children.add(child);
+    public void addAssignment(String ascendant, String descendant) {
+        ascendants.add(ascendant);
     }
 
     @Override
-    public void deleteAssignment(String child, String parent) {
-        children.remove(child);
+    public void deleteAssignment(String ascendant, String descendant) {
+        ascendants.remove(ascendant);
     }
 
     @Override

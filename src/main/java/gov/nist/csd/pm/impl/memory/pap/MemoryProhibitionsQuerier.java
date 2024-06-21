@@ -75,7 +75,7 @@ public class MemoryProhibitionsQuerier extends ProhibitionsQuerier {
                 .withVisitor((n) -> {
                     pros.addAll(getWithSubject(n));
                 })
-                .withDirection(Direction.PARENTS)
+                .withDirection(Direction.DESCENDANTS)
                 .walk(subject);
 
         return pros;

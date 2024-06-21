@@ -6,8 +6,8 @@ import java.util.Collection;
 import java.util.Map;
 
 public class CreateUserAttributeOp extends CreateNodeOp{
-    public CreateUserAttributeOp(String name, Map<String, String> properties, Collection<String> parents) {
-        super(name, NodeType.UA, properties, parents);
+    public CreateUserAttributeOp(String name, Map<String, String> properties, Collection<String> descendants) {
+        super(name, NodeType.UA, properties, descendants);
     }
 
     @Override

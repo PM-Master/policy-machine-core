@@ -1818,8 +1818,8 @@ public class PMLParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class AssignStatementContext extends ParserRuleContext {
-		public ExpressionContext childNode;
-		public ExpressionContext parentNodes;
+		public ExpressionContext ascendantNode;
+		public ExpressionContext descendantNodes;
 		public TerminalNode ASSIGN() { return getToken(PMLParser.ASSIGN, 0); }
 		public TerminalNode TO() { return getToken(PMLParser.TO, 0); }
 		public List<ExpressionContext> expression() {
@@ -1856,11 +1856,11 @@ public class PMLParser extends Parser {
 			setState(309);
 			match(ASSIGN);
 			setState(310);
-			((AssignStatementContext)_localctx).childNode = expression(0);
+			((AssignStatementContext)_localctx).ascendantNode = expression(0);
 			setState(311);
 			match(TO);
 			setState(312);
-			((AssignStatementContext)_localctx).parentNodes = expression(0);
+			((AssignStatementContext)_localctx).descendantNodes = expression(0);
 			}
 		}
 		catch (RecognitionException re) {
@@ -1876,8 +1876,8 @@ public class PMLParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class DeassignStatementContext extends ParserRuleContext {
-		public ExpressionContext childNode;
-		public ExpressionContext parentNodes;
+		public ExpressionContext ascendantNode;
+		public ExpressionContext descendantNodes;
 		public TerminalNode DEASSIGN() { return getToken(PMLParser.DEASSIGN, 0); }
 		public TerminalNode FROM() { return getToken(PMLParser.FROM, 0); }
 		public List<ExpressionContext> expression() {
@@ -1914,11 +1914,11 @@ public class PMLParser extends Parser {
 			setState(314);
 			match(DEASSIGN);
 			setState(315);
-			((DeassignStatementContext)_localctx).childNode = expression(0);
+			((DeassignStatementContext)_localctx).ascendantNode = expression(0);
 			setState(316);
 			match(FROM);
 			setState(317);
-			((DeassignStatementContext)_localctx).parentNodes = expression(0);
+			((DeassignStatementContext)_localctx).descendantNodes = expression(0);
 			}
 		}
 		catch (RecognitionException re) {

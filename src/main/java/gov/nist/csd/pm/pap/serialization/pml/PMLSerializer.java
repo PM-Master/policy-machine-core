@@ -178,7 +178,7 @@ public class PMLSerializer implements PolicySerializer {
 
     private List<String> processAssignments(String name, JSONNode node, Set<String> seen,
                                             Map<String, List<String>> delayedAssignments) {
-        // process assignments, storing any assignments in which the parent node does not exist
+        // process assignments, storing any assignments in which the descendant node does not exist
         Collection<String> assignments = node.getAssignments();
         List<String> seenAssignments = new ArrayList<>();
         for (String assignment : assignments) {
@@ -229,26 +229,26 @@ public class PMLSerializer implements PolicySerializer {
         // create delayed assignment statements
         List<String> delayed = delayedAssignments.getOrDefault(name, new ArrayList<>());
         while (!delayed.isEmpty()) {
-            String child = delayed.getFirst();
+            String ascendant = delayed.getFirst();
 
-            // create the child node if not sen yet
-            if (delayedNodes.containsKey(child)) {
+            // create the ascendant node if not sen yet
+            if (delayedNodes.containsKey(ascendant)) {
                 // add create node statement
-                sb.append(jsonNodeToPML(seen, child, type, delayedNodes.get(child), List.of(name)));
+                sb.append(jsonNodeToPML(seen, ascendant, type, delayedNodes.get(ascendant), List.of(name)));
 
                 // remove from delayed nodes
-                delayedNodes.remove(child);
+                delayedNodes.remove(ascendant);
             } else {
                 // add assign to statement
                 sb.append(new AssignStatement(
-                        buildNameExpression(child),
+                        buildNameExpression(ascendant),
                         new ArrayLiteral(Type.string(), buildNameExpression(name))
                 )).append("\n");
             }
 
             // remove from delayed assignments
             List<String> delAssigns = delayedAssignments.getOrDefault(name, new ArrayList<>());
-            delAssigns.remove(child);
+            delAssigns.remove(ascendant);
 
             if (delAssigns.isEmpty()) {
                 delayedAssignments.remove(name);

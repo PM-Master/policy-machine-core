@@ -12,14 +12,11 @@ import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.graph.relationship.Association;
 import gov.nist.csd.pm.common.obligation.Obligation;
-import gov.nist.csd.pm.common.obligation.Rule;
-import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 abstract class TxCmd implements TxRollbackSupport {
@@ -55,8 +52,8 @@ abstract class TxCmd implements TxRollbackSupport {
 
         } else if (op instanceof AssignOp o) {
             return new TxCmd.AssignTxCmd(
-                    o.getChild(),
-                    o.getParent()
+                    o.getAscendant(),
+                    o.getDescendant()
             );
 
         } else if (op instanceof AssociateOp o) {
@@ -68,14 +65,14 @@ abstract class TxCmd implements TxRollbackSupport {
             return new TxCmd.CreateObjectAttributeTxCmd(
                     o.getName(),
                     o.getProperties(),
-                    o.getParents()
+                    o.getDescendants()
             );
 
         } else if (op instanceof CreateObjectOp o) {
             return new TxCmd.CreateObjectTxCmd(
                     o.getName(),
                     o.getProperties(),
-                    o.getParents()
+                    o.getDescendants()
             );
 
         } else if (op instanceof CreateObligationOp o) {
@@ -98,27 +95,27 @@ abstract class TxCmd implements TxRollbackSupport {
             return new TxCmd.CreateUserAttributeTxCmd(
                     o.getName(),
                     o.getProperties(),
-                    o.getParents()
+                    o.getDescendants()
             );
 
         } else if (op instanceof CreateUserOp o) {
             return new TxCmd.CreateUserTxCmd(
                     o.getName(),
                     o.getProperties(),
-                    o.getParents()
+                    o.getDescendants()
             );
 
         } else if (op instanceof DeassignOp o) {
             return new TxCmd.DeassignTxCmd(
-                    o.getChild(),
-                    o.getParent()
+                    o.getAscendant(),
+                    o.getDescendant()
             );
 
         } else if (op instanceof TxOps.MemoryDeleteNodeOp o) {
             return new TxCmd.DeleteNodeTxCmd(
                     o.getName(),
                     o.getNode(),
-                    o.getParents()
+                    o.getDescendants()
             );
 
         } else if (op instanceof TxOps.MemoryDeleteObligationOp o) {
@@ -210,13 +207,13 @@ abstract class TxCmd implements TxRollbackSupport {
     static class CreateObjectAttributeTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> properties;
-        private final Collection<String> parents;
+        private final Collection<String> descendants;
 
-        public CreateObjectAttributeTxCmd(String name, Map<String, String> properties, Collection<String> parents) {
+        public CreateObjectAttributeTxCmd(String name, Map<String, String> properties, Collection<String> descendants) {
             super(Type.GRAPH);
             this.name = name;
             this.properties = properties;
-            this.parents = parents;
+            this.descendants = descendants;
         }
 
         @Override
@@ -228,13 +225,13 @@ abstract class TxCmd implements TxRollbackSupport {
     static class CreateUserAttributeTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> properties;
-        private final Collection<String> parents;
+        private final Collection<String> descendants;
 
-        public CreateUserAttributeTxCmd(String name, Map<String, String> properties, Collection<String> parents) {
+        public CreateUserAttributeTxCmd(String name, Map<String, String> properties, Collection<String> descendants) {
             super(Type.GRAPH);
             this.name = name;
             this.properties = properties;
-            this.parents = parents;
+            this.descendants = descendants;
         }
 
         @Override
@@ -246,13 +243,13 @@ abstract class TxCmd implements TxRollbackSupport {
     static class CreateObjectTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> properties;
-        private final Collection<String> parents;
+        private final Collection<String> descendants;
 
-        public CreateObjectTxCmd(String name, Map<String, String> properties, Collection<String> parents) {
+        public CreateObjectTxCmd(String name, Map<String, String> properties, Collection<String> descendants) {
             super(Type.GRAPH);
             this.name = name;
             this.properties = properties;
-            this.parents = parents;
+            this.descendants = descendants;
         }
 
         @Override
@@ -264,13 +261,13 @@ abstract class TxCmd implements TxRollbackSupport {
     static class CreateUserTxCmd extends TxCmd {
         private final String name;
         private final Map<String, String> properties;
-        private final Collection<String> parents;
+        private final Collection<String> descendants;
 
-        public CreateUserTxCmd(String name, Map<String, String> properties, Collection<String> parents) {
+        public CreateUserTxCmd(String name, Map<String, String> properties, Collection<String> descendants) {
             super(Type.GRAPH);
             this.name = name;
             this.properties = properties;
-            this.parents = parents;
+            this.descendants = descendants;
         }
 
         @Override
@@ -300,13 +297,13 @@ abstract class TxCmd implements TxRollbackSupport {
     static class DeleteNodeTxCmd extends TxCmd {
         private final String name;
         private final Node nodeToDelete;
-        private final Collection<String> parents;
+        private final Collection<String> descendants;
 
-        public DeleteNodeTxCmd(String name, Node nodeToDelete, Collection<String> parents) {
+        public DeleteNodeTxCmd(String name, Node nodeToDelete, Collection<String> descendants) {
             super(Type.GRAPH);
             this.name = name;
             this.nodeToDelete = nodeToDelete;
-            this.parents = parents;
+            this.descendants = descendants;
         }
 
         @Override
@@ -316,43 +313,43 @@ abstract class TxCmd implements TxRollbackSupport {
 
             switch (type) {
                 case PC -> memoryPolicy.graph().createPolicyClass(name, properties);
-                case OA -> memoryPolicy.graph().createObjectAttribute(name, properties, parents);
-                case UA -> memoryPolicy.graph().createUserAttribute(name, properties, parents);
-                case O -> memoryPolicy.graph().createObject(name, properties, parents);
-                case U -> memoryPolicy.graph().createUser(name, properties, parents);
+                case OA -> memoryPolicy.graph().createObjectAttribute(name, properties, descendants);
+                case UA -> memoryPolicy.graph().createUserAttribute(name, properties, descendants);
+                case O -> memoryPolicy.graph().createObject(name, properties, descendants);
+                case U -> memoryPolicy.graph().createUser(name, properties, descendants);
             }
         }
     }
 
     static final class AssignTxCmd extends TxCmd {
-        private final String child;
-        private final String parent;
+        private final String ascendant;
+        private final String descendant;
 
-        public AssignTxCmd(String child, String parent) {
+        public AssignTxCmd(String ascendant, String descendant) {
             super(Type.GRAPH);
-            this.child = child;
-            this.parent = parent;
+            this.ascendant = ascendant;
+            this.descendant = descendant;
         }
 
         @Override
         public void rollback(MemoryPolicy memoryPolicy) throws PMException {
-            memoryPolicy.graph().deassign(child, parent);
+            memoryPolicy.graph().deassign(ascendant, descendant);
         }
     }
 
     static class DeassignTxCmd extends TxCmd {
-        private final String child;
-        private final String parent;
+        private final String ascendant;
+        private final String descendant;
 
-        public DeassignTxCmd(String child, String parent) {
+        public DeassignTxCmd(String ascendant, String descendant) {
             super(Type.GRAPH);
-            this.child = child;
-            this.parent = parent;
+            this.ascendant = ascendant;
+            this.descendant = descendant;
         }
 
         @Override
         public void rollback(MemoryPolicy memoryPolicy) throws PMException {
-            memoryPolicy.graph().assign(child, parent);
+            memoryPolicy.graph().assign(ascendant, descendant);
         }
     }
 

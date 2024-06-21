@@ -14,7 +14,7 @@ public class BreakStmtVisitor extends PMLBaseVisitor<BreakStatement> {
 
     @Override
     public BreakStatement visitBreakStatement(PMLParser.BreakStatementContext ctx) {
-        // check that there is a for loop parent
+        // check that there is a for loop descendant
         if (!inFor(ctx)) {
             throw new PMLCompilationRuntimeException(ctx, "break statement not in foreach");
         }

@@ -10,8 +10,8 @@ import java.util.Collection;
 public abstract class GraphQuerier implements GraphQuery{
 
     protected abstract Node getNodeInternal(String name) throws PMException;
-    protected abstract Collection<String> getParentsInternal(String name) throws PMException;
-    protected abstract Collection<String> getChildrenInternal(String name) throws PMException;
+    protected abstract Collection<String> getDescendantsInternal(String name) throws PMException;
+    protected abstract Collection<String> getAscendantsInternal(String name) throws PMException;
     protected abstract Collection<Association> getAssociationsWithSourceInternal(String ua) throws PMException;
     protected abstract Collection<Association> getAssociationsWithTargetInternal(String target) throws PMException;
     protected abstract Collection<String> getAttributeContainersInternal(String node) throws PMException;
@@ -25,15 +25,15 @@ public abstract class GraphQuerier implements GraphQuery{
     }
 
     @Override
-    public Collection<String> getParents(String node) throws PMException {
+    public Collection<String> getAdjacentDescendants(String node) throws PMException {
         checkNodeExists(node);
-        return getParentsInternal(node);
+        return getDescendantsInternal(node);
     }
 
     @Override
-    public Collection<String> getChildren(String node) throws PMException {
+    public Collection<String> getAdjacentAscendants(String node) throws PMException {
         checkNodeExists(node);
-        return getChildrenInternal(node);
+        return getAscendantsInternal(node);
     }
 
     @Override
@@ -49,22 +49,22 @@ public abstract class GraphQuerier implements GraphQuery{
     }
 
     @Override
-    public Collection<String> getAttributeContainers(String node) throws PMException {
+    public Collection<String> getAttributeDescendants(String node) throws PMException {
         checkNodeExists(node);
         return getAttributeContainersInternal(node);
     }
 
     @Override
-    public Collection<String> getPolicyClassContainers(String node) throws PMException {
+    public Collection<String> getPolicyClassDescendants(String node) throws PMException {
         checkNodeExists(node);
         return getPolicyClassContainersInternal(node);
     }
 
     @Override
-    public boolean isContained(String subject, String container) throws PMException {
-        checkNodeExists(subject);
+    public boolean isAscendant(String node, String container) throws PMException {
+        checkNodeExists(node);
         checkNodeExists(container);
-        return isContainedInternal(subject, container);
+        return isContainedInternal(node, container);
     }
 
     /**

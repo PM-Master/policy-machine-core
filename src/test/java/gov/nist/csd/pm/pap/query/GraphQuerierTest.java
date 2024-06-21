@@ -18,7 +18,7 @@ public abstract class GraphQuerierTest {
     public record TestContext(PAP pap) {}
 
     @Test
-    void testGetAttributeContainers() throws PMException {
+    void testGetAttributeDescendants() throws PMException {
         TestContext testCtx = initTest();
         String pml =
                 """
@@ -45,14 +45,14 @@ public abstract class GraphQuerierTest {
                 """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        Collection<String> conts = testCtx.pap().query().graph().getAttributeContainers("o1");
+        Collection<String> conts = testCtx.pap().query().graph().getAttributeDescendants("o1");
         List<String> expected = List.of("oa3", "oa2", "oa1", "oa6", "oa5");
         assertTrue(conts.containsAll(expected));
         assertTrue(expected.containsAll(conts));
     }
 
     @Test
-    void testGetPolicyClassContainers() throws PMException {
+    void testGetPolicyClassDescendants() throws PMException {
         TestContext testCtx = initTest();
 
         String pml = """
@@ -79,14 +79,14 @@ public abstract class GraphQuerierTest {
                       """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        Collection<String> pcs = testCtx.pap().query().graph().getPolicyClassContainers("o1");
+        Collection<String> pcs = testCtx.pap().query().graph().getPolicyClassDescendants("o1");
         List<String> expected = List.of("pc1", "pc2");
         assertTrue(pcs.containsAll(expected));
         assertTrue(expected.containsAll(pcs));
     }
 
     @Test
-    void testIsContained() throws PMException {
+    void testIsAscendant() throws PMException {
         TestContext testCtx = initTest();
         String pml = """
                       set resource access rights ["read", "write"]
@@ -112,12 +112,12 @@ public abstract class GraphQuerierTest {
                       """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        assertTrue(testCtx.pap().query().graph().isContained("o1", "oa1"));
-        assertTrue(testCtx.pap().query().graph().isContained("o1", "oa2"));
-        assertTrue(testCtx.pap().query().graph().isContained("o1", "oa3"));
-        assertTrue(testCtx.pap().query().graph().isContained("o1", "pc1"));
-        assertTrue(testCtx.pap().query().graph().isContained("o1", "pc2"));
-        assertFalse(testCtx.pap().query().graph().isContained("o1", "pc3"));
+        assertTrue(testCtx.pap().query().graph().isAscendant("o1", "oa1"));
+        assertTrue(testCtx.pap().query().graph().isAscendant("o1", "oa2"));
+        assertTrue(testCtx.pap().query().graph().isAscendant("o1", "oa3"));
+        assertTrue(testCtx.pap().query().graph().isAscendant("o1", "pc1"));
+        assertTrue(testCtx.pap().query().graph().isAscendant("o1", "pc2"));
+        assertFalse(testCtx.pap().query().graph().isAscendant("o1", "pc3"));
     }
 
 }

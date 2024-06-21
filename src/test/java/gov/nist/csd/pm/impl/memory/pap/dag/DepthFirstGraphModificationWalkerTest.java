@@ -2,7 +2,6 @@ package gov.nist.csd.pm.impl.memory.pap.dag;
 
 import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPolicyModifier;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.dag.Direction;
 import gov.nist.csd.pm.common.graph.dag.DepthFirstGraphWalker;
@@ -40,7 +39,7 @@ class DepthFirstGraphModificationWalkerTest {
     void testWalk() throws PMException {
         List<String> visited = new ArrayList<>();
         DepthFirstGraphWalker bfs = new DepthFirstGraphWalker(pap.query().graph())
-                .withDirection(Direction.CHILDREN)
+                .withDirection(Direction.ASCENDANTS)
                 .withVisitor((node) -> {
                     visited.add(node);
                 });
@@ -57,7 +56,7 @@ class DepthFirstGraphModificationWalkerTest {
     void testAllPathsShortCircuit() throws PMException {
         List<String> visited = new ArrayList<>();
         DepthFirstGraphWalker dfs = new DepthFirstGraphWalker(pap.query().graph())
-                .withDirection(Direction.CHILDREN)
+                .withDirection(Direction.ASCENDANTS)
                 .withVisitor(node -> {
                     visited.add(node);
                 })
@@ -74,7 +73,7 @@ class DepthFirstGraphModificationWalkerTest {
     void testSinglePathShortCircuit() throws PMException {
         List<String> visited = new ArrayList<>();
         DepthFirstGraphWalker dfs = new DepthFirstGraphWalker(pap.query().graph())
-                .withDirection(Direction.CHILDREN)
+                .withDirection(Direction.ASCENDANTS)
                 .withVisitor(node -> {
                     visited.add(node);
                 })

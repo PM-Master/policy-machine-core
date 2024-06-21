@@ -11,7 +11,6 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import static gov.nist.csd.pm.common.graph.node.Properties.NO_PROPERTIES;
@@ -34,16 +33,16 @@ public class PolicyEquals {
             Node bNode = b.graph().getNode(nodeName);
             assertEquals(aNode, bNode);
 
-            Collection<String> aChildren = a.graph().getChildren(nodeName);
-            Collection<String> aParents = a.graph().getParents(nodeName);
+            Collection<String> aAscendants = a.graph().getAdjacentAscendants(nodeName);
+            Collection<String> aDescendants = a.graph().getAdjacentDescendants(nodeName);
 
-            Collection<String> bChildren = b.graph().getChildren(nodeName);
-            Collection<String> bParents = b.graph().getParents(nodeName);
+            Collection<String> bAscendants = b.graph().getAdjacentAscendants(nodeName);
+            Collection<String> bDescendants = b.graph().getAdjacentDescendants(nodeName);
 
-            assertTrue(aChildren.containsAll(bChildren), nodeName + ": " + aChildren + " != " + bChildren);
-            assertTrue(bChildren.containsAll(aChildren), nodeName + ": " + bChildren + " != " + aChildren);
-            assertTrue(aParents.containsAll(bParents), nodeName + ": " + aParents + " != " + bParents);
-            assertTrue(bParents.containsAll(aParents), nodeName + ": " + bParents + " != " + aParents);
+            assertTrue(aAscendants.containsAll(bAscendants), nodeName + ": " + aAscendants + " != " + bAscendants);
+            assertTrue(bAscendants.containsAll(aAscendants), nodeName + ": " + bAscendants + " != " + aAscendants);
+            assertTrue(aDescendants.containsAll(bDescendants), nodeName + ": " + aDescendants + " != " + bDescendants);
+            assertTrue(bDescendants.containsAll(aDescendants), nodeName + ": " + bDescendants + " != " + aDescendants);
 
             Collection<Association> aSourceAssocs = a.graph().getAssociationsWithSource(nodeName);
             Collection<Association> aTargetAssocs = a.graph().getAssociationsWithTarget(nodeName);

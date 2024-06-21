@@ -12,23 +12,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class GetParents extends FunctionDefinitionStatement {
+public class GetAdjacentAscendants extends FunctionDefinitionStatement {
 
     private static final Type returnType = Type.array(Type.string());
 
-    public GetParents() {
-        super(new FunctionDefinitionStatement.Builder("getParents")
+    public GetAdjacentAscendants() {
+        super(new FunctionDefinitionStatement.Builder("getAdjacentAscendants")
                       .returns(returnType)
                       .args(
                               new FormalArgument("nodeName", Type.string())
                       )
                       .executor((ctx, pap) -> {
-                          Collection<String> parents = pap.query().graph().getParents(ctx.scope().getVariable("nodeName").getStringValue());
-                          List<Value> parentValues = new ArrayList<>(parents.size());
+                          Collection<String> ascendants = pap.query().graph().getAdjacentAscendants(ctx.scope().getVariable("nodeName").getStringValue());
+                          List<Value> ascValues = new ArrayList<>(ascendants.size());
 
-                          parents.forEach(parentValue -> parentValues.add(new StringValue(parentValue)));
+                          ascendants.forEach(ascendant -> ascValues.add(new StringValue(ascendant)));
 
-                          return new ArrayValue(parentValues, returnType);
+                          return new ArrayValue(ascValues, returnType);
                       })
                       .build()
         );

@@ -40,7 +40,7 @@ public abstract class AccessQuerierTest {
     private static final AccessRightSet RWE = new AccessRightSet("read", "write", "execute");
 
     @Test
-    void testComputeAccessibleChildren() throws PMException {
+    void testComputeAccessibleAscendants() throws PMException {
         TestContext testCtx = initTest();
         String pml = """
                 set resource access rights ["read", "write"]
@@ -63,7 +63,7 @@ public abstract class AccessQuerierTest {
                 """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        Collection<String> actual = testCtx.pap().query().access().computeAccessibleChildren(new UserContext("u1"), "oa1");
+        Collection<String> actual = testCtx.pap().query().access().computeAccessibleAscendants(new UserContext("u1"), "oa1");
         assertEquals(
                 Set.of("oa2", "o1", "o2"),
                 new HashSet<>(actual)
@@ -71,7 +71,7 @@ public abstract class AccessQuerierTest {
     }
 
     @Test
-    void testComputeAccessibleParents() throws PMException {
+    void testComputeAccessibleDescendants() throws PMException {
         TestContext testCtx = initTest();
         String pml = """
                set resource access rights ["read", "write"]
@@ -95,7 +95,7 @@ public abstract class AccessQuerierTest {
                """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        Collection<String> actual = testCtx.pap().query().access().computeAccessibleParents(new UserContext("u1"), "o1");
+        Collection<String> actual = testCtx.pap().query().access().computeAccessibleDescendants(new UserContext("u1"), "o1");
         assertEquals(
                 Set.of("oa1", "oa2"),
                 new HashSet<>(actual)
@@ -144,7 +144,7 @@ public abstract class AccessQuerierTest {
                 """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
 
-        Set<String> u1 = testCtx.pap().query().access().buildPOS(new UserContext("u1"));
+        Set<String> u1 = testCtx.pap().query().access().computePersonalObjectSystem(new UserContext("u1"));
         assertEquals(
                 Set.of("oa1", "oa2", "oa4"),
                 u1
@@ -297,7 +297,7 @@ public abstract class AccessQuerierTest {
                 """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
         Map<String, AccessRightSet> u1 =
-                testCtx.pap().query().access().computeSubgraphPrivileges(new UserContext("u1"), "oa1");
+                testCtx.pap().query().access().computeAscendantPrivileges(new UserContext("u1"), "oa1");
         assertEquals(
                 Map.of(
                         "oa2", new AccessRightSet("read", "write"),
@@ -330,7 +330,7 @@ public abstract class AccessQuerierTest {
                 create u "u1" assign to ["ua1", "ua2"]
                 """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
-        Map<String, AccessRightSet> u1 = testCtx.pap().query().access().findBorderAttributes("u1");
+        Map<String, AccessRightSet> u1 = testCtx.pap().query().access().computeDestinationAttributes("u1");
         assertEquals(
                 Map.of(
                         "oa1", new AccessRightSet("read", "write"),
@@ -364,7 +364,7 @@ public abstract class AccessQuerierTest {
                 create o "o1" assign to ["oa1"]
                 """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
-        Map<String, AccessRightSet> o1 = testCtx.pap().query().access().buildACL("o1");
+        Map<String, AccessRightSet> o1 = testCtx.pap().query().access().computeACL("o1");
         assertEquals(
                 Map.of(
                         "u1", new AccessRightSet("read", "write"),
@@ -403,7 +403,7 @@ public abstract class AccessQuerierTest {
                 on union of ["oa1"]
                 """;
         testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
-        Map<String, AccessRightSet> u1 = testCtx.pap().query().access().buildCapabilityList(new UserContext("u1"));
+        Map<String, AccessRightSet> u1 = testCtx.pap().query().access().computeCapabilityList(new UserContext("u1"));
         assertEquals(
                 Map.of(
                         "o1", new AccessRightSet("read"),
@@ -489,7 +489,7 @@ public abstract class AccessQuerierTest {
     }
 
     @Test
-    void testGetChildren() throws PMException {
+    void testGetAscendants() throws PMException {
         TestContext testCtx = initTest();
 
         testCtx.pap().modify().graph().setResourceAccessRights(RWE);
@@ -504,7 +504,7 @@ public abstract class AccessQuerierTest {
 
         AccessRightSet arset = new AccessRightSet("read", "write");
         testCtx.pap().modify().graph().associate(ua1, oa1, arset);
-        Map<String, AccessRightSet> subgraph = testCtx.pap().query().access().computeSubgraphPrivileges(new UserContext(u1), oa1);
+        Map<String, AccessRightSet> subgraph = testCtx.pap().query().access().computeAscendantPrivileges(new UserContext(u1), oa1);
         assertEquals(
                 Map.of("o1", arset, "o2", arset, "o3", arset),
                 subgraph
@@ -526,7 +526,7 @@ public abstract class AccessQuerierTest {
 
         AccessRightSet arset = new AccessRightSet("read", "write");
         testCtx.pap().modify().graph().associate(ua1, oa1, arset);
-        Map<String, AccessRightSet> accessibleNodes = testCtx.pap().query().access().buildCapabilityList(new UserContext(u1));
+        Map<String, AccessRightSet> accessibleNodes = testCtx.pap().query().access().computeCapabilityList(new UserContext(u1));
 
         assertTrue(accessibleNodes.containsKey(oa1));
         assertTrue(accessibleNodes.containsKey(o1));
@@ -882,7 +882,7 @@ public abstract class AccessQuerierTest {
                     testCtx.pap().query().access().computePrivileges(new UserContext(u1), o1).containsAll(Arrays.asList("read", "write")));
         }
 
-        // removed graph7 due to adding the parent IDs to the createNode, need to always connect to the testCtx.policy().graph().
+        // removed graph7 due to adding the descendant IDs to the createNode, need to always connect to the testCtx.policy().graph().
 
         @Test
         void testGraph18() throws PMException {
