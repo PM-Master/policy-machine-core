@@ -65,16 +65,3 @@ create obligation "o2" {
         create prohibition "u2-prohibition" deny user "u2" access rights ["write"] on intersection of ["oa1", "oa2"]
     }
 }
-
-operation myOperation(arg1) {
-    ...
-    ...
-    ...
-}
-
-routine myRoutine(arg1 string[]) {
- create
- assign
- assign
- ...
-}
