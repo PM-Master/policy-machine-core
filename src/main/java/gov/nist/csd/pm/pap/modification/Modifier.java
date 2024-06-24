@@ -2,11 +2,11 @@ package gov.nist.csd.pm.pap.modification;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.tx.Transactional;
-import gov.nist.csd.pm.pap.query.PolicyQuery;
+import gov.nist.csd.pm.pap.query.PolicyQuerier;
 
 public abstract class Modifier implements Transactional {
 
-    public abstract PolicyQuery query();
+    public abstract PolicyQuerier query();
 
     protected <T> T runTx(Runner<T> txRunner) throws PMException {
         try {

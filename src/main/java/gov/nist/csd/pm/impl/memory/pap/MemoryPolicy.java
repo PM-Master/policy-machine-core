@@ -20,7 +20,7 @@ import gov.nist.csd.pm.pap.op.pml.CreateConstantOp;
 import gov.nist.csd.pm.pap.op.pml.CreateFunctionOp;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
-import gov.nist.csd.pm.pap.query.PolicyQuery;
+import gov.nist.csd.pm.pap.query.PolicyQuerier;
 import gov.nist.csd.pm.pap.query.UserContext;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -120,7 +120,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
     }
 
     @Override
-    public PolicyQuery query() {
+    public PolicyQuerier query() {
         if (querier == null) {
             querier = new MemoryPolicyQuerier(this);
         }
@@ -341,7 +341,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         }
 
         @Override
-        public PolicyQuery query() {
+        public PolicyQuerier query() {
             return MemoryPolicy.this.query();
         }
 
@@ -457,7 +457,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         }
 
         @Override
-        public PolicyQuery query() {
+        public PolicyQuerier query() {
             return MemoryPolicy.this.query();
         }
 
@@ -539,7 +539,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         }
 
         @Override
-        public PolicyQuery query() {
+        public PolicyQuerier query() {
             return MemoryPolicy.this.query();
         }
 
@@ -616,7 +616,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         }
 
         @Override
-        public PolicyQuery query() {
+        public PolicyQuerier query() {
             return MemoryPolicy.this.query();
         }
 

@@ -2,6 +2,7 @@ package gov.nist.csd.pm.impl.memory.pap;
 
 import gov.nist.csd.pm.pap.modification.*;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.query.PolicyQuerier;
 
 import static gov.nist.csd.pm.pap.admin.AdminPolicy.Verifier;
 
