@@ -61,7 +61,7 @@ public abstract class AccessQuerierTest {
                 create o "o1" assign to ["oa1"]
                 create o "o2" assign to ["oa1"]
                 """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         Collection<String> actual = testCtx.pap().query().access().computeAccessibleAscendants(new UserContext("u1"), "oa1");
         assertEquals(
@@ -93,7 +93,7 @@ public abstract class AccessQuerierTest {
                create u "u1" assign to ["ua1"]
                create o "o1" assign to ["oa1", "oa2"]
                """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         Collection<String> actual = testCtx.pap().query().access().computeAccessibleDescendants(new UserContext("u1"), "o1");
         assertEquals(
@@ -142,7 +142,7 @@ public abstract class AccessQuerierTest {
                 access rights ["write"]
                 on union of ["oa1"]
                 """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         Set<String> u1 = testCtx.pap().query().access().computePersonalObjectSystem(new UserContext("u1"));
         assertEquals(
@@ -193,7 +193,7 @@ public abstract class AccessQuerierTest {
                 access rights ["write"]
                 on union of [!"oa1"]
                 """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         Explain explain = testCtx.pap().query().access().explain(new UserContext("u1"), "o1");
         Explain expected = new Explain(
@@ -245,7 +245,7 @@ public abstract class AccessQuerierTest {
                 
                 create user "u1" assign to ["ua1"]
                 """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
         Explain actual = testCtx.pap().query().access().explain(new UserContext("u1"), "oa2");
         assertEquals(
                 new Explain(
@@ -295,7 +295,7 @@ public abstract class AccessQuerierTest {
                 create u "u1" assign to ["ua1"]
                 create o "o1" assign to ["oa2"]
                 """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
         Map<String, AccessRightSet> u1 =
                 testCtx.pap().query().access().computeAscendantPrivileges(new UserContext("u1"), "oa1");
         assertEquals(
@@ -329,7 +329,7 @@ public abstract class AccessQuerierTest {
                 
                 create u "u1" assign to ["ua1", "ua2"]
                 """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
         Map<String, AccessRightSet> u1 = testCtx.pap().query().access().computeDestinationAttributes("u1");
         assertEquals(
                 Map.of(
@@ -363,7 +363,7 @@ public abstract class AccessQuerierTest {
                 create u "u2" assign to ["ua2"]
                 create o "o1" assign to ["oa1"]
                 """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
         Map<String, AccessRightSet> o1 = testCtx.pap().query().access().computeACL("o1");
         assertEquals(
                 Map.of(
@@ -402,7 +402,7 @@ public abstract class AccessQuerierTest {
                 access rights ["write"]
                 on union of ["oa1"]
                 """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
         Map<String, AccessRightSet> u1 = testCtx.pap().query().access().computeCapabilityList(new UserContext("u1"));
         assertEquals(
                 Map.of(
@@ -440,7 +440,7 @@ public abstract class AccessQuerierTest {
                 access rights ["write"]
                 on union of ["oa1"]
                 """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
         AccessRightSet deniedPrivileges = testCtx.pap().query().access().computeDeniedPrivileges(new UserContext("u1"), "o1");
         assertEquals(new AccessRightSet("write"), deniedPrivileges);
     }
@@ -476,7 +476,7 @@ public abstract class AccessQuerierTest {
                 create u "u1" assign to ["ua1", "ua2"]
                 create o "o1" assign to ["oa1", "oa2"]
                 """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
         Map<String, AccessRightSet> policyClassAccessRights =
                 testCtx.pap().query().access().computePolicyClassAccessRights(new UserContext("u1"), "o1");
         assertEquals(

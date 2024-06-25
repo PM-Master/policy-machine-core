@@ -450,7 +450,7 @@ public class ExecutionTest {
                 """;
 
          PAP pap = new MemoryPAP();
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        pap.deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         assertTrue(pap.query().graph().nodeExists("test"));
     }
@@ -467,7 +467,7 @@ public class ExecutionTest {
                 """;
 
          PAP pap = new MemoryPAP();
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        pap.deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         assertFalse(pap.query().graph().nodeExists("test"));
         assertTrue(pap.query().graph().nodeExists("test2"));

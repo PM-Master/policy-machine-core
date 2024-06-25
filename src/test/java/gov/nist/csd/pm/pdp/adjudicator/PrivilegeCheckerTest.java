@@ -9,6 +9,8 @@ import gov.nist.csd.pm.pap.query.UserContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class PrivilegeCheckerTest {
@@ -20,7 +22,7 @@ class PrivilegeCheckerTest {
         pap = new MemoryPAP();
         pap.deserialize(
                 new UserContext("u1"),
-                        """
+                List.of("""
                         set resource access rights ["read", "write"]
                         
                         create policy class "pc1" {
@@ -41,7 +43,7 @@ class PrivilegeCheckerTest {
                         create user "u2" assign to ["ua2"]
                         
                         create object "o1" assign to ["oa1"]
-                        """,
+                        """),
                         new PMLDeserializer()
         );
     }

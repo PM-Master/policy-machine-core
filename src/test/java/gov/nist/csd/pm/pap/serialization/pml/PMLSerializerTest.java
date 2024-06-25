@@ -58,7 +58,7 @@ class PMLSerializerTest {
     void testSerialization() throws PMException {
         MemoryPAP pap = new MemoryPAP();
         UserContext userContext = new UserContext("u1");
-        pap.deserialize(userContext, input, new PMLDeserializer());
+        pap.deserialize(userContext, List.of(input), new PMLDeserializer());
 
         pap.modify().graph().createObjectAttribute("test-oa", new HashMap<>(), List.of("pc1"));
         pap.modify().graph().assign(AdminPolicy.policyClassTargetName("pc1"), "test-oa");
@@ -66,7 +66,7 @@ class PMLSerializerTest {
         String expected = input + " create object attribute \"test-oa\" assign to [\"pc1\"]\n" + "assign \"pc1:target\" to [\"test-oa\"]";
 
         PAP testPAP = new MemoryPAP();
-        testPAP.deserialize(userContext, expected, new PMLDeserializer());
+        testPAP.deserialize(userContext, List.of(expected), new PMLDeserializer());
 
         PolicyEquals.assertPolicyEquals(pap.query(), testPAP.query());
     }
@@ -80,7 +80,7 @@ class PMLSerializerTest {
 
         PAP testPAP = new MemoryPAP();
         String serialize = pap.serialize(new PMLSerializer());
-        testPAP.deserialize(userContext, serialize, new PMLDeserializer());
+        testPAP.deserialize(userContext, List.of(serialize), new PMLDeserializer());
 
         PolicyEquals.assertPolicyEquals(pap.query(), testPAP.query());
     }

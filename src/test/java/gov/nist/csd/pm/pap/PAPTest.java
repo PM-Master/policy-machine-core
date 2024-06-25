@@ -52,7 +52,7 @@ public abstract class PAPTest {
         assertTrue(pap.query().graph().nodeExists("oa1"));
         assertTrue(pap.query().graph().nodeExists("ua1"));
         assertTrue(pap.query().graph().getAssociationsWithSource("ua1").iterator().next()
-                .equals(new Association("ua1", "oa1", new AccessRightSet())));
+                      .equals(new Association("ua1", "oa1", new AccessRightSet())));
 
         pap.beginTx();
         pap.modify().graph().deleteNode("ua1");
@@ -70,7 +70,7 @@ public abstract class PAPTest {
                     create ua "ua1" assign to ["pc2"]
                     """;
 
-            assertThrows(PMException.class, () -> pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer()));
+            assertThrows(PMException.class, () -> pap.deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer()));
             assertFalse(pap.query().graph().nodeExists("pc1"));
             assertFalse(pap.query().graph().nodeExists("ua1"));
         }
@@ -108,35 +108,35 @@ public abstract class PAPTest {
         @Test
         void testSuccess() throws PMException {
             UserContext userContext = new UserContext("u1");
-            pap.deserialize(userContext, input, new PMLDeserializer());
+            pap.deserialize(userContext, List.of(input), new PMLDeserializer());
 
             String pml = pap.serialize(new PMLSerializer());
             MemoryPAP pmlPAP = new MemoryPAP();
-            pmlPAP.deserialize(userContext, pml, new PMLDeserializer());
+            pmlPAP.deserialize(userContext, List.of(pml), new PMLDeserializer());
 
             String json = pmlPAP.serialize(new JSONSerializer());
             MemoryPAP jsonPAP = new MemoryPAP();
-            jsonPAP.deserialize(userContext, json, new JSONDeserializer());
+            jsonPAP.deserialize(userContext, List.of(json), new JSONDeserializer());
 
             assertPolicyEquals(pap.query(), pmlPAP.query());
             assertPolicyEquals(pap.query(), jsonPAP.query());
 
             assertThrows(PMException.class, () -> {
-                pap.deserialize(new UserContext("unknown user"), input, new PMLDeserializer());
+                pap.deserialize(new UserContext("unknown user"), List.of(input), new PMLDeserializer());
             });
         }
         @Test
         void testJSONAndPMLCreateEqualPolicy() throws PMException {
             UserContext userContext = new UserContext("u1");
-            pap.deserialize(userContext, input, new PMLDeserializer());
+            pap.deserialize(userContext, List.of(input), new PMLDeserializer());
             String pml = pap.serialize(new PMLSerializer());
             String json = pap.serialize(new JSONSerializer());
 
             PAP pap1 = new MemoryPAP();
-            pap1.deserialize(userContext, pml, new PMLDeserializer());
+            pap1.deserialize(userContext, List.of(pml), new PMLDeserializer());
 
             PAP pap2 = new MemoryPAP();
-            pap2.deserialize(userContext, json, new JSONDeserializer());
+            pap2.deserialize(userContext, List.of(json), new JSONDeserializer());
 
             assertPolicyEquals(pap1.query(), pap2.query());
         }
@@ -144,16 +144,34 @@ public abstract class PAPTest {
         @Test
         void testAssignPolicyClassTargetToAnotherPolicyClass() throws PMException {
             UserContext userContext = new UserContext("u1");
-            pap.deserialize(userContext, input, new PMLDeserializer());
+            pap.deserialize(userContext, List.of(input), new PMLDeserializer());
 
             pap.modify().graph().createObjectAttribute("test-oa", new HashMap<>(), List.of("pc1"));
             pap.modify().graph().assign(AdminPolicy.policyClassTargetName("pc1"), "test-oa");
             String pml = pap.serialize(new PMLSerializer());
 
             PAP pap1 = new MemoryPAP();
-            pap1.deserialize(userContext, pml, new PMLDeserializer());
+            pap1.deserialize(userContext, List.of(pml), new PMLDeserializer());
 
             assertPolicyEquals(pap.query(), pap1.query());
+        }
+
+        @Test
+        void testMultipleInputStringsWithNodesInMultiple() throws PMException {
+            UserContext userContext = new UserContext("u1");
+
+            pap.deserialize(userContext, List.of(
+                """
+                create pc "pc1"
+                """,
+                """
+                create ua "ua1" assign to ["pc1"]
+                """
+            ), new PMLDeserializer());
+
+            assertTrue(pap.query().graph().nodeExists("pc1"));
+            assertTrue(pap.query().graph().nodeExists("ua1"));
+            assertTrue(pap.query().graph().getAdjacentDescendants("ua1").contains("pc1"));
         }
     }
 
@@ -196,7 +214,7 @@ public abstract class PAPTest {
         Collection<String> ascendants = pap.query().graph().getAdjacentAscendants(AdminPolicyNode.ADMIN_POLICY.nodeName());
         assertEquals(5, ascendants.size());
         assertTrue(ascendants.containsAll(List.of(AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName(), AdminPolicyNode.PML_FUNCTIONS_TARGET.nodeName(),
-                                                AdminPolicyNode.PML_CONSTANTS_TARGET.nodeName(), AdminPolicyNode.PROHIBITIONS_TARGET.nodeName(), AdminPolicyNode.OBLIGATIONS_TARGET.nodeName())));
+                                                  AdminPolicyNode.PML_CONSTANTS_TARGET.nodeName(), AdminPolicyNode.PROHIBITIONS_TARGET.nodeName(), AdminPolicyNode.OBLIGATIONS_TARGET.nodeName())));
 
         assertTrue(pap.query().graph().nodeExists(AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName()));
         Collection<String> descendants = pap.query().graph().getAdjacentDescendants(AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName());
@@ -261,8 +279,8 @@ public abstract class PAPTest {
                 pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
                 pap.modify().prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
-                        new AccessRightSet("read"), true,
-                        Collections.singleton(new ContainerCondition("oa1", false))
+                                                   new AccessRightSet("read"), true,
+                                                   Collections.singleton(new ContainerCondition("oa1", false))
                 );
 
                 pap.modify().obligations().create(new UserContext("u1"), "obl1", List.of());
@@ -295,8 +313,8 @@ public abstract class PAPTest {
                 pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
                 pap.modify().prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
-                        new AccessRightSet("read"), true,
-                        Collections.singleton(new ContainerCondition("oa1", false))
+                                                   new AccessRightSet("read"), true,
+                                                   Collections.singleton(new ContainerCondition("oa1", false))
                 );
 
                 pap.modify().obligations().create(new UserContext("u1"), "obl1", List.of());
@@ -327,8 +345,8 @@ public abstract class PAPTest {
             pap.modify().graph().createUser("u1", new HashMap<>(), List.of("ua1"));
 
             pap.modify().prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
-                    new AccessRightSet("read"), true,
-                    Collections.singleton(new ContainerCondition("oa1", false))
+                                               new AccessRightSet("read"), true,
+                                               Collections.singleton(new ContainerCondition("oa1", false))
             );
 
             pap.modify().pml().createConstant("const1", new StringValue("value"));
@@ -340,17 +358,17 @@ public abstract class PAPTest {
                     pap.modify().obligations().create(new UserContext("u1"), "obl1", List.of());
                     pap.modify().pml().createConstant("const2", new StringValue("value"));
                     pap.modify().prohibitions().create("deny-ua1", new ProhibitionSubject("ua2", ProhibitionSubject.Type.USER_ATTRIBUTE),
-                            new AccessRightSet("read"), true,
-                            Collections.singleton(new ContainerCondition("oa1", false))
+                                                       new AccessRightSet("read"), true,
+                                                       Collections.singleton(new ContainerCondition("oa1", false))
                     );
                     pap.modify().prohibitions().create("deny-ua2", new ProhibitionSubject("ua2", ProhibitionSubject.Type.USER_ATTRIBUTE),
-                            new AccessRightSet("read"), true,
-                            Collections.singleton(new ContainerCondition("oa1", false))
+                                                       new AccessRightSet("read"), true,
+                                                       Collections.singleton(new ContainerCondition("oa1", false))
                     );
 
                     pap.modify().prohibitions().create("deny-ua1", new ProhibitionSubject("ua2", ProhibitionSubject.Type.USER_ATTRIBUTE),
-                            new AccessRightSet("read"), true,
-                            Collections.singleton(new ContainerCondition("oa1", false))
+                                                       new AccessRightSet("read"), true,
+                                                       Collections.singleton(new ContainerCondition("oa1", false))
                     );
                 });
             });
@@ -386,8 +404,8 @@ public abstract class PAPTest {
             assertThrows(PMException.class, () -> {
                 pap.runTx(tx -> {
                     tx.modify().prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
-                            new AccessRightSet("read"), true,
-                            Collections.singleton(new ContainerCondition("oa1", false))
+                                                      new AccessRightSet("read"), true,
+                                                      Collections.singleton(new ContainerCondition("oa1", false))
                     );
                     tx.modify().graph().createUser("u3", new HashMap<>(), List.of("ua1"));
                     tx.modify().obligations().delete("obl1");
@@ -429,8 +447,8 @@ public abstract class PAPTest {
             assertThrows(PMException.class, () -> {
                 pap.runTx((tx) -> {
                     pap.modify().prohibitions().create("deny-ua1", new ProhibitionSubject("ua1", ProhibitionSubject.Type.USER_ATTRIBUTE),
-                            new AccessRightSet("read"), true,
-                            Collections.singleton(new ContainerCondition("oa1", false))
+                                                       new AccessRightSet("read"), true,
+                                                       Collections.singleton(new ContainerCondition("oa1", false))
                     );
                     pap.modify().graph().createUser("u3", new HashMap<>(), List.of("ua1"));
                     pap.modify().obligations().delete("obl1");

@@ -59,7 +59,7 @@ class EPPTest {
                     }
                 }
                 """;
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        pap.deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         assertTrue(pap.query().graph().nodeExists("pc1"));
         assertTrue(pap.query().graph().nodeExists("oa1"));
@@ -105,7 +105,7 @@ class EPPTest {
                     }
                 }
                 """;
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        pap.deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         pdp.runTx(new UserContext("u1"), (txPDP) -> txPDP.modify().graph().createObjectAttribute("oa2", new HashMap<>(),
                 List.of("oa1")));
@@ -203,7 +203,7 @@ class EPPTest {
                     }
                 }
                 """;
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer(testFunc));
+        pap.deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer(testFunc));
 
         pdp.runTx(new UserContext("u1"), (txPDP) -> txPDP.modify().graph().createObjectAttribute("oa2", new HashMap<>(),
                 List.of("oa1")));
@@ -241,7 +241,7 @@ class EPPTest {
                     }
                 }
                 """;
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        pap.deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         pdp.runTx(new UserContext("u1"), (txPDP) -> txPDP.modify().graph().createObjectAttribute("oa2", new HashMap<>(),
                 List.of("oa1")));

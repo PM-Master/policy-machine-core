@@ -20,10 +20,7 @@ import gov.nist.csd.pm.pdp.adjudicator.PolicyModificationAdjudicator;
 import gov.nist.csd.pm.pdp.adjudicator.PolicyQueryAdjudicator;
 import gov.nist.csd.pm.pdp.adjudicator.PrivilegeChecker;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static gov.nist.csd.pm.pap.admin.AdminPolicy.ALL_NODE_NAMES;
 import static gov.nist.csd.pm.common.graph.node.NodeType.ANY;
@@ -147,7 +144,7 @@ public class PDP implements EventEmitter, AccessAdjudication {
         }
 
         @Override
-        public void deserialize(UserContext author, String input, PolicyDeserializer policyDeserializer)
+        public void deserialize(UserContext author, Collection<String> input, PolicyDeserializer policyDeserializer)
                 throws PMException {
             PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(), DESERIALIZE_POLICY);
 

@@ -45,7 +45,7 @@ class ObligationTest {
                 }
                 """;
         MemoryPAP pap = new MemoryPAP();
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        pap.deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
         PDP pdp = new PDP(pap);
         EPP epp = new EPP(pdp, pap);
         epp.getEventProcessor().processEvent(new EventContext(new UserContext("u1"), new AssignOp("o1", "oa1")));

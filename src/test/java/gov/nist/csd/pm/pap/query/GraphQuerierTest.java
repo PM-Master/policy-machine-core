@@ -43,7 +43,7 @@ public abstract class GraphQuerierTest {
                                 
                 create o "o1" assign to ["oa3", "oa6"]
                 """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         Collection<String> conts = testCtx.pap().query().graph().getAttributeDescendants("o1");
         List<String> expected = List.of("oa3", "oa2", "oa1", "oa6", "oa5");
@@ -77,7 +77,7 @@ public abstract class GraphQuerierTest {
                                       
                       create o "o1" assign to ["oa3", "oa6"]
                       """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         Collection<String> pcs = testCtx.pap().query().graph().getPolicyClassDescendants("o1");
         List<String> expected = List.of("pc1", "pc2");
@@ -110,7 +110,7 @@ public abstract class GraphQuerierTest {
                                       
                       create o "o1" assign to ["oa3", "oa6"]
                       """;
-        testCtx.pap().deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        testCtx.pap().deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         assertTrue(testCtx.pap().query().graph().isAscendant("o1", "oa1"));
         assertTrue(testCtx.pap().query().graph().isAscendant("o1", "oa2"));

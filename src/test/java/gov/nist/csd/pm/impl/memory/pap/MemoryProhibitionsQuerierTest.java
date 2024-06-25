@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,7 +47,7 @@ class MemoryProhibitionsQuerierTest {
                 on intersection of [!"oa1", "oa2"]
                 """;
         PAP pap = new MemoryPAP();
-        pap.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        pap.deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         querier = pap.query().prohibitions();
     }

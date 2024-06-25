@@ -13,6 +13,8 @@ import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.pap.serialization.PolicySerializer;
 import gov.nist.csd.pm.pdp.PDPEventEmitter;
 
+import java.util.Collection;
+
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 
 public class Adjudicator implements PolicyPoint {
@@ -48,7 +50,7 @@ public class Adjudicator implements PolicyPoint {
     }
 
     @Override
-    public void deserialize(UserContext author, String input, PolicyDeserializer policyDeserializer)
+    public void deserialize(UserContext author, Collection<String> input, PolicyDeserializer policyDeserializer)
             throws PMException {
         PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(), DESERIALIZE_POLICY);
 

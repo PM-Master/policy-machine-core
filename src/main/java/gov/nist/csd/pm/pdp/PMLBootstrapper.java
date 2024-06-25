@@ -6,6 +6,8 @@ import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.pap.query.UserContext;
 
+import java.util.List;
+
 public class PMLBootstrapper implements PolicyBootstrapper{
 
     private UserContext author;
@@ -20,6 +22,6 @@ public class PMLBootstrapper implements PolicyBootstrapper{
 
     @Override
     public void bootstrap(PAP pap) throws PMException {
-        pap.deserialize(author, pml, new PMLDeserializer(customFunctions));
+        pap.deserialize(author, List.of(pml), new PMLDeserializer(customFunctions));
     }
 }

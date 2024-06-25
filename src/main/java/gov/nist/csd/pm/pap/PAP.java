@@ -5,15 +5,14 @@ import gov.nist.csd.pm.pap.modification.PolicyModifier;
 import gov.nist.csd.pm.pap.query.PolicyQuerier;
 import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.pap.serialization.PolicySerializer;
-import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.pap.pml.PMLExecutable;
 import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.query.PolicyQuery;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
-import gov.nist.csd.pm.common.tx.Transactional;
+
+import java.util.Collection;
 
 public abstract class PAP implements PolicyPoint {
 
@@ -57,12 +56,14 @@ public abstract class PAP implements PolicyPoint {
      * @param policyDeserializer The PolicyDeserializer to apply the input string to the policy.
      * @throws PMException If there is an error deserializing the given inputs string.
      */
-    public void deserialize(UserContext author, String input, PolicyDeserializer policyDeserializer) throws PMException {
+    public void deserialize(UserContext author, Collection<String> input, PolicyDeserializer policyDeserializer) throws PMException {
         beginTx();
         reset();
 
         try {
-            policyDeserializer.deserialize(this, author, input);
+            for (String i : input) {
+                policyDeserializer.deserialize(this, author, i);
+            }
         } catch (PMException e) {
             rollback();
             throw e;

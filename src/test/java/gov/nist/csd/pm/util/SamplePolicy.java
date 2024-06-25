@@ -9,17 +9,18 @@ import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class SamplePolicy {
 
     public static void loadSamplePolicyFromPML(PAP pap) throws IOException, PMException {
         String s = IOUtils.resourceToString("sample/sample.pml", StandardCharsets.UTF_8, SamplePolicy.class.getClassLoader());
-        pap.deserialize(new UserContext("u1"), s, new PMLDeserializer());
+        pap.deserialize(new UserContext("u1"), List.of(s), new PMLDeserializer());
     }
 
     public static void loadSamplePolicyFromJSON(PAP pap) throws IOException, PMException {
         String s = IOUtils.resourceToString("sample/sample.json", StandardCharsets.UTF_8, SamplePolicy.class.getClassLoader());
-        pap.deserialize(new UserContext("u1"), s, new JSONDeserializer());
+        pap.deserialize(new UserContext("u1"), List.of(s), new JSONDeserializer());
     }
 
     public static String loadSamplePolicyPML() throws IOException {

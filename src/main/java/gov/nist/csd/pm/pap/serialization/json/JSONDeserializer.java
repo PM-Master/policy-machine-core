@@ -3,7 +3,6 @@ package gov.nist.csd.pm.pap.serialization.json;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.pap.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.pap.PAP;
@@ -17,73 +16,12 @@ import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.pap.serialization.pml.PMLSerializer;
 
 import java.util.*;
 
 import static gov.nist.csd.pm.common.graph.node.NodeType.*;
 
 public class JSONDeserializer implements PolicyDeserializer {
-
-    public static void main(String[] args) throws PMException {
-        MemoryPAP pap = new MemoryPAP();
-
-        JSONDeserializer jsonDeserializer = new JSONDeserializer();
-        jsonDeserializer.deserialize(pap, new UserContext(""), """
-                {
-                	"resourceAccessRights": ["read", "write"],
-                	"graph": {
-                		"pcs": {
-                			"pc1": {
-                				"properties": {}
-                			}
-                		},
-                		"uas": {
-                			"ua1": {
-                				"properties": {},
-                				"assignments": ["pc1"],
-                				"associations": {
-                					"oa1": ["read", "write"]
-                				}
-                			}
-                		},
-                		"oas": {
-                			"oa1": {
-                				"properties": {},
-                				"assignments": ["pc1"]
-                			}
-                		},
-                		"users": {
-                			"u1": {
-                				"properties": {},
-                				"assignments": ["ua1"]
-                			}
-                		},
-                		"objects": {
-                			"o1": {
-                				"properties": {},
-                				"assignments": ["oa1"]
-                			}
-                		}
-                	},
-                	"pml": {
-                		"constants": [
-                			{
-                				"name": "const1",
-                				"value": "123"
-                			}
-                		],
-                		"functions": [
-                			"create function func1() {}"
-                		]
-                	}
-                }
-                """);
-        System.out.println(pap.query().graph().search(ANY, new HashMap<>()));
-        String serialize = pap.serialize(new PMLSerializer());
-        System.out.println(serialize);
-    }
-
 
     private FunctionDefinitionStatement[] customPMLFunctions;
 

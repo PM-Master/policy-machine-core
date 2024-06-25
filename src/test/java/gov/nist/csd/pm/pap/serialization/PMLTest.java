@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -48,7 +49,7 @@ class PMLTest {
         PMLDeserializer pmlDeserializer = new PMLDeserializer();
 
         MemoryPAP pap = new MemoryPAP();
-        assertThrows(PMException.class, () -> pap.deserialize(new UserContext("u1"), pml, pmlDeserializer));
+        assertThrows(PMException.class, () -> pap.deserialize(new UserContext("u1"), List.of(pml), pmlDeserializer));
 
         FunctionDefinitionStatement testFunc = new FunctionDefinitionStatement.Builder("testFunc")
                 .returns(Type.voidType())
@@ -63,7 +64,7 @@ class PMLTest {
                 .build();
 
         PMLDeserializer pmlDeserializer2 = new PMLDeserializer(testFunc);
-        pap.deserialize(new UserContext("u1"), pml, pmlDeserializer2);
+        pap.deserialize(new UserContext("u1"), List.of(pml), pmlDeserializer2);
         assertTrue(pap.query().graph().nodeExists("hello world"));
     }
 

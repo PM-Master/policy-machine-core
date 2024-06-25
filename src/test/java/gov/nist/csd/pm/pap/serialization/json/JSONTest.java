@@ -11,6 +11,7 @@ import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -24,7 +25,7 @@ public class JSONTest {
         String serialize = pap.serialize(new JSONSerializer());
 
         PAP pap2 = new MemoryPAP();
-        pap2.deserialize(new UserContext("u1"), serialize, new JSONDeserializer());
+        pap2.deserialize(new UserContext("u1"), List.of(serialize), new JSONDeserializer());
 
         PolicyEquals.assertPolicyEquals(pap.query(), pap2.query());
     }

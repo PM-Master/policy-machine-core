@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 import static gov.nist.csd.pm.util.PolicyEquals.assertPolicyEquals;
 
@@ -56,10 +57,10 @@ public class SerializationTest {
         String pml = pap.serialize(new PMLSerializer());
 
         PAP jsonPAP = new MemoryPAP();
-        jsonPAP.deserialize(new UserContext("u1"), json, new JSONDeserializer());
+        jsonPAP.deserialize(new UserContext("u1"), List.of(json), new JSONDeserializer());
 
         PAP pmlPAP = new MemoryPAP();
-        pmlPAP.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        pmlPAP.deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         assertPolicyEquals(jsonPAP.query(), pmlPAP.query());
         assertPolicyEquals(pap.query(), pmlPAP.query());
@@ -85,10 +86,10 @@ public class SerializationTest {
         String json = pap.serialize(new JSONSerializer());
 
         PAP jsonPAP = new MemoryPAP();
-        jsonPAP.deserialize(new UserContext("u1"), json, new JSONDeserializer());
+        jsonPAP.deserialize(new UserContext("u1"), List.of(json), new JSONDeserializer());
 
         PAP pmlPAP = new MemoryPAP();
-        pmlPAP.deserialize(new UserContext("u1"), pml, new PMLDeserializer());
+        pmlPAP.deserialize(new UserContext("u1"), List.of(pml), new PMLDeserializer());
 
         assertPolicyEquals(jsonPAP.query(), pmlPAP.query());
         assertPolicyEquals(pap.query(), pmlPAP.query());
@@ -108,12 +109,12 @@ public class SerializationTest {
         String pmlStr = pml.serialize(new PMLSerializer());
         String jsonStr = json.serialize(new JSONSerializer());
 
-        pml.deserialize(new UserContext("u1"), pmlStr, new PMLDeserializer());
-        json.deserialize(new UserContext("u1"), pmlStr, new PMLDeserializer());
+        pml.deserialize(new UserContext("u1"), List.of(pmlStr), new PMLDeserializer());
+        json.deserialize(new UserContext("u1"), List.of(pmlStr), new PMLDeserializer());
         PolicyEquals.assertPolicyEquals(pml.query(), json.query());
 
-        pml.deserialize(new UserContext("u1"), jsonStr, new JSONDeserializer());
-        json.deserialize(new UserContext("u1"), jsonStr, new JSONDeserializer());
+        pml.deserialize(new UserContext("u1"), List.of(jsonStr), new JSONDeserializer());
+        json.deserialize(new UserContext("u1"), List.of(jsonStr), new JSONDeserializer());
         PolicyEquals.assertPolicyEquals(pml.query(), json.query());
     }
 }

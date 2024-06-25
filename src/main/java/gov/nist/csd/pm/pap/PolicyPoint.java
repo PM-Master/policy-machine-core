@@ -5,14 +5,12 @@ import gov.nist.csd.pm.common.tx.Transactional;
 import gov.nist.csd.pm.pap.admin.AdminPolicy;
 import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.pap.pml.PMLExecutable;
-import gov.nist.csd.pm.pap.pml.PMLExecutor;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.pap.pml.value.Value;
-import gov.nist.csd.pm.pap.query.PolicyQuerier;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.pap.serialization.PolicySerializer;
+
+import java.util.Collection;
 
 public interface PolicyPoint extends Transactional, PMLExecutable {
 
@@ -41,5 +39,5 @@ public interface PolicyPoint extends Transactional, PMLExecutable {
      * @param policyDeserializer The PolicyDeserializer to apply the input string to the policy.
      * @throws PMException If there is an error deserializing the given inputs string.
      */
-    void deserialize(UserContext author, String input, PolicyDeserializer policyDeserializer) throws PMException;
+    void deserialize(UserContext author, Collection<String> input, PolicyDeserializer policyDeserializer) throws PMException;
 }
