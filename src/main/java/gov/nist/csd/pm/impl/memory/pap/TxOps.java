@@ -2,10 +2,8 @@ package gov.nist.csd.pm.impl.memory.pap;
 
 import gov.nist.csd.pm.pap.op.graph.DeleteNodeOp;
 import gov.nist.csd.pm.pap.op.graph.SetNodePropertiesOp;
-import gov.nist.csd.pm.pap.op.pml.DeleteConstantOp;
-import gov.nist.csd.pm.pap.op.pml.DeleteFunctionOp;
 import gov.nist.csd.pm.pap.op.graph.DissociateOp;
-import gov.nist.csd.pm.pap.op.graph.SetResourceAccessRightsOp;
+import gov.nist.csd.pm.pap.op.graph.SetResourceOperationsOp;
 import gov.nist.csd.pm.pap.op.obligation.DeleteObligationOp;
 import gov.nist.csd.pm.pap.op.obligation.UpdateObligationOp;
 import gov.nist.csd.pm.pap.op.prohibition.DeleteProhibitionOp;
@@ -18,19 +16,18 @@ import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 public class TxOps {
 
     private TxOps() {}
 
-    public static class MemorySetResourceAccessRightsOp extends SetResourceAccessRightsOp {
+    public static class MemorySetResourceOperationsOp extends SetResourceOperationsOp {
 
         private AccessRightSet oldAccessRights;
         private AccessRightSet newAccessRights;
 
-        public MemorySetResourceAccessRightsOp(AccessRightSet oldAccessRights, AccessRightSet newAccessRights) {
+        public MemorySetResourceOperationsOp(AccessRightSet oldAccessRights, AccessRightSet newAccessRights) {
             super(newAccessRights);
 
             this.oldAccessRights = oldAccessRights;
@@ -51,7 +48,7 @@ public class TxOps {
         private Node node;
 
         public MemoryDeleteNodeOp(String name, Node node, Collection<String> descendants) {
-            super(name, descendants);
+            super(name, node.getType(), descendants);
             this.node = node;
         }
 
@@ -100,34 +97,6 @@ public class TxOps {
 
         public AccessRightSet getAccessRightSet() {
             return accessRightSet;
-        }
-    }
-
-    public static class MemoryDeleteConstantOp extends DeleteConstantOp {
-
-        private Value value;
-
-        public MemoryDeleteConstantOp(String constantName, Value value) {
-            super(constantName);
-            this.value = value;
-        }
-
-        public Value getValue() {
-            return value;
-        }
-    }
-
-    public static class MemoryDeleteFunctionOp extends DeleteFunctionOp {
-
-        private FunctionDefinitionStatement functionDefinitionStatement;
-
-        public MemoryDeleteFunctionOp(FunctionDefinitionStatement functionDefinitionStatement) {
-            super(functionDefinitionStatement.getSignature().getFunctionName());
-            this.functionDefinitionStatement = functionDefinitionStatement;
-        }
-
-        public FunctionDefinitionStatement getFunctionDefinitionStatement() {
-            return functionDefinitionStatement;
         }
     }
 

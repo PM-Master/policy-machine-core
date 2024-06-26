@@ -7,6 +7,7 @@ import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.modification.ObligationsModification;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.op.PrivilegeChecker;
 import gov.nist.csd.pm.pap.op.obligation.CreateObligationOp;
 import gov.nist.csd.pm.pap.op.obligation.DeleteObligationOp;
 import gov.nist.csd.pm.pap.op.obligation.UpdateObligationOp;
@@ -17,7 +18,7 @@ import java.util.Collection;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 
-public class ObligationsModificationAdjudicator implements ObligationsModification {
+public class ObligationsModificationAdjudicator extends OperationExecutor implements ObligationsModification {
     private final UserContext userCtx;
     private final PAP pap;
     private final EventEmitter eventEmitter;
@@ -30,33 +31,28 @@ public class ObligationsModificationAdjudicator implements ObligationsModificati
 
     @Override
     public void create(UserContext author, String name, Collection<Rule> rules) throws PMException {
-        PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.OBLIGATIONS_TARGET.nodeName(), CREATE_OBLIGATION);
+        CreateObligationOp op = new CreateObligationOp(author, name, rules);
 
-        pap.modify().obligations().create(author, name, rules);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new CreateObligationOp(author, name, rules)));
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
     }
 
     @Override
     public void update(UserContext author, String name, Collection<Rule> rules) throws PMException {
-        PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.OBLIGATIONS_TARGET.nodeName(), CREATE_OBLIGATION);
+        UpdateObligationOp op = new UpdateObligationOp(author, name, rules);
 
-        pap.modify().obligations().update(author, name, rules);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new UpdateObligationOp(author, name, rules)));
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
     }
 
     @Override
     public void delete(String name) throws PMException {
-        PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.OBLIGATIONS_TARGET.nodeName(), DELETE_OBLIGATION);
-
         Obligation obligation = pap.query().obligations().get(name);
 
-        pap.modify().obligations().delete(name);
-
-        eventEmitter.emitEvent(new EventContext(
-                userCtx,
-                new DeleteObligationOp(obligation.getAuthor(), obligation.getName(), obligation.getRules()))
+        DeleteObligationOp op = new DeleteObligationOp(
+                obligation.getAuthor(),
+                obligation.getName(),
+                obligation.getRules()
         );
+
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
     }
 }

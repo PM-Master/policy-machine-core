@@ -108,7 +108,7 @@ public class AccessRightResolver {
 
     private static boolean isProhibitionSatisfied(Prohibition prohibition, Set<String> reachedTargets, String target) {
         boolean inter = prohibition.isIntersection();
-        List<ContainerCondition> containers = prohibition.getContainers();
+        Collection<ContainerCondition> containers = prohibition.getContainers();
         boolean addOps = false;
 
         for (ContainerCondition containerCondition : containers) {

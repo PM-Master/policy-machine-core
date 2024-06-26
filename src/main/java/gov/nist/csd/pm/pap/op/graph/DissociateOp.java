@@ -1,26 +1,29 @@
 package gov.nist.csd.pm.pap.op.graph;
 
-import gov.nist.csd.pm.pap.op.Operation;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.op.operand.Operand;
+import gov.nist.csd.pm.pap.op.operand.PolicyElementOperand;
+import gov.nist.csd.pm.pap.query.UserContext;
 
+import java.util.List;
 import java.util.Objects;
+
+import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
+import static gov.nist.csd.pm.pap.op.AdminAccessRights.ASSOCIATE_TO;
 
 public class DissociateOp extends GraphOp {
     private final String ua;
     private final String target;
 
     public DissociateOp(String ua, String target) {
+        super("dissociate",
+              new PolicyElementOperand("ua", ua, ASSOCIATE),
+              new PolicyElementOperand("target", target, ASSOCIATE_TO));
+
         this.ua = ua;
         this.target = target;
-    }
-
-    @Override
-    public String getOpName() {
-        return "dissociate";
-    }
-
-    @Override
-    public Object[] getOperands() {
-        return operands(ua, target);
     }
 
     public String getUa() {
@@ -29,6 +32,22 @@ public class DissociateOp extends GraphOp {
 
     public String getTarget() {
         return target;
+    }
+
+    @Override
+    public String getOpName() {
+        return "associate";
+    }
+
+    @Override
+    public void execute(PAP pap) throws PMException {
+        pap.modify().graph().dissociate(ua, target);
+    }
+
+    @Override
+    public void canExecute(PAP pap, UserContext userCtx) throws PMException {
+        checkPrivilegesOnOperand(pap, userCtx, (PolicyElementOperand) operands.get(0));
+        checkPrivilegesOnOperand(pap, userCtx, (PolicyElementOperand) operands.get(1));
     }
 
     @Override
@@ -51,10 +70,8 @@ public class DissociateOp extends GraphOp {
 
     @Override
     public String toString() {
-        return "DissociateOp[" +
+        return "AssociateOp[" +
                 "ua=" + ua + ", " +
                 "target=" + target + ']';
     }
-
-
 }

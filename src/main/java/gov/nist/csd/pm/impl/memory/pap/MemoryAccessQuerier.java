@@ -329,7 +329,7 @@ public class MemoryAccessQuerier extends AccessQuerier {
             Collection<Prohibition> subjectProhibitions = prohibitionsQuerier.getWithSubject(node);
             reachedProhibitions.addAll(subjectProhibitions);
             for (Prohibition prohibition : subjectProhibitions) {
-                List<ContainerCondition> containers = prohibition.getContainers();
+                Collection<ContainerCondition> containers = prohibition.getContainers();
                 for (ContainerCondition cont : containers) {
                     prohibitionTargets.add(cont.getName());
                 }

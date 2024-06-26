@@ -2,6 +2,7 @@ package gov.nist.csd.pm.common.obligation;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.op.Operation;
+import gov.nist.csd.pm.pap.op.operand.Operand;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.query.UserContext;
@@ -68,17 +69,17 @@ public class EventPattern implements Serializable {
         return operationPattern.matches(op.getOpName(), pap);
     }
 
-    public boolean operandsMatch(Object[] operands, PAP pap) throws PMException {
+    public boolean operandsMatch(List<Operand> operands, PAP pap) throws PMException {
         // if more patterns than operands - false
         // if no patterns - true (match everything)
-        if (operandPatterns.size() > operands.length) {
+        if (operandPatterns.size() > operands.size()) {
             return false;
         } else if (operandPatterns.isEmpty()) {
             return true;
         }
 
         for (int i = 0; i < operandPatterns.size(); i++) {
-            Object operand = operands[i];
+            Object operand = operands.get(i);
             Pattern pattern = operandPatterns.get(i);
             if (!pattern.matches(operand, pap)) {
                 return false;

@@ -4,9 +4,7 @@ import gov.nist.csd.pm.pap.op.Operation;
 import gov.nist.csd.pm.pap.op.graph.*;
 import gov.nist.csd.pm.pap.op.obligation.CreateObligationOp;
 import gov.nist.csd.pm.pap.op.prohibition.CreateProhibitionOp;
-import gov.nist.csd.pm.pap.op.pml.CreateConstantOp;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.op.pml.CreateFunctionOp;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.graph.node.NodeType;
@@ -39,18 +37,7 @@ abstract class TxCmd implements TxRollbackSupport {
     }
 
     static TxCmd eventToCmd(Operation op) throws UnsupportedPolicyEvent {
-        if (op instanceof CreateConstantOp o) {
-            return new TxCmd.AddConstantTxCmd(
-                    o.name(),
-                    o.value()
-            );
-
-        } else if (op instanceof CreateFunctionOp o) {
-            return new TxCmd.AddFunctionTxCmd(
-                    o.functionDefinitionStatement()
-            );
-
-        } else if (op instanceof AssignOp o) {
+        if (op instanceof AssignOp o) {
             return new TxCmd.AssignTxCmd(
                     o.getAscendant(),
                     o.getDescendant()
@@ -88,7 +75,7 @@ abstract class TxCmd implements TxRollbackSupport {
 
         } else if (op instanceof CreateProhibitionOp o) {
             return new TxCmd.CreateProhibitionTxCmd(
-                    new Prohibition(o.getName(), o.getSubject(), o.getAccessRightSet(), o.isIntersection(), o.getContainerConditions())
+                    new Prohibition(o.getName(), o.getSubject(), o.getAccessRightSet(), o.isIntersection(), o.getContainers())
             );
 
         } else if (op instanceof CreateUserAttributeOp o) {
@@ -133,15 +120,6 @@ abstract class TxCmd implements TxRollbackSupport {
                     new Association(o.getUa(), o.getTarget(), o.getAccessRightSet())
             );
 
-        } else if (op instanceof TxOps.MemoryDeleteConstantOp o) {
-            return new TxCmd.RemoveConstantTxCmd(
-                    o.name(),
-                    o.getValue()
-            );
-
-        } else if (op instanceof TxOps.MemoryDeleteFunctionOp o) {
-            return new TxCmd.RemoveFunctionTxCmd(o.getFunctionDefinitionStatement());
-
         } else if (op instanceof TxOps.MemorySetNodePropertiesOp o) {
             return new TxCmd.SetNodePropertiesTxCmd(
                     o.getName(),
@@ -156,10 +134,10 @@ abstract class TxCmd implements TxRollbackSupport {
 
         } else if (op instanceof TxOps.MemoryUpdateProhibitionOp o) {
             return new TxCmd.UpdateProhibitionTxCmd(
-                    new Prohibition(o.getName(), o.getSubject(), o.getAccessRightSet(), o.isIntersection(), o.getContainerConditions()), o.getOldPro()
+                    new Prohibition(o.getName(), o.getSubject(), o.getAccessRightSet(), o.isIntersection(), o.getContainers()), o.getOldPro()
             );
 
-        } else if (op instanceof TxOps.MemorySetResourceAccessRightsOp o) {
+        } else if (op instanceof TxOps.MemorySetResourceOperationsOp o) {
             return new TxCmd.SetResourceAccessRightsTxCmd(
                     o.getOldAccessRights(),
                     o.getNewAccessRights()

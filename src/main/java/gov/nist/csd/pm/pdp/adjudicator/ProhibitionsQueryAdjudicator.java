@@ -6,6 +6,7 @@ import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.AdminAccessRights;
+import gov.nist.csd.pm.pap.op.PrivilegeChecker;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.query.ProhibitionsQuery;

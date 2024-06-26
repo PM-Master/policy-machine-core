@@ -1,4 +1,4 @@
-package gov.nist.csd.pm.pdp.adjudicator;
+package gov.nist.csd.pm.pap.op;
 
 import gov.nist.csd.pm.pap.admin.AdminPolicy;
 import gov.nist.csd.pm.pap.admin.AdminPolicyNode;

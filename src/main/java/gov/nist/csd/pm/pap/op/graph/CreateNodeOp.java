@@ -1,36 +1,34 @@
 package gov.nist.csd.pm.pap.op.graph;
 
+import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.node.NodeType;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.op.operand.Operand;
+import gov.nist.csd.pm.pap.op.operand.PolicyElementListOperand;
+import gov.nist.csd.pm.pap.query.UserContext;
 
 import java.util.*;
 
 public abstract class CreateNodeOp extends GraphOp {
 
-    protected final String name;
-    protected final NodeType type;
-    protected final Map<String, String> properties;
+    protected String name;
+    protected Map<String, String> properties;
     protected Collection<String> descendants;
 
-    protected CreateNodeOp(String name, NodeType type, Map<String, String> properties, Collection<String> descendants) {
+    public CreateNodeOp(String opName, String name, NodeType type, Map<String, String> props,
+                        Collection<String> descendants, String reqCap) {
+        super(opName, List.of(
+                new Operand("name", name),
+                new Operand("type", type),
+                new Operand("properties", props),
+                new PolicyElementListOperand("descendants", descendants, reqCap)).toArray(Operand[]::new));
         this.name = name;
-        this.type = type;
-        this.properties = properties;
+        this.properties = props;
         this.descendants = descendants;
-    }
-
-    protected CreateNodeOp(String name, NodeType type, Map<String, String> properties) {
-        this.name = name;
-        this.type = type;
-        this.properties = properties;
-        this.descendants = new ArrayList<>();
     }
 
     public String getName() {
         return name;
-    }
-
-    public NodeType getType() {
-        return type;
     }
 
     public Map<String, String> getProperties() {
@@ -42,8 +40,8 @@ public abstract class CreateNodeOp extends GraphOp {
     }
 
     @Override
-    public Object[] getOperands() {
-        return operands(name, descendants);
+    public void canExecute(PAP pap, UserContext userCtx) throws PMException {
+        checkPrivilegesOnListOperand(pap, userCtx, (PolicyElementListOperand) operands.get(3));
     }
 
     @Override
@@ -55,7 +53,7 @@ public abstract class CreateNodeOp extends GraphOp {
             return false;
         }
         CreateNodeOp that = (CreateNodeOp) o;
-        return Objects.equals(name, that.name) && type == that.type && Objects.equals(
+        return Objects.equals(name, that.name) && Objects.equals(
                 properties,
                 that.properties
         ) && Objects.equals(descendants, that.descendants);
@@ -63,7 +61,7 @@ public abstract class CreateNodeOp extends GraphOp {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, type, properties, descendants);
+        return Objects.hash(name, properties, descendants);
     }
 
 }

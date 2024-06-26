@@ -1,9 +1,6 @@
 package gov.nist.csd.pm.pdp.adjudicator;
 
-import gov.nist.csd.pm.common.obligation.EventContext;
 import gov.nist.csd.pm.epp.EventEmitter;
-import gov.nist.csd.pm.pap.admin.AdminPolicy;
-import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.modification.GraphModification;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
@@ -13,14 +10,12 @@ import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 import static gov.nist.csd.pm.common.graph.node.NodeType.PC;
 
-public class GraphModificationAdjudicator implements GraphModification {
+public class GraphModificationAdjudicator extends OperationExecutor implements GraphModification {
 
     private final UserContext userCtx;
     private final PAP pap;
@@ -34,169 +29,91 @@ public class GraphModificationAdjudicator implements GraphModification {
 
     @Override
     public void setResourceAccessRights(AccessRightSet accessRightSet) throws PMException {
-        PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName(), SET_RESOURCE_ACCESS_RIGHTS);
-
-        pap.modify().graph().setResourceAccessRights(accessRightSet);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new SetResourceAccessRightsOp(accessRightSet)));
+        SetResourceOperationsOp op = new SetResourceOperationsOp(accessRightSet);
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
     }
 
     @Override
     public String createPolicyClass(String name, Map<String, String> properties) throws PMException {
-        PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName(), CREATE_POLICY_CLASS);
-
-        pap.modify().graph().createPolicyClass(name, properties);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new CreatePolicyClassOp(name, new HashMap<>())));
+        CreatePolicyClassOp op = new CreatePolicyClassOp(name, properties);
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
 
         return name;
     }
 
     @Override
     public String createUserAttribute(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
-        if (!assignments.isEmpty()) {
-            checkAssignments(CREATE_USER_ATTRIBUTE, assignments);
-        } else {
-            checkAssignments(CREATE_USER_ATTRIBUTE, List.of(AdminPolicyNode.ADMIN_POLICY_TARGET.nodeName()));
-        }
-
-        pap.modify().graph().createUserAttribute(name, properties, assignments);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new CreateUserAttributeOp(name, new HashMap<>(), assignments)));
+        CreateUserAttributeOp op = new CreateUserAttributeOp(name, properties, assignments);
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
 
         return name;
     }
 
     @Override
     public String createObjectAttribute(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
-        checkAssignments(CREATE_OBJECT_ATTRIBUTE, assignments);
-
-        pap.modify().graph().createObjectAttribute(name, properties, assignments);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new CreateObjectAttributeOp(name, new HashMap<>(), assignments)));
+        CreateObjectAttributeOp op = new CreateObjectAttributeOp(name, properties, assignments);
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
 
         return name;
     }
 
     @Override
     public String createObject(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
-        checkAssignments(CREATE_OBJECT, assignments);
-
-        pap.modify().graph().createObject(name, properties, assignments);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new CreateObjectOp(name, new HashMap<>(), assignments)));
+        CreateObjectOp op = new CreateObjectOp(name, properties, assignments);
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
 
         return name;
     }
 
     @Override
     public String createUser(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
-        checkAssignments(CREATE_USER, assignments);
-
-        pap.modify().graph().createUser(name, properties, assignments);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new CreateUserOp(name, new HashMap<>(), assignments)));
+        CreateUserOp op = new CreateUserOp(name, properties, assignments);
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
 
         return name;
     }
 
     @Override
     public void setNodeProperties(String name, Map<String, String> properties) throws PMException {
-        PrivilegeChecker.check(pap, userCtx, name, SET_NODE_PROPERTIES);
-
-        pap.modify().graph().setNodeProperties(name, properties);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new SetNodePropertiesOp(name, properties)));
+        SetNodePropertiesOp op = new SetNodePropertiesOp(name, properties);
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
     }
 
     @Override
     public void deleteNode(String name) throws PMException {
         NodeType nodeType = pap.query().graph().getNode(name).getType();
-
-        if (nodeType == PC) {
-            PrivilegeChecker.check(pap, userCtx, AdminPolicy.policyClassTargetName(name), DELETE_POLICY_CLASS);
-            return;
-        }
-
-        String op = switch (nodeType) {
-            case OA -> DELETE_OBJECT_ATTRIBUTE;
-            case UA -> DELETE_USER_ATTRIBUTE;
-            case O -> DELETE_OBJECT;
-            case U -> DELETE_USER;
-            default -> DELETE_POLICY_CLASS;
-        };
-
-        // check the user can delete the node
-        PrivilegeChecker.check(pap, userCtx, name, op);
-
-        // check that the user can delete the node from the node's descendants
         Collection<String> descendants = pap.query().graph().getAdjacentDescendants(name);
 
-        for(String descendant : descendants) {
-            PrivilegeChecker.check(pap, userCtx, descendant, op);
-        }
-
-        pap.modify().graph().deleteNode(name);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new DeleteNodeOp(name, descendants)));
+        DeleteNodeOp op = new DeleteNodeOp(name, nodeType, descendants);
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
     }
 
     @Override
     public void assign(String ascendant, String descendant) throws PMException {
-        pap.query().graph().getNode(ascendant);
-        pap.query().graph().getNode(descendant);
+        AssignOp op = new AssignOp(ascendant, descendant);
 
-        //check the user can assign the ascendant
-        PrivilegeChecker.check(pap, userCtx, ascendant, ASSIGN);
-
-        // check that the user can assign to the descendant node
-        PrivilegeChecker.check(pap, userCtx, descendant, ASSIGN_TO);
-
-        pap.modify().graph().assign(ascendant, descendant);
-
-        eventEmitter.emitEvent(new EventContext(userCtx,
-                new AssignOp(ascendant, descendant)));
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
     }
 
     @Override
     public void deassign(String ascendant, String descendant) throws PMException {
-        pap.query().graph().getNode(ascendant);
-        pap.query().graph().getNode(descendant);
+        DeassignOp op = new DeassignOp(ascendant, descendant);
 
-        //check the user can deassign the ascendant
-        PrivilegeChecker.check(pap, userCtx, ascendant, DEASSIGN);
-
-        // check that the user can deassign from the descendant node
-        PrivilegeChecker.check(pap, userCtx, descendant, DEASSIGN_FROM);
-
-        pap.modify().graph().deassign(ascendant, descendant);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new DeassignOp(ascendant, descendant)));
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
     }
 
     @Override
     public void associate(String ua, String target, AccessRightSet accessRights) throws PMException {
-        PrivilegeChecker.check(pap, userCtx, ua, ASSOCIATE);
-        PrivilegeChecker.check(pap, userCtx, target, ASSOCIATE_TO);
+        AssociateOp op = new AssociateOp(ua, target, accessRights);
 
-        pap.modify().graph().associate(ua, target, accessRights);
-
-        eventEmitter.emitEvent(new EventContext(userCtx, new AssociateOp(ua, target, accessRights)));
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
     }
 
     @Override
     public void dissociate(String ua, String target) throws PMException {
-        PrivilegeChecker.check(pap, userCtx, ua, DISSOCIATE);
-        PrivilegeChecker.check(pap, userCtx, target, DISSOCIATE_FROM);
+        DissociateOp op = new DissociateOp(ua, target);
 
-        pap.modify().graph().dissociate(ua, target);
+        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
 
-        eventEmitter.emitEvent(new EventContext(userCtx, new DissociateOp(ua, target)));
-    }
-
-    private void checkAssignments(String accessRight, Collection<String> descendants) throws PMException {
-        for (String descendant : descendants) {
-            PrivilegeChecker.check(pap, userCtx, descendant, accessRight);
-        }
     }
 }

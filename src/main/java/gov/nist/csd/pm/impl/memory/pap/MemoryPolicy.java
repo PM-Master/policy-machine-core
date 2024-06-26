@@ -16,8 +16,6 @@ import gov.nist.csd.pm.pap.op.Operation;
 import gov.nist.csd.pm.pap.op.graph.*;
 import gov.nist.csd.pm.pap.op.obligation.CreateObligationOp;
 import gov.nist.csd.pm.pap.op.prohibition.CreateProhibitionOp;
-import gov.nist.csd.pm.pap.op.pml.CreateConstantOp;
-import gov.nist.csd.pm.pap.op.pml.CreateFunctionOp;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.query.PolicyQuerier;
@@ -232,7 +230,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
 
             super.setResourceAccessRights(accessRightSet);
 
-            txOpTracker.trackOp(tx, new TxOps.MemorySetResourceAccessRightsOp(
+            txOpTracker.trackOp(tx, new TxOps.MemorySetResourceOperationsOp(
                     old,
                     accessRightSet)
             );
@@ -589,30 +587,23 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         @Override
         public void createFunction(FunctionDefinitionStatement functionDefinitionStatement) throws PMException {
             super.createFunction(functionDefinitionStatement);
-            txOpTracker.trackOp(tx, new CreateFunctionOp(functionDefinitionStatement));
         }
 
         @Override
         public void deleteFunction(String functionName) throws PMException {
             FunctionDefinitionStatement old = functions.get(functionName);
             super.deleteFunction(functionName);
-
-            if (old != null) {
-                txOpTracker.trackOp(tx, new TxOps.MemoryDeleteFunctionOp(old));
-            }
         }
 
         @Override
         public void createConstant(String constantName, Value constantValue) throws PMException {
             super.createConstant(constantName, constantValue);
-            txOpTracker.trackOp(tx, new CreateConstantOp(constantName, constantValue));
         }
 
         @Override
         public void deleteConstant(String constName) throws PMException {
             Value old = constants.get(constName);
             super.deleteConstant(constName);
-            txOpTracker.trackOp(tx, new TxOps.MemoryDeleteConstantOp(constName, old));
         }
 
         @Override

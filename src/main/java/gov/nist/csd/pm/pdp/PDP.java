@@ -18,7 +18,7 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.common.tx.TxRunner;
 import gov.nist.csd.pm.pdp.adjudicator.PolicyModificationAdjudicator;
 import gov.nist.csd.pm.pdp.adjudicator.PolicyQueryAdjudicator;
-import gov.nist.csd.pm.pdp.adjudicator.PrivilegeChecker;
+import gov.nist.csd.pm.pap.op.PrivilegeChecker;
 
 import java.util.*;
 

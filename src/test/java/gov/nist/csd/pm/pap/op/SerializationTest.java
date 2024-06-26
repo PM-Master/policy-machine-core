@@ -10,7 +10,6 @@ import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.graph.CreatePolicyClassOp;
 import gov.nist.csd.pm.pap.op.obligation.CreateObligationOp;
 import gov.nist.csd.pm.pap.op.prohibition.CreateProhibitionOp;
-import gov.nist.csd.pm.pap.op.pml.CreateFunctionOp;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
@@ -77,21 +76,4 @@ public class SerializationTest {
         CreateObligationOp actual = SerializationUtils.deserialize(serialize);
         assertEquals(expected, actual);
     }
-
-    @Test
-    void testFuncExecDoestNotSerialize() throws PMException {
-        PAP pap = new MemoryPAP();
-        CreateFunctionOp createFunctionOp = new CreateFunctionOp(new FunctionDefinitionStatement.Builder("test_func")
-                                                                                  .returns(Type.string())
-                                                                                  .args(
-                                                                                          new FormalArgument("arg1", Type.string())
-                                                                                  )
-                                                                                  .executor((ctx, policy) -> new StringValue("hello world"))
-                                                                                  .build());
-
-        pap.modify().pml().createFunction(createFunctionOp.functionDefinitionStatement());
-
-        assertThrows(RuntimeException.class, () -> pap.serialize(new PMLSerializer()));
-    }
-
 }

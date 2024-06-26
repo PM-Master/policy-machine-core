@@ -5,6 +5,7 @@ import gov.nist.csd.pm.pap.pml.statement.CreateProhibitionStatement;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,7 +16,7 @@ public class Prohibition implements Serializable {
 
     private String name;
     private ProhibitionSubject      subject;
-    private List<ContainerCondition> containers;
+    private Collection<ContainerCondition> containers;
     private AccessRightSet accessRightSet;
     private boolean      intersection;
 
@@ -23,7 +24,8 @@ public class Prohibition implements Serializable {
 
     }
 
-    public Prohibition(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection, List<ContainerCondition> containers) {
+    public Prohibition(String name, ProhibitionSubject subject, AccessRightSet accessRightSet, boolean intersection,
+                       Collection<ContainerCondition> containers) {
         if (subject == null) {
             throw new IllegalArgumentException("Prohibition subject cannot be null");
         }
@@ -60,7 +62,7 @@ public class Prohibition implements Serializable {
         this.subject = subject;
     }
 
-    public List<ContainerCondition> getContainers() {
+    public Collection<ContainerCondition> getContainers() {
         return containers;
     }
 

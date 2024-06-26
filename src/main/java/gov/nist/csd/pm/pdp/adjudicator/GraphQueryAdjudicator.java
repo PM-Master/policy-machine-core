@@ -8,6 +8,7 @@ import gov.nist.csd.pm.common.graph.relationship.Association;
 import gov.nist.csd.pm.pap.admin.AdminPolicy;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.AdminAccessRights;
+import gov.nist.csd.pm.pap.op.PrivilegeChecker;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.query.GraphQuery;
 import gov.nist.csd.pm.pdp.exception.UnauthorizedException;

@@ -5,6 +5,7 @@ import gov.nist.csd.pm.common.obligation.EventPattern;
 import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.AdminAccessRights;
+import gov.nist.csd.pm.pap.op.PrivilegeChecker;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
@@ -12,7 +13,6 @@ import gov.nist.csd.pm.pap.query.ObligationsQuery;
 import gov.nist.csd.pm.pdp.exception.UnauthorizedException;
 
 import java.util.Collection;
-import java.util.List;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.GET_OBLIGATION;
 

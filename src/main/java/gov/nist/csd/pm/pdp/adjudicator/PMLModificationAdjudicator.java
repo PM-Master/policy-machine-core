@@ -4,6 +4,7 @@ import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.modification.PMLModification;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.op.PrivilegeChecker;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
@@ -24,8 +25,6 @@ public class PMLModificationAdjudicator implements PMLModification {
         PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.PML_FUNCTIONS_TARGET.nodeName(), CREATE_FUNCTION);
 
         pap.modify().pml().createFunction(functionDefinitionStatement);
-
-        // TODO emit PML operation when supported
     }
 
     @Override
