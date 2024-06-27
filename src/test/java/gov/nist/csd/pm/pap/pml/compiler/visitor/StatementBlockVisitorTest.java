@@ -17,7 +17,6 @@ import java.util.Map;
 
 import static gov.nist.csd.pm.pap.pml.PMLContextVisitor.toCtx;
 import static gov.nist.csd.pm.pap.pml.PMLContextVisitor.toStatementBlockCtx;
-import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StatementBlockVisitorTest {
@@ -27,7 +26,7 @@ class StatementBlockVisitorTest {
     @BeforeAll
     static void setup() throws PMException {
         testGlobalScope = GlobalScope.forCompile(new MemoryPAP())
-                   .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
+                   .withProvidedFunctions(Map.of("equals", new Equals().getSignature()));
     }
 
     @Test

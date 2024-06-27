@@ -33,30 +33,8 @@ public class JSONSerializer implements PolicySerializer {
                 policyQuery.graph().getResourceAccessRights(),
                 buildGraphJSON(policyQuery),
                 buildProhibitionsJSON(policyQuery),
-                buildObligationsJSON(policyQuery),
-                buildUserDefinedPML(policyQuery)
+                buildObligationsJSON(policyQuery)
         );
-    }
-
-    private JSONPML buildUserDefinedPML(PolicyQuery policyQuery) throws PMException {
-        Map<String, FunctionDefinitionStatement> functions = policyQuery.pml().getFunctions();
-        Map<String, String> jsonFunctions = new HashMap<>();
-        for (Map.Entry<String, FunctionDefinitionStatement> e : functions.entrySet()) {
-            jsonFunctions.put(e.getKey(), e.getValue().toString());
-        }
-
-        Map<String, Value> constants = policyQuery.pml().getConstants();
-        Map<String, String> jsonConstants = new HashMap<>();
-        for (Map.Entry<String, Value> e : constants.entrySet()) {
-            // do not serialize admin policy constants
-            if (AdminPolicy.isAdminPolicyNodeConstantName(e.getKey())) {
-                continue;
-            }
-
-            jsonConstants.put(e.getKey(), e.getValue().toString());
-        }
-
-        return new JSONPML(jsonFunctions, jsonConstants);
     }
 
     private List<String> buildObligationsJSON(PolicyQuery policyQuery) throws PMException {

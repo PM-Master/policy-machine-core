@@ -8,13 +8,11 @@ public class MemoryPolicyQuerier extends PolicyQuerier {
     private MemoryGraphQuerier graphQuerier;
     private MemoryProhibitionsQuerier prohibitionsQuerier;
     private MemoryObligationsQuerier obligationsQuerier;
-    private MemoryPMLQuerier pmlQuerier;
 
     public MemoryPolicyQuerier(MemoryPolicy memoryPolicy) {
         this.graphQuerier = new MemoryGraphQuerier(memoryPolicy);
         this.prohibitionsQuerier = new MemoryProhibitionsQuerier(memoryPolicy, graphQuerier);
         this.obligationsQuerier = new MemoryObligationsQuerier(memoryPolicy);
-        this.pmlQuerier = new MemoryPMLQuerier(memoryPolicy);
         this.accessQuerier = new MemoryAccessQuerier(graphQuerier, prohibitionsQuerier);
     }
 
@@ -36,10 +34,5 @@ public class MemoryPolicyQuerier extends PolicyQuerier {
     @Override
     public MemoryObligationsQuerier obligations() {
         return obligationsQuerier;
-    }
-
-    @Override
-    public MemoryPMLQuerier pml() {
-        return pmlQuerier;
     }
 }

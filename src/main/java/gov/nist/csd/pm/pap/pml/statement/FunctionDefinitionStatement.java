@@ -92,11 +92,7 @@ public class FunctionDefinitionStatement extends PMLStatement {
 
     @Override
     public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMLExecutionException {
-        try {
-            policy.modify().pml().createFunction(this);
-        } catch (PMException e) {
-            throw new PMLExecutionException(e);
-        }
+        ctx.scope().global().withProvidedFunction(signature.getFunctionName(), this);
 
         return new VoidValue();
     }

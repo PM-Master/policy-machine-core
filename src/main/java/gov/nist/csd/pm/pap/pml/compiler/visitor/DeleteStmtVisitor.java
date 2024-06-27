@@ -34,12 +34,8 @@ public class DeleteStmtVisitor extends PMLBaseVisitor<DeleteStatement> {
             }
         } else if (deleteTypeCtx instanceof PMLParser.DeleteProhibitionContext) {
             deleteType = DeleteStatement.Type.PROHIBITION;
-        } else if (deleteTypeCtx instanceof PMLParser.DeleteObligationContext) {
-            deleteType = DeleteStatement.Type.OBLIGATION;
-        } else if (deleteTypeCtx instanceof PMLParser.DeleteFunctionContext) {
-            deleteType = DeleteStatement.Type.FUNCTION;
         } else {
-            deleteType = DeleteStatement.Type.CONST;
+            deleteType = DeleteStatement.Type.OBLIGATION;
         }
 
         return new DeleteStatement(deleteType, nameExpr);

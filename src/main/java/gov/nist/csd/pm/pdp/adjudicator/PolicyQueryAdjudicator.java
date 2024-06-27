@@ -9,14 +9,12 @@ public class PolicyQueryAdjudicator implements PolicyQuery {
     private final GraphQueryAdjudicator graph;
     private final ProhibitionsQueryAdjudicator prohibitions;
     private final ObligationsQueryAdjudicator obligations;
-    private final PMLQueryAdjudicator pml;
 
     public PolicyQueryAdjudicator(UserContext userCtx, PAP pap) {
         this.access = new AccessQueryAdjudicator(userCtx, pap);
         this.graph = new GraphQueryAdjudicator(userCtx, pap);
         this.prohibitions = new ProhibitionsQueryAdjudicator(userCtx, pap);
         this.obligations = new ObligationsQueryAdjudicator(userCtx, pap);
-        this.pml = new PMLQueryAdjudicator(userCtx, pap);
     }
 
     @Override
@@ -39,8 +37,4 @@ public class PolicyQueryAdjudicator implements PolicyQuery {
         return obligations;
     }
 
-    @Override
-    public PMLQuery pml() {
-        return pml;
-    }
 }

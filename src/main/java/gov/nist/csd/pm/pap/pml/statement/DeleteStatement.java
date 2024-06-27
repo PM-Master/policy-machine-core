@@ -35,10 +35,6 @@ public class DeleteStatement extends PMLStatement {
             policy.modify().prohibitions().delete(name);
         } else if (type == Type.OBLIGATION) {
             policy.modify().obligations().delete(name);
-        } else if (type == Type.FUNCTION) {
-            policy.modify().pml().deleteFunction(name);
-        } else if (type == Type.CONST) {
-            policy.modify().pml().deleteConstant(name);
         } else {
             policy.modify().graph().deleteNode(name);
         }
@@ -57,8 +53,6 @@ public class DeleteStatement extends PMLStatement {
             case USER_ATTRIBUTE -> typeStr = "UA";
             case OBJECT -> typeStr = "O";
             case USER -> typeStr = "U";
-            case FUNCTION -> typeStr = "function";
-            case CONST -> typeStr = "const";
         }
 
         return indent(indentLevel) + String.format("delete %s %s", typeStr, expression);
@@ -84,8 +78,6 @@ public class DeleteStatement extends PMLStatement {
         OBJECT,
         USER,
         PROHIBITION,
-        OBLIGATION,
-        FUNCTION,
-        CONST
+        OBLIGATION
     }
 }

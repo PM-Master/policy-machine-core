@@ -40,44 +40,8 @@ public class JSONDeserializer implements PolicyDeserializer {
 
         pap.modify().graph().setResourceAccessRights(jsonPolicy.getResourceAccessRights());
 
-        createUserDefinedPML(pap, author, customPMLFunctions, jsonPolicy.getPml());
         createGraph(pap, jsonPolicy.getGraph());
         createProhibitionsAndObligations(pap, author, customPMLFunctions, jsonPolicy.getProhibitions(), jsonPolicy.getObligations());
-    }
-
-    private void createUserDefinedPML(PAP pap, UserContext author,
-                                      FunctionDefinitionStatement[] customPMLFunctions,
-                                      JSONPML userDefinedPML)
-            throws PMException {
-        if (userDefinedPML == null) {
-            return;
-        }
-
-        // to apply the constants and functions to the policy, create a PML string and execute it on the policy
-        // this will allow all function signatures to be compiled before the function bodies in the case of functions
-        // calling other functions
-        StringBuilder pml = new StringBuilder();
-        VisitorContext visitorCtx = new VisitorContext(new Scope<>(GlobalScope.forCompile(pap, customPMLFunctions)));
-
-        Map<String, String> constants = userDefinedPML.getConstants();
-        if (constants != null){
-            List<VariableDeclarationStatement.Declaration> constDecs = new ArrayList<>();
-            for (Map.Entry<String, String> e : constants.entrySet()) {
-                Expression expression = Expression.fromString(visitorCtx, e.getValue(), Type.any());
-                constDecs.add(new VariableDeclarationStatement.Declaration(e.getKey(), expression));
-            }
-            pml.append(new VariableDeclarationStatement(true, constDecs)).append("\n");
-        }
-
-        Map<String, String> functions = userDefinedPML.getFunctions();
-        if (functions != null) {
-            for (Map.Entry<String, String> e : functions.entrySet()) {
-                pml.append(e.getValue()).append("\n");
-            }
-        }
-
-        PMLDeserializer pmlDeserializer = new PMLDeserializer(customPMLFunctions);
-        pmlDeserializer.deserialize(pap, author, pml.toString());
     }
 
     private void createProhibitionsAndObligations(PAP pap,

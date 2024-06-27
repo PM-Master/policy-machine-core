@@ -70,14 +70,6 @@ public class AdminPolicy {
             verifier.verifyAdminPolicyAttribute(PML_CONSTANTS_TARGET, ADMIN_POLICY);
             verifier.verifyAdminPolicyAttribute(OBLIGATIONS_TARGET, ADMIN_POLICY);
             verifier.verifyAdminPolicyAttribute(PROHIBITIONS_TARGET, ADMIN_POLICY);
-
-            verifier.verifyAdminPolicyConstant(ADMIN_POLICY);
-            verifier.verifyAdminPolicyConstant(ADMIN_POLICY_TARGET);
-            verifier.verifyAdminPolicyConstant(POLICY_CLASS_TARGETS);
-            verifier.verifyAdminPolicyConstant(PML_FUNCTIONS_TARGET);
-            verifier.verifyAdminPolicyConstant(PML_CONSTANTS_TARGET);
-            verifier.verifyAdminPolicyConstant(OBLIGATIONS_TARGET);
-            verifier.verifyAdminPolicyConstant(PROHIBITIONS_TARGET);
         } catch (PMException e) {
             throw new AdminPolicyVerificationException(e);
         }
@@ -87,8 +79,6 @@ public class AdminPolicy {
         void verifyAdminPolicyClassNode() throws PMException;
 
         void verifyAdminPolicyAttribute(AdminPolicyNode node, AdminPolicyNode descendant) throws PMException;
-
-        void verifyAdminPolicyConstant(AdminPolicyNode constant) throws PMException;
 
         void verifyPolicyClassTargets() throws PMException;
     }

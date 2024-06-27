@@ -38,10 +38,6 @@ public class AdminAccessRights {
     public static final String CREATE_PROCESS_PROHIBITION = "create_process_prohibition";
     public static final String DELETE_PROCESS_PROHIBITION = "delete_process_prohibition";
     public static final String GET_PROCESS_PROHIBITIONS = "get_process_prohibitions";
-    public static final String ADD_CONTAINER_TO_PROHIBITION = "add_container_to_prohibition";
-    public static final String ADD_CONTAINER_COMPLEMENT_TO_PROHIBITION = "add_container_complement_to_prohibition";
-    public static final String DELETE_CONTAINER_FROM_PROHIBITION = "delete_container_from_prohibition";
-    public static final String DELETE_CONTAINER_COMPLEMENT_FROM_PROHIBITION = "delete_container_complement_from_prohibition";
     public static final String DELETE_PROHIBITION = "delete_prohibition";
 
     // obligations
@@ -51,7 +47,6 @@ public class AdminAccessRights {
     public static final String DELETE_RULE = "delete_rule";
     public static final String SET_RESOURCE_ACCESS_RIGHTS = "set_resource_access_rights";
     public static final String GET_RESOURCE_ACCESS_RIGHTS = "get_resource_access_rights";
-    public static final String OBLIGATION_RESPOND = "obligation_respond";
 
     // pml
     public static final String CREATE_FUNCTION = "create_function";
@@ -104,10 +99,6 @@ public class AdminAccessRights {
             CREATE_PROCESS_PROHIBITION,
             DELETE_PROCESS_PROHIBITION,
             GET_PROCESS_PROHIBITIONS,
-            ADD_CONTAINER_TO_PROHIBITION,
-            ADD_CONTAINER_COMPLEMENT_TO_PROHIBITION,
-            DELETE_CONTAINER_FROM_PROHIBITION,
-            DELETE_CONTAINER_COMPLEMENT_FROM_PROHIBITION,
             DELETE_PROHIBITION,
 
             // obligations

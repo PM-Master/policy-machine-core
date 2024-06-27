@@ -36,7 +36,7 @@ class FunctionReturnStatementVisitorTest {
 
         VisitorContext visitorCtx = new VisitorContext(
                 GlobalScope.forCompile(new MemoryPAP())
-                           .withPersistedFunctions(Map.of(
+                           .withProvidedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(
                                            "func1",

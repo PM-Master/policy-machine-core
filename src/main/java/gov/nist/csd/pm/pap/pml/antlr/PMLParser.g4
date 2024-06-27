@@ -97,9 +97,7 @@ deleteStatement:
 deleteType:
     nodeType #DeleteNode
     | OBLIGATION #DeleteObligation
-    | PROHIBITION #DeleteProhibition
-    | FUNCTION #DeleteFunction
-    | CONST #DeleteConst;
+    | PROHIBITION #DeleteProhibition ;
 nodeType:
     (POLICY_CLASS | OBJECT_ATTRIBUTE | USER_ATTRIBUTE | OBJECT | USER) ;
 

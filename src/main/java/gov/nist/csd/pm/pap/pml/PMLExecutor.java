@@ -4,6 +4,7 @@ import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.modification.PolicyModification;
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.pml.scope.ExecuteGlobalScope;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -17,28 +18,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PMLExecutor {
+public class PMLExecutor extends PMLCompiler {
 
-    public static void compileAndExecutePML(PolicyPoint pap, UserContext author, String input,
-                                            FunctionDefinitionStatement ... customFunctions) throws PMException {
+    public void compileAndExecutePML(PolicyPoint pap, UserContext author, String input) throws PMException {
         // compile the PML into statements
-        CompiledPML compiledPML = PMLCompiler.compilePML(pap, input, customFunctions);
+        CompiledPML compiledPML = compilePML(input);
 
         // evaluate the constants and functions from the compiled PML
         Map<String, Value> persistedConstants = evaluateConstantStmts(pap, compiledPML.constants());
-
-        // add constants and functions to policy
-        for (Map.Entry<String, Value> c : persistedConstants.entrySet()) {
-            pap.modify().pml().createConstant(c.getKey(), c.getValue());
-        }
-
-        for (Map.Entry<String, FunctionDefinitionStatement> f : compiledPML.functions().entrySet()) {
-            pap.modify().pml().createFunction(f.getValue());
-        }
+        persistedConstants.putAll(constants);
 
         // add the constants and functions to the persisted scope
         // build a global scope from the policy
-        GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(pap, customFunctions);
+        GlobalScope<Value, FunctionDefinitionStatement> globalScope = new ExecuteGlobalScope()
+                .withProvidedConstants(persistedConstants)
+                .withProvidedFunctions(functions);
 
         // execute other statements
         ExecutionContext ctx = new ExecutionContext(author, new Scope<>(globalScope));
@@ -53,7 +47,7 @@ public class PMLExecutor {
         Map<String, Value> constantsMap = new HashMap<>();
 
         // create empty exec ctx for constant value evaluation as all constants are literals
-        ExecutionContext ctx = new ExecutionContext(new UserContext(), new Scope<>(GlobalScope.forExecute(pap)));
+        ExecutionContext ctx = new ExecutionContext(new UserContext(), new Scope<>(new ExecuteGlobalScope()));
 
         for (Map.Entry<String, Expression> e : constants.entrySet()) {
             constantsMap.put(e.getKey(), e.getValue().execute(ctx, pap));

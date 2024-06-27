@@ -6,5 +6,4 @@ public interface PolicyQuery {
     GraphQuery graph();
     ProhibitionsQuery prohibitions();
     ObligationsQuery obligations();
-    PMLQuery pml();
 }

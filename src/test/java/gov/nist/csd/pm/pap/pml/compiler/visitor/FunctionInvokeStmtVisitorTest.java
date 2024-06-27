@@ -4,7 +4,6 @@ import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
-import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.expression.FunctionInvokeExpression;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.function.FormalArgument;
@@ -35,7 +34,7 @@ class FunctionInvokeStmtVisitorTest {
 
         VisitorContext visitorCtx = new VisitorContext(
                 GlobalScope.forCompile(new MemoryPAP())
-                           .withPersistedFunctions(
+                           .withProvidedFunctions(
                                    Map.of(
                                            "func1",
                                            new FunctionSignature(
@@ -82,7 +81,7 @@ class FunctionInvokeStmtVisitorTest {
     void testWrongNumberOfArgs() throws PMException {
         VisitorContext visitorCtx = new VisitorContext(
                 GlobalScope.forCompile(new MemoryPAP())
-                           .withPersistedFunctions(Map.of(
+                           .withProvidedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(
                                            "func1",
@@ -108,7 +107,7 @@ class FunctionInvokeStmtVisitorTest {
     void testWrongArgType() throws PMException {
         VisitorContext visitorCtx = new VisitorContext(
                 GlobalScope.forCompile(new MemoryPAP())
-                           .withPersistedFunctions(Map.of(
+                           .withProvidedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(
                                            "func1",
@@ -138,7 +137,7 @@ class FunctionInvokeStmtVisitorTest {
                 PMLParser.FunctionInvokeStatementContext.class);
         VisitorContext visitorCtx = new VisitorContext(
                 GlobalScope.forCompile(new MemoryPAP())
-                           .withPersistedFunctions(Map.of(
+                           .withProvidedFunctions(Map.of(
                                    "func1",
                                    new FunctionSignature(
                                            "func1",

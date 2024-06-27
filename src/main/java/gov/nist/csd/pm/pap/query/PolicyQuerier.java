@@ -12,7 +12,4 @@ public abstract class PolicyQuerier implements PolicyQuery{
 
     @Override
     public abstract ObligationsQuerier obligations();
-
-    @Override
-    public abstract PMLQuerier pml();
 }

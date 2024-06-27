@@ -11,13 +11,11 @@ public class PolicyModificationAdjudicator implements PolicyModification {
     private final GraphModificationAdjudicator graph;
     private final ProhibitionsModificationAdjudicator prohibitions;
     private final ObligationsModificationAdjudicator obligations;
-    private final PMLModificationAdjudicator pml;
 
     public PolicyModificationAdjudicator(UserContext userCtx, PAP pap, EventEmitter eventEmitter) {
         this.graph = new GraphModificationAdjudicator(userCtx, pap, eventEmitter);
         this.prohibitions = new ProhibitionsModificationAdjudicator(userCtx, pap, eventEmitter);
         this.obligations = new ObligationsModificationAdjudicator(userCtx, pap, eventEmitter);
-        this.pml = new PMLModificationAdjudicator(userCtx, pap);
     }
 
     @Override
@@ -35,8 +33,4 @@ public class PolicyModificationAdjudicator implements PolicyModification {
         return obligations;
     }
 
-    @Override
-    public PMLModification pml() {
-        return pml;
-    }
 }

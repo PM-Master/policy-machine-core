@@ -12,18 +12,15 @@ public class JSONPolicy {
     private JSONGraph graph;
     private List<String> prohibitions;
     private List<String> obligations;
-    private JSONPML pml;
 
     public JSONPolicy(AccessRightSet resourceAccessRights,
                       JSONGraph graph,
                       List<String> prohibitions,
-                      List<String> obligations,
-                      JSONPML pml) {
+                      List<String> obligations) {
         this.resourceAccessRights = resourceAccessRights;
         this.graph = graph;
         this.prohibitions = prohibitions;
         this.obligations = obligations;
-        this.pml = pml;
     }
 
     public AccessRightSet getResourceAccessRights() {
@@ -56,14 +53,6 @@ public class JSONPolicy {
 
     public void setObligations(List<String> obligations) {
         this.obligations = obligations;
-    }
-
-    public JSONPML getPml() {
-        return pml;
-    }
-
-    public void setPml(JSONPML pml) {
-        this.pml = pml;
     }
 
     @Override

@@ -22,7 +22,7 @@ public abstract class PAP implements PolicyPoint {
 
     @Override
     public void executePML(UserContext userContext, String input, FunctionDefinitionStatement... functionDefinitionStatements) throws PMException {
-        PMLExecutor.compileAndExecutePML(this, userContext, input, functionDefinitionStatements);
+        new PMLExecutor().compileAndExecutePML(this, userContext, input, functionDefinitionStatements);
     }
 
     @Override

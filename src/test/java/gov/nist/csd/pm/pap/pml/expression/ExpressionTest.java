@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
-import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ExpressionTest {
@@ -90,7 +89,7 @@ class ExpressionTest {
     @Test
     void testCompileStringExpression_FuncInvoke() throws PMException {
         VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPAP())
-                                                                   .withPersistedFunctions(Map.of("test", new FunctionSignature("test", Type.string(), List.of()))));
+                                                                   .withProvidedFunctions(Map.of("test", new FunctionSignature("test", Type.string(), List.of()))));
 
         Expression expression = Expression.fromString(visitorContext, "test()", Type.string());
         assertEquals(0, visitorContext.errorLog().getErrors().size());

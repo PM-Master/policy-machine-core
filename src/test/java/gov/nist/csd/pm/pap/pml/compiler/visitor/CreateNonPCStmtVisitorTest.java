@@ -30,7 +30,7 @@ class CreateNonPCStmtVisitorTest {
     @BeforeAll
     static void setup() throws PMException {
         testGlobalScope = GlobalScope.forCompile(new MemoryPAP())
-                .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
+                .withProvidedFunctions(Map.of("equals", new Equals().getSignature()));
     }
 
     @Test

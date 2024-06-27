@@ -32,7 +32,7 @@ class FunctionDefinitionVisitorTest {
     ));
 
     VisitorContext visitorCtx = new VisitorContext(
-            GlobalScope.forCompile(new MemoryPAP()).withPersistedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
+            GlobalScope.forCompile(new MemoryPAP()).withProvidedFunctions(Map.of(testSignature.getFunctionName(), testSignature))
     );
 
     FunctionDefinitionVisitorTest() throws PMException {
@@ -74,7 +74,7 @@ class FunctionDefinitionVisitorTest {
                 """,
                 PMLParser.FunctionDefinitionStatementContext.class);
         visitorCtx = new VisitorContext(
-                GlobalScope.forCompile(new MemoryPAP()).withPersistedFunctions(Map.of("func1", new FunctionSignature("func1", Type.voidType(), List.of(new FormalArgument("a", Type.string())))))
+                GlobalScope.forCompile(new MemoryPAP()).withProvidedFunctions(Map.of("func1", new FunctionSignature("func1", Type.voidType(), List.of(new FormalArgument("a", Type.string())))))
         );
         stmt = new FunctionDefinitionVisitor(visitorCtx)
                 .visitFunctionDefinitionStatement(ctx);

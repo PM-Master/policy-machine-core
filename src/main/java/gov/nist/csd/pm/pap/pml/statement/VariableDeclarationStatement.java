@@ -50,10 +50,6 @@ public class VariableDeclarationStatement extends PMLStatement{
             Value value = declaration.expression.execute(ctx, policy);
 
             ctx.scope().local().addOrOverwriteVariable(declaration.id, value);
-
-            if (isConst) {
-                policy.modify().pml().createConstant(declaration.id, value);
-            }
         }
 
         return new VoidValue();

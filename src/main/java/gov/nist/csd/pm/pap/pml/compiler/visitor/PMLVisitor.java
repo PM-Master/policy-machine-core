@@ -31,17 +31,6 @@ public class PMLVisitor extends PMLBaseVisitor<CompiledPML> {
         Map<String, Expression> consts = compilePersistedConstants(constAndFuncCtx, sortedStatements.constantCtxs);
         Map<String, FunctionDefinitionStatement> funcs = compilePersistedFunctions(constAndFuncCtx, sortedStatements.functionCtxs);
 
-
-        Map<String, Variable> persistedConsts = constExpressionsToVariables(consts);
-        persistedConsts.putAll(visitorCtx.scope().global().getPersistedConstants());
-
-        Map<String, FunctionSignature> persistedFuncs = funcStmtsToSignatures(funcs);
-        persistedFuncs.putAll(visitorCtx.scope().global().getPersistedFunctions());
-
-        // add the persisted level constants and functions to the global scope
-        visitorCtx.scope().global().setPersistedConstants(persistedConsts);
-        visitorCtx.scope().global().setPersistedFunctions(persistedFuncs);
-
         return new CompiledPML(
                 consts,
                 funcs,
@@ -106,7 +95,7 @@ public class PMLVisitor extends PMLBaseVisitor<CompiledPML> {
                 new FunctionDefinitionVisitor.FunctionSignatureVisitor(visitorCtx);
         // initialize the function signatures map with any signature defined in the policy already
 
-        Map<String, FunctionSignature> functionSignatures = new HashMap<>(visitorCtx.scope().global().getPersistedFunctions());
+        Map<String, FunctionSignature> functionSignatures = new HashMap<>(visitorCtx.scope().global().getProvidedFunctions());
         // track the function definitions statements to be processed,
         // any function with an error won't be processed but execution will continue inorder to find anymore errors
         Map<String, PMLParser.FunctionDefinitionStatementContext> validFunctionDefs = new HashMap<>();
@@ -132,7 +121,7 @@ public class PMLVisitor extends PMLBaseVisitor<CompiledPML> {
         }
 
         // store all function signatures for use in compiling function bodies
-        visitorCtx.scope().global().setPersistedFunctions(functionSignatures);
+        visitorCtx.scope().global().setProvidedFunctions(functionSignatures);
 
         // compile function bodies
         FunctionDefinitionVisitor functionDefinitionVisitor = new FunctionDefinitionVisitor(visitorCtx);

@@ -40,7 +40,6 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
     private TxGraphModifier txGraph;
     private TxProhibitionsModifier txPros;
     private TxObligationsModifier txObls;
-    private TxPMLModifier txPml;
     private TxOpTracker txOpTracker;
     private MemoryTx tx;
     private MemoryPolicyQuerier querier;
@@ -53,7 +52,6 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         this.txGraph = new TxGraphModifier(txOpTracker);
         this.txPros = new TxProhibitionsModifier(txOpTracker);
         this.txObls = new TxObligationsModifier(txOpTracker);
-        this.txPml = new TxPMLModifier(txOpTracker);
     }
 
     @Override
@@ -69,11 +67,6 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
     @Override
     public ObligationsModifier obligations() {
         return txObls;
-    }
-
-    @Override
-    public PMLModifier pml() {
-        return txPml;
     }
 
     public void reset() {
@@ -534,76 +527,6 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
             Obligation old = getObligation(name);
             super.delete(name);
             txOpTracker.trackOp(tx, new TxOps.MemoryDeleteObligationOp(old));
-        }
-
-        @Override
-        public PolicyQuerier query() {
-            return MemoryPolicy.this.query();
-        }
-
-        @Override
-        public void beginTx() throws PMException {
-            MemoryPolicy.this.beginTx();
-        }
-
-        @Override
-        public void commit() throws PMException {
-            MemoryPolicy.this.commit();
-        }
-
-        @Override
-        public void rollback() throws PMException {
-            MemoryPolicy.this.rollback();
-        }
-    }
-    class TxPMLModifier extends PMLModifier {
-
-        private TxOpTracker txOpTracker;
-
-        public TxPMLModifier(TxOpTracker txOpTracker) {
-            this.txOpTracker = txOpTracker;
-        }
-
-        @Override
-        protected void createFunctionInternal(FunctionDefinitionStatement func) throws PMException {
-            functions.put(func.getSignature().getFunctionName(), new FunctionDefinitionStatement(func));
-        }
-
-        @Override
-        protected void deleteFunctionInternal(String name) throws PMException {
-            functions.remove(name);
-        }
-
-        @Override
-        protected void createConstantInternal(String name, Value value) throws PMException {
-            constants.put(name, value);
-        }
-
-        @Override
-        protected void deleteConstantInternal(String name) throws PMException {
-            constants.remove(name);
-        }
-
-        @Override
-        public void createFunction(FunctionDefinitionStatement functionDefinitionStatement) throws PMException {
-            super.createFunction(functionDefinitionStatement);
-        }
-
-        @Override
-        public void deleteFunction(String functionName) throws PMException {
-            FunctionDefinitionStatement old = functions.get(functionName);
-            super.deleteFunction(functionName);
-        }
-
-        @Override
-        public void createConstant(String constantName, Value constantValue) throws PMException {
-            super.createConstant(constantName, constantValue);
-        }
-
-        @Override
-        public void deleteConstant(String constName) throws PMException {
-            Value old = constants.get(constName);
-            super.deleteConstant(constName);
         }
 
         @Override

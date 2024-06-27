@@ -26,10 +26,7 @@ public abstract class PolicyModifier extends Modifier implements PolicyModificat
 
     @Override
     public abstract ObligationsModifier obligations();
-
-    @Override
-    public abstract PMLModifier pml();
-
+    
     @Override
     public void verifyAdminPolicyClassNode() throws PMException {
         if (!query().graph().nodeExists(AdminPolicyNode.ADMIN_POLICY.nodeName())) {
@@ -45,15 +42,6 @@ public abstract class PolicyModifier extends Modifier implements PolicyModificat
 
         if (!query().graph().getAdjacentDescendants(node.nodeName()).contains(assignment.nodeName())) {
             graph().createAssignmentInternal(node.nodeName(), assignment.nodeName());
-        }
-    }
-
-    @Override
-    public void verifyAdminPolicyConstant(AdminPolicyNode constant) throws PMException {
-        try {
-            pml().createConstant(constant.constantName(), new StringValue(constant.nodeName()));
-        } catch (PMLConstantAlreadyDefinedException e) {
-            // ignore this exception as the admin policy constant already existing is not an error
         }
     }
 

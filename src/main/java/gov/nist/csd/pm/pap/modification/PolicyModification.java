@@ -23,10 +23,4 @@ public interface PolicyModification {
      */
     ObligationsModification obligations();
 
-    /**
-     * Get the user defined pml component of the policy.
-     * @return The PML implementation.
-     */
-    PMLModification pml();
-
 }

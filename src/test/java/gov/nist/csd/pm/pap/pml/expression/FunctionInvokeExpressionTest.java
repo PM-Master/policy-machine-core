@@ -50,7 +50,7 @@ class FunctionInvokeExpressionTest {
                 voidFunc("a", "b")
                 """, PMLParser.FunctionInvokeExpressionContext.class);
         VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPAP())
-                                                                      .withPersistedFunctions(Map.of(voidFunc.getSignature().getFunctionName(), voidFunc.getSignature())));
+                                                                      .withProvidedFunctions(Map.of(voidFunc.getSignature().getFunctionName(), voidFunc.getSignature())));
 
         Expression e = FunctionInvokeExpression.compileFunctionInvokeExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().getErrors().toString());
@@ -67,7 +67,7 @@ class FunctionInvokeExpressionTest {
         );
 
         ExecutionContext executionContext = new ExecutionContext(new UserContext(""), GlobalScope.forExecute(new MemoryPAP())
-                                                                                                 .withPersistedFunctions(Map.of(voidFunc.getSignature().getFunctionName(), voidFunc)));
+                                                                                                 .withProvidedFunctions(Map.of(voidFunc.getSignature().getFunctionName(), voidFunc)));
         Value value = e.execute(executionContext, new MemoryPAP());
         assertEquals(
                 new VoidValue(),
@@ -95,7 +95,7 @@ class FunctionInvokeExpressionTest {
     @Test
     void testWrongNumberOfArgs() throws PMException {
         VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP())
-                                                                      .withPersistedFunctions(Map.of(voidFunc.getSignature().getFunctionName(), voidFunc.getSignature())));
+                                                                      .withProvidedFunctions(Map.of(voidFunc.getSignature().getFunctionName(), voidFunc.getSignature())));
 
         testCompilationError(
                 """
@@ -108,7 +108,7 @@ class FunctionInvokeExpressionTest {
     @Test
     void testWrongArgType() throws PMException {
         VisitorContext visitorCtx = new VisitorContext(GlobalScope.forCompile(new MemoryPAP())
-                                                                      .withPersistedFunctions(Map.of(voidFunc.getSignature().getFunctionName(), voidFunc.getSignature())));
+                                                                      .withProvidedFunctions(Map.of(voidFunc.getSignature().getFunctionName(), voidFunc.getSignature())));
 
         testCompilationError(
                 """
@@ -137,7 +137,7 @@ class FunctionInvokeExpressionTest {
                 stringFunc("a", "b")
                 """, PMLParser.FunctionInvokeExpressionContext.class);
         VisitorContext visitorContext = new VisitorContext(GlobalScope.forCompile(new MemoryPAP())
-                                                                      .withPersistedFunctions(Map.of(stringFunc.getSignature().getFunctionName(), stringFunc.getSignature())));
+                                                                      .withProvidedFunctions(Map.of(stringFunc.getSignature().getFunctionName(), stringFunc.getSignature())));
 
         Expression e = FunctionInvokeExpression.compileFunctionInvokeExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().getErrors().toString());
@@ -165,7 +165,7 @@ class FunctionInvokeExpressionTest {
                 """, PMLParser.FunctionInvokeExpressionContext.class);
         VisitorContext visitorContext = new VisitorContext(
                 GlobalScope.forCompile(new MemoryPAP())
-                           .withPersistedFunctions(Map.of(stringFunc.getSignature().getFunctionName(), stringFunc.getSignature()))
+                           .withProvidedFunctions(Map.of(stringFunc.getSignature().getFunctionName(), stringFunc.getSignature()))
         );
         Expression e = FunctionInvokeExpression.compileFunctionInvokeExpression(visitorContext, ctx);
         assertEquals(0, visitorContext.errorLog().getErrors().size(), visitorContext.errorLog().getErrors().toString());
@@ -175,7 +175,7 @@ class FunctionInvokeExpressionTest {
                 new ExecutionContext(
                         new UserContext(""),
                         GlobalScope.forExecute(new MemoryPAP())
-                                   .withPersistedFunctions(Map.of(stringFunc.getSignature().getFunctionName(), stringFunc))
+                                   .withProvidedFunctions(Map.of(stringFunc.getSignature().getFunctionName(), stringFunc))
                 );
         Value value = e.execute(executionContext, pap);
         assertEquals(

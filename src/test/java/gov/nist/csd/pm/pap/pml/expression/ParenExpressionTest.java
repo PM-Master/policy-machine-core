@@ -32,9 +32,9 @@ class ParenExpressionTest {
     @BeforeAll
     static void setup() throws PMException {
         compileGlobalScope = GlobalScope.forCompile(new MemoryPAP())
-                                        .withPersistedFunctions(Map.of("equals", new Equals().getSignature()));
+                                        .withProvidedFunctions(Map.of("equals", new Equals().getSignature()));
         executeGlobalScope = GlobalScope.forExecute(new MemoryPAP())
-                                        .withPersistedFunctions(Map.of("equals", new Equals()));
+                                        .withProvidedFunctions(Map.of("equals", new Equals()));
     }
 
     @Test

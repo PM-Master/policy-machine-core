@@ -32,11 +32,6 @@ public class MemoryPolicyModifier extends PolicyModifier implements Verifier {
     }
 
     @Override
-    public PMLModifier pml() {
-        return policy.pml();
-    }
-
-    @Override
     public MemoryPolicyQuerier query() {
         return querier;
     }
