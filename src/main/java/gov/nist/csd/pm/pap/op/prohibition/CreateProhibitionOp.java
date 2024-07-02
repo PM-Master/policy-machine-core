@@ -18,24 +18,12 @@ public class CreateProhibitionOp extends ProhibitionOp {
               CREATE_PROCESS_PROHIBITION, CREATE_PROHIBITION);
     }
 
+    public CreateProhibitionOp() {
+        super("create_prohibition", CREATE_PROCESS_PROHIBITION, CREATE_PROHIBITION);
+    }
+
     @Override
     public void execute(PAP pap) throws PMException {
         pap.modify().prohibitions().create(name, subject, accessRightSet, intersection, containers);
-    }
-
-    @Override
-    public String getOpName() {
-        return "create_prohibition";
-    }
-
-    @Override
-    public String toString() {
-        return "CreateProhibitionOp{" +
-                "name='" + name + '\'' +
-                ", subject=" + subject +
-                ", accessRightSet=" + accessRightSet +
-                ", intersection=" + intersection +
-                ", containers=" + containers +
-                '}';
     }
 }

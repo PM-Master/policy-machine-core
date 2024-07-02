@@ -3,32 +3,37 @@ package gov.nist.csd.pm.pap.op.graph;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
-import gov.nist.csd.pm.pap.op.operand.Operand;
-import gov.nist.csd.pm.pap.op.operand.PolicyElementListOperand;
-import gov.nist.csd.pm.pap.op.operand.PolicyElementOperand;
-import gov.nist.csd.pm.pap.query.UserContext;
+import gov.nist.csd.pm.pap.op.RequiredCapability;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import static gov.nist.csd.pm.common.graph.node.NodeType.PC;
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 
-public class DeleteNodeOp extends GraphOp {
-    private final String name;
-    private final NodeType type;
-    private final Collection<String> descendants;
+public abstract class DeleteNodeOp extends GraphOp {
+    private String name;
+    private NodeType type;
+    private Collection<String> descendants;
 
-    public DeleteNodeOp(String name, NodeType type, Collection<String> descendants) {
-        super("delete_node",
-              new Operand("name", name),
-              new Operand("type", type),
-              new PolicyElementListOperand("descendants", descendants, getReqCapForType(type)));
-        this.name = name;
-        this.type = type;
-        this.descendants = descendants;
+    public DeleteNodeOp(String opName, String reqCap) {
+        super(opName,
+              List.of(
+                      new RequiredCapability("node", List.of(reqCap)),
+                      new RequiredCapability("type"),
+                      new RequiredCapability("descendants", List.of(reqCap))
+              )
+        );
+    }
+
+    public DeleteNodeOp(String opName, String name, NodeType type, Collection<String> descendants, String reqCap) {
+        super(opName,
+              List.of(
+                      new RequiredCapability("node", List.of(reqCap)),
+                      new RequiredCapability("type"),
+                      new RequiredCapability("descendants", List.of(reqCap))
+              ));
+        setOperands(name, type, descendants);
     }
 
     public String getName() {
@@ -44,17 +49,17 @@ public class DeleteNodeOp extends GraphOp {
     }
 
     @Override
-    public void execute(PAP pap) throws PMException {
-        pap.modify().graph().deleteNode(name);
+    public void setOperands(List<Object> operands) {
+        super.setOperands(operands);
+
+        this.name = (String) operands.get(0);
+        this.type = (NodeType) operands.get(1);
+        this.descendants = (Collection<String>) operands.get(2);
     }
 
     @Override
-    public void canExecute(PAP pap, UserContext userCtx) throws PMException {
-        if (type == PC) {
-            checkPrivilegesOnAdminNode(pap, userCtx, AdminPolicyNode.POLICY_CLASS_TARGETS, DELETE_POLICY_CLASS);
-        } else {
-            checkPrivilegesOnOperand(pap, userCtx, (PolicyElementOperand) operands.get(3));
-        }
+    public void execute(PAP pap) throws PMException {
+        pap.modify().graph().deleteNode(name);
     }
 
     @Override
@@ -80,15 +85,5 @@ public class DeleteNodeOp extends GraphOp {
                 "name='" + name + '\'' +
                 ", descendants=" + descendants +
                 '}';
-    }
-
-    private static String getReqCapForType(NodeType type) {
-        return switch (type) {
-            case OA -> DELETE_OBJECT_ATTRIBUTE;
-            case UA -> DELETE_USER_ATTRIBUTE;
-            case O -> DELETE_OBJECT;
-            case U -> DELETE_USER;
-            default -> DELETE_POLICY_CLASS;
-        };
     }
 }

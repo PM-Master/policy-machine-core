@@ -45,8 +45,8 @@ public class AdminAccessRights {
     public static final String DELETE_OBLIGATION = "delete_obligation";
     public static final String GET_OBLIGATION = "get_obligation";
     public static final String DELETE_RULE = "delete_rule";
-    public static final String SET_RESOURCE_ACCESS_RIGHTS = "set_resource_access_rights";
-    public static final String GET_RESOURCE_ACCESS_RIGHTS = "get_resource_access_rights";
+    public static final String SET_RESOURCE_OPERATIONS = "set_resource_operations";
+    public static final String GET_RESOURCE_OPERATIONS = "get_resource_operations";
 
     // pml
     public static final String CREATE_FUNCTION = "create_function";
@@ -106,8 +106,8 @@ public class AdminAccessRights {
             DELETE_OBLIGATION,
             GET_OBLIGATION,
             DELETE_RULE,
-            SET_RESOURCE_ACCESS_RIGHTS,
-            GET_RESOURCE_ACCESS_RIGHTS,
+            SET_RESOURCE_OPERATIONS,
+            GET_RESOURCE_OPERATIONS,
 
             // pml
             CREATE_FUNCTION,

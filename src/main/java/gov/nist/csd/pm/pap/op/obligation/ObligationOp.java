@@ -7,7 +7,7 @@ import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.op.Operation;
-import gov.nist.csd.pm.pap.op.operand.Operand;
+import gov.nist.csd.pm.pap.op.RequiredCapability;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.query.UserContext;
 
@@ -20,20 +20,40 @@ import static gov.nist.csd.pm.pap.op.AdminAccessRights.CREATE_OBLIGATION;
 
 public abstract class ObligationOp extends Operation {
 
-    protected final UserContext author;
-    protected final String name;
-    protected final Collection<Rule> rules;
-    protected final transient String reqCap;
+    protected UserContext author;
+    protected String name;
+    protected Collection<Rule> rules;
+    protected String reqCap;
+
+    public ObligationOp(String opName, String reqCap) {
+        super(opName, List.of(
+                new RequiredCapability("author"),
+                new RequiredCapability("name"),
+                new RequiredCapability("rules")
+        ));
+
+        this.reqCap = reqCap;
+    }
 
     public ObligationOp(String opName, UserContext author, String name, Collection<Rule> rules, String reqCap) {
-        super(opName,
-              new Operand("author", author),
-              new Operand("name", name),
-              new Operand("rules", rules));
-        this.author = author;
-        this.name = name;
-        this.rules = rules;
+        super(opName, List.of(
+                new RequiredCapability("author"),
+                new RequiredCapability("name"),
+                new RequiredCapability("rules")
+        ));
+
         this.reqCap = reqCap;
+
+        setOperands(author, name, rules);
+    }
+
+    @Override
+    public void setOperands(List<Object> operands) {
+        super.setOperands(operands);
+
+        this.author = (UserContext) operands.get(0);
+        this.name = (String) operands.get(1);
+        this.rules = (Collection<Rule>) operands.get(2);
     }
 
     public UserContext getAuthor() {
@@ -49,7 +69,7 @@ public abstract class ObligationOp extends Operation {
     }
 
     @Override
-    public void canExecute(PAP pap, UserContext userCtx) throws PMException {
+    public Operation canExecute(PAP pap, UserContext userCtx) throws PMException {
         for (Rule rule : rules) {
             EventPattern eventPattern = rule.getEventPattern();
 
@@ -62,35 +82,7 @@ public abstract class ObligationOp extends Operation {
                 checkPatternPrivileges(pap, userCtx, operandPattern, AdminPolicyNode.OBLIGATIONS_TARGET, reqCap);
             }
         }
-    }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ObligationOp that = (ObligationOp) o;
-        return Objects.equals(author, that.author) && Objects.equals(
-                name,
-                that.name
-        ) && Objects.equals(rules, that.rules) && Objects.equals(reqCap, that.reqCap);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(author, name, rules, reqCap);
-    }
-
-    @Override
-    public String toString() {
-        return "ObligationOp{" +
-                "author=" + author +
-                ", name='" + name + '\'' +
-                ", rules=" + rules +
-                ", reqCap='" + reqCap + '\'' +
-                '}';
+        return this;
     }
 }

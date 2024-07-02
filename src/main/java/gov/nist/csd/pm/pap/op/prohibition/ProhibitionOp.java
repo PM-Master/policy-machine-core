@@ -7,24 +7,35 @@ import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.op.Operation;
-import gov.nist.csd.pm.pap.op.operand.Operand;
+import gov.nist.csd.pm.pap.op.RequiredCapability;
 import gov.nist.csd.pm.pap.query.UserContext;
 
 import java.util.*;
 
-import static gov.nist.csd.pm.pap.op.AdminAccessRights.CREATE_PROCESS_PROHIBITION;
-import static gov.nist.csd.pm.pap.op.AdminAccessRights.CREATE_PROHIBITION;
 import static gov.nist.csd.pm.pap.op.PrivilegeChecker.check;
 
 public abstract class ProhibitionOp extends Operation {
 
-    protected final String name;
-    protected final ProhibitionSubject subject;
-    protected final AccessRightSet accessRightSet;
-    protected final boolean intersection;
-    protected final Collection<ContainerCondition> containers;
-    protected final transient String processReqCap;
-    protected final transient String reqCap;
+    protected String name;
+    protected ProhibitionSubject subject;
+    protected AccessRightSet accessRightSet;
+    protected boolean intersection;
+    protected Collection<ContainerCondition> containers;
+    protected String processReqCap;
+    protected String reqCap;
+
+    public ProhibitionOp(String opName, String processReqCap, String reqCap) {
+        super(opName, List.of(
+                new RequiredCapability("name"),
+                new RequiredCapability("subject"),
+                new RequiredCapability("accessRightSet"),
+                new RequiredCapability("intersection"),
+                new RequiredCapability("containers")
+        ));
+
+        this.processReqCap = processReqCap;
+        this.reqCap = reqCap;
+    }
 
     public ProhibitionOp(String opName,
                          String name,
@@ -34,19 +45,29 @@ public abstract class ProhibitionOp extends Operation {
                          Collection<ContainerCondition> containers,
                          String processReqCap,
                          String reqCap) {
-        super(opName,
-              new Operand("name", name),
-              new Operand("subject", subject),
-              new Operand("accessRightSet", accessRightSet),
-              new Operand("intersection", intersection),
-              new Operand("containers", containers));
-        this.name = name;
-        this.subject = subject;
-        this.accessRightSet = accessRightSet;
-        this.intersection = intersection;
-        this.containers = containers;
+        super(opName, List.of(
+                new RequiredCapability("name"),
+                new RequiredCapability("subject"),
+                new RequiredCapability("accessRightSet"),
+                new RequiredCapability("intersection"),
+                new RequiredCapability("containers")
+        ));
+
         this.processReqCap = processReqCap;
         this.reqCap = reqCap;
+
+        setOperands(name, subject, accessRightSet, intersection, containers, processReqCap, reqCap);
+    }
+
+    @Override
+    public void setOperands(List<Object> operands) {
+        super.setOperands(operands);
+
+        this.name = (String) operands.get(0);
+        this.subject = (ProhibitionSubject) operands.get(1);
+        this.accessRightSet = (AccessRightSet) operands.get(2);
+        this.intersection = (boolean) operands.get(3);
+        this.containers = (Collection<ContainerCondition>) operands.get(4);
     }
 
     public String getName() {
@@ -70,7 +91,7 @@ public abstract class ProhibitionOp extends Operation {
     }
 
     @Override
-    public void canExecute(PAP pap, UserContext userCtx) throws PMException {
+    public Operation canExecute(PAP pap, UserContext userCtx) throws PMException {
         if (subject.getType() == ProhibitionSubject.Type.PROCESS) {
             check(pap, userCtx, AdminPolicyNode.PROHIBITIONS_TARGET.nodeName(), processReqCap);
         } else {
@@ -88,40 +109,7 @@ public abstract class ProhibitionOp extends Operation {
                 check(pap, userCtx, AdminPolicyNode.PROHIBITIONS_TARGET.nodeName(), reqCap);
             }
         }
-    }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ProhibitionOp that = (ProhibitionOp) o;
-        return intersection == that.intersection && Objects.equals(name, that.name) && Objects.equals(
-                subject,
-                that.subject
-        ) && Objects.equals(accessRightSet, that.accessRightSet) && Objects.equals(
-                containers,
-                that.containers
-        ) && Objects.equals(reqCap, that.reqCap);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, subject, accessRightSet, intersection, containers, reqCap);
-    }
-
-    @Override
-    public String toString() {
-        return "ProhibitionOp{" +
-                "name='" + name + '\'' +
-                ", subject=" + subject +
-                ", accessRightSet=" + accessRightSet +
-                ", intersection=" + intersection +
-                ", containers=" + containers +
-                ", reqCap='" + reqCap + '\'' +
-                '}';
+        return this;
     }
 }

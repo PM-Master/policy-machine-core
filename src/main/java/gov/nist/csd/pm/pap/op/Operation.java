@@ -1,100 +1,103 @@
 package gov.nist.csd.pm.pap.op;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.graph.node.Node;
-import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.common.obligation.EventPattern;
+import gov.nist.csd.pm.common.obligation.EventContext;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.admin.AdminPolicy;
 import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
-import gov.nist.csd.pm.pap.op.operand.Operand;
-import gov.nist.csd.pm.pap.op.operand.PolicyElementListOperand;
-import gov.nist.csd.pm.pap.op.operand.PolicyElementOperand;
+import gov.nist.csd.pm.pap.exception.InvalidOperationException;
 import gov.nist.csd.pm.pap.op.pattern.Pattern;
 import gov.nist.csd.pm.pap.op.pattern.ReferencedNodes;
 import gov.nist.csd.pm.pap.query.UserContext;
-import gov.nist.csd.pm.pdp.exception.UnauthorizedException;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-
-import static gov.nist.csd.pm.common.graph.node.NodeType.PC;
+import java.util.*;
 
 public abstract class Operation implements Serializable {
 
-    protected transient String opName;
-    protected transient List<Operand> operands;
+    protected String opName;
+    protected List<RequiredCapability> capMap;
+    protected List<Object> operands;
 
-    public Operation(String opName, Operand ... operands) {
+    public Operation(String opName, List<RequiredCapability> capMap) {
         this.opName = opName;
-        this.operands = List.of(operands);
+        this.capMap = capMap;
     }
+
     public abstract void execute(PAP pap) throws PMException;
-    public abstract void canExecute(PAP pap, UserContext userCtx) throws PMException;
+
+    public Operation canExecute(PAP pap, UserContext userCtx) throws PMException {
+        if (operands.size() != capMap.size()) {
+            throw new InvalidOperationException(opName, capMap, operands);
+        }
+
+        for (int i = 0; i < capMap.size(); i++) {
+            RequiredCapability reqCap = capMap.get(i);
+
+            // skip operands that do not have a required capability
+            if (reqCap.caps().isEmpty()) {
+                continue;
+            }
+
+            Object operand = operands.get(i);
+
+            // policy element operands can be strings or collections of strings
+            if (operand instanceof String strOp) {
+                PrivilegeChecker.check(pap, userCtx, strOp, reqCap.capsArray());
+            } else {
+                if (operand instanceof Collection<?> colOp) {
+                    for (Object o : colOp) {
+                        if (o instanceof String strColOp) {
+                            PrivilegeChecker.check(pap, userCtx, strColOp, reqCap.capsArray());
+                        }
+                    }
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public EventContext execute(PAP pap, UserContext userCtx) throws PMException {
+        canExecute(pap, userCtx);
+
+        execute(pap);
+
+        return toEventContext(userCtx, operands);
+    }
 
     public String getOpName() {
         return opName;
     }
 
-    public List<Operand> getOperands() {
+    public void setOpName(String opName) {
+        this.opName = opName;
+    }
+
+    public List<RequiredCapability> getCapMap() {
+        return capMap;
+    }
+
+    public void setCapMap(List<RequiredCapability> capMap) {
+        this.capMap = capMap;
+    }
+
+    public List<Object> getOperands() {
         return operands;
     }
 
-    public boolean matches(EventPattern pattern, PAP pap) throws PMException {
-        boolean opPatternMatches = operationMatches(pattern.getOperationPattern(), pap);
-        boolean operandPatternsMatch = operandsMatch(pattern.getOperandPatterns(), pap);
-
-        return opPatternMatches && operandPatternsMatch;
+    public void setOperands(List<Object> operands) {
+        this.operands = operands;
     }
 
-    private boolean operationMatches(Pattern operationPattern, PAP pap) throws PMException {
-        return operationPattern.matches(getOpName(), pap);
-    }
 
-    private boolean operandsMatch(List<Pattern> operandPatterns, PAP pap) throws PMException {
-        // if there are more values provided than patterns, they cannot match
-        // if there are more patterns than values than there still might be a match
-        List<Operand> operands = getOperands();
-
-        if (operands.size() > operandPatterns.size()) {
-            return false;
-        }
-
-        for (int i = 0; i < operands.size(); i++) {
-            Object operandValue = operands.get(i);
-            Pattern operandPattern = operandPatterns.get(i);
-
-            if (!operandPattern.matches(operandValue, pap)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    protected void checkPrivilegesOnListOperand(PAP pap, UserContext userCtx, PolicyElementListOperand operand) throws PMException {
-        Collection<String> value = operand.getValue();
-
-        for (String v : value) {
-            PrivilegeChecker.check(pap, userCtx, v, operand.getReqCap());
-        }
-    }
-
-    protected void checkPrivilegesOnOperand(PAP pap, UserContext userCtx, PolicyElementOperand operand) throws PMException {
-        PrivilegeChecker.check(pap, userCtx, operand.getName(), operand.getValue());
-    }
-
-    protected void checkPrivilegesOnAdminNode(PAP pap, UserContext userCtx, AdminPolicyNode node, String ar) throws PMException {
-        String target = node.nodeName();
-
-        PrivilegeChecker.check(pap, userCtx, target, ar);
+    public void setOperands(Object ... operands) {
+        setOperands(List.of(operands));
     }
 
     protected void checkPatternPrivileges(PAP pap, UserContext userCtx, Pattern pattern, AdminPolicyNode target, String toCheck) throws PMException {
         ReferencedNodes referencedNodes = pattern.getReferencedNodes();
         if (referencedNodes.isAny()) {
-            checkPrivilegesOnAdminNode(pap, userCtx, target, toCheck);
+            PrivilegeChecker.check(pap, userCtx, target.nodeName(), toCheck);
 
             return;
         }
@@ -102,6 +105,32 @@ public abstract class Operation implements Serializable {
         for (String entity : referencedNodes.nodes()) {
             PrivilegeChecker.check(pap, userCtx, entity, toCheck);
         }
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Operation operation = (Operation) o;
+        return Objects.equals(opName, operation.opName) && Objects.equals(capMap, operation.capMap);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(opName, capMap);
+    }
+
+    private EventContext toEventContext(UserContext userCtx, Object ... operands) {
+        HashMap<String, Object> operandsMap = new HashMap<>();
+
+        for (int i = 0; i < operands.length; i++) {
+            operandsMap.put(capMap.get(i).operand(), operands[i]);
+        }
+
+        return new EventContext(userCtx, opName, operandsMap);
     }
 }
