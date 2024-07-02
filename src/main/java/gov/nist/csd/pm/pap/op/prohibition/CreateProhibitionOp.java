@@ -25,5 +25,7 @@ public class CreateProhibitionOp extends ProhibitionOp {
     @Override
     public Void execute(PAP pap) throws PMException {
         pap.modify().prohibitions().create(name, subject, accessRightSet, intersection, containers);
+
+        return null;
     }
 }

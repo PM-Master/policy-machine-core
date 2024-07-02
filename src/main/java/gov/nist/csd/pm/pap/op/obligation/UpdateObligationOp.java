@@ -22,5 +22,7 @@ public class UpdateObligationOp extends ObligationOp {
     @Override
     public Void execute(PAP pap) throws PMException {
         pap.modify().obligations().update(author, name, rules);
+
+        return null;
     }
 }
