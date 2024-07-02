@@ -58,8 +58,10 @@ public abstract class DeleteNodeOp extends GraphOp {
     }
 
     @Override
-    public void execute(PAP pap) throws PMException {
+    public Void execute(PAP pap) throws PMException {
         pap.modify().graph().deleteNode(name);
+
+        return null;
     }
 
     @Override

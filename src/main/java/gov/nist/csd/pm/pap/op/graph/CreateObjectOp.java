@@ -24,7 +24,9 @@ public class CreateObjectOp extends CreateNodeOp{
     }
 
     @Override
-    public void execute(PAP pap) throws PMException {
+    public Void execute(PAP pap) throws PMException {
         pap.modify().graph().createObject(name, properties, descendants);
+
+        return null;
     }
 }

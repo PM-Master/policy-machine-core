@@ -12,7 +12,7 @@ import gov.nist.csd.pm.pap.query.UserContext;
 import java.io.Serializable;
 import java.util.*;
 
-public abstract class Operation implements Serializable {
+public abstract class Operation<T> implements Serializable {
 
     protected String opName;
     protected List<RequiredCapability> capMap;
@@ -23,9 +23,15 @@ public abstract class Operation implements Serializable {
         this.capMap = capMap;
     }
 
-    public abstract void execute(PAP pap) throws PMException;
+    public Operation(String opName, List<RequiredCapability> capMap, List<Object> operands) {
+        this.opName = opName;
+        this.capMap = capMap;
+        this.operands = operands;
+    }
 
-    public Operation canExecute(PAP pap, UserContext userCtx) throws PMException {
+    public abstract T execute(PAP pap) throws PMException;
+
+    public Operation<T> canExecute(PAP pap, UserContext userCtx) throws PMException {
         if (operands.size() != capMap.size()) {
             throw new InvalidOperationException(opName, capMap, operands);
         }

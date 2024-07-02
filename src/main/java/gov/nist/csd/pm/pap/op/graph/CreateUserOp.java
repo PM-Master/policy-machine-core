@@ -24,7 +24,9 @@ public class CreateUserOp extends CreateNodeOp{
     }
 
     @Override
-    public void execute(PAP pap) throws PMException {
+    public Void execute(PAP pap) throws PMException {
         pap.modify().graph().createUserAttribute(name, properties, descendants);
+
+        return null;
     }
 }

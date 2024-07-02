@@ -23,7 +23,9 @@ public class CreateObjectAttributeOp extends CreateNodeOp{
     }
 
     @Override
-    public void execute(PAP pap) throws PMException {
+    public Void execute(PAP pap) throws PMException {
         pap.modify().graph().createObjectAttribute(name, properties, descendants);
+
+        return null;
     }
 }

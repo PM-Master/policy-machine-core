@@ -23,12 +23,14 @@ public class CreatePolicyClassOp extends CreateNodeOp{
     }
 
     @Override
-    public void execute(PAP pap) throws PMException {
+    public Void execute(PAP pap) throws PMException {
          pap.modify().graph().createPolicyClass(name, properties);
+
+        return null;
     }
 
     @Override
-    public Operation canExecute(PAP pap, UserContext userCtx) throws PMException {
+    public Operation<Void> canExecute(PAP pap, UserContext userCtx) throws PMException {
         PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName(), CREATE_POLICY_CLASS);
 
         return this;

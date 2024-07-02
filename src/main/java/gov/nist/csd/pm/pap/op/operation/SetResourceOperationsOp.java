@@ -39,8 +39,10 @@ public class SetResourceOperationsOp extends GraphOp {
     }
 
     @Override
-    public void execute(PAP pap) throws PMException {
+    public Void execute(PAP pap) throws PMException {
         pap.modify().graph().setResourceAccessRights(operations);
+
+        return null;
     }
 
     @Override

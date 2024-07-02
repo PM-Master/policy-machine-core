@@ -18,7 +18,7 @@ import java.util.Objects;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.CREATE_OBLIGATION;
 
-public abstract class ObligationOp extends Operation {
+public abstract class ObligationOp extends Operation<Void> {
 
     protected UserContext author;
     protected String name;

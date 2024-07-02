@@ -41,8 +41,10 @@ public class DissociateOp extends GraphOp {
     }
 
     @Override
-    public void execute(PAP pap) throws PMException {
+    public Void execute(PAP pap) throws PMException {
         pap.modify().graph().dissociate(ua, target);
+
+        return null;
     }
 
     public String getUa() {

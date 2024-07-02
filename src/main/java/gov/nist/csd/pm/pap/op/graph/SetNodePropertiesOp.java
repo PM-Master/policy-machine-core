@@ -50,7 +50,9 @@ public class SetNodePropertiesOp extends GraphOp {
     }
 
     @Override
-    public void execute(PAP pap) throws PMException {
+    public Void execute(PAP pap) throws PMException {
         pap.modify().graph().setNodeProperties(name, properties);
+
+        return null;
     }
 }

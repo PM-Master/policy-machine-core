@@ -51,8 +51,10 @@ public class DeassignOp extends GraphOp {
     }
 
     @Override
-    public void execute(PAP pap) throws PMException {
+    public Void execute(PAP pap) throws PMException {
         pap.modify().graph().deassign(ascendant, descendant);
+
+        return null;
     }
 
     @Override

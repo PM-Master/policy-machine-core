@@ -14,7 +14,7 @@ import java.util.*;
 
 import static gov.nist.csd.pm.pap.op.PrivilegeChecker.check;
 
-public abstract class ProhibitionOp extends Operation {
+public abstract class ProhibitionOp extends Operation<Void> {
 
     protected String name;
     protected ProhibitionSubject subject;

@@ -45,8 +45,10 @@ public class AssociateOp extends GraphOp {
     }
 
     @Override
-    public void execute(PAP pap) throws PMException {
+    public Void execute(PAP pap) throws PMException {
         pap.modify().graph().associate(ua, target, accessRightSet);
+
+        return null;
     }
 
     public String getUa() {

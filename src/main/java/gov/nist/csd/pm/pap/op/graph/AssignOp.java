@@ -34,8 +34,10 @@ public class AssignOp extends GraphOp {
     }
 
     @Override
-    public void execute(PAP pap) throws PMException {
+    public Void execute(PAP pap) throws PMException {
         pap.modify().graph().assign((String) operands.get(0), (String) operands.get(1));
+
+        return null;
     }
 
     @Override
