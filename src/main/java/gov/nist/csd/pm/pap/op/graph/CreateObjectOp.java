@@ -8,13 +8,19 @@ import java.util.Collection;
 import java.util.Map;
 
 import static gov.nist.csd.pm.common.graph.node.NodeType.O;
+import static gov.nist.csd.pm.pap.op.AdminAccessRights.CREATE_OBJECT;
+import static gov.nist.csd.pm.pap.op.AdminAccessRights.CREATE_OBJECT_ATTRIBUTE;
 
 public class CreateObjectOp extends CreateNodeOp{
     public CreateObjectOp(String name,
                                    Map<String, String> properties,
                                    Collection<String> descendants) {
-        super("create_object", name, O, properties, descendants, AdminAccessRights.CREATE_OBJECT_ATTRIBUTE);
+        super("create_object", name, O, properties, descendants, CREATE_OBJECT);
 
+    }
+
+    public CreateObjectOp() {
+        super("create_object", CREATE_OBJECT);
     }
 
     @Override
