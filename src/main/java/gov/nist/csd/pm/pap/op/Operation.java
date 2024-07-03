@@ -121,7 +121,7 @@ public abstract class Operation<T> implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Operation operation = (Operation) o;
+        Operation<?> operation = (Operation<?>) o;
         return Objects.equals(opName, operation.opName) && Objects.equals(capMap, operation.capMap);
     }
 
@@ -137,6 +137,6 @@ public abstract class Operation<T> implements Serializable {
             operandsMap.put(capMap.get(i).operand(), operands[i]);
         }
 
-        return new EventContext(userCtx, opName, operandsMap);
+        return new EventContext(userCtx.getUser(), userCtx.getProcess(), opName, operandsMap);
     }
 }
