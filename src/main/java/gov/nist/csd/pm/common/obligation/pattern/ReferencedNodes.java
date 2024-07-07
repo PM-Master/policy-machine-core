@@ -1,4 +1,4 @@
-package gov.nist.csd.pm.pap.op.pattern;
+package gov.nist.csd.pm.common.obligation.pattern;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -12,5 +12,9 @@ public record ReferencedNodes(Set<String> nodes, boolean isAny) {
 
     public void addNodes(Collection<String> entity) {
         nodes.addAll(entity);
+    }
+
+    public void addNode(String entity) {
+        nodes.add(entity);
     }
 }

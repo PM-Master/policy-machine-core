@@ -5,6 +5,7 @@ import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.op.OperationExecutor;
 
 import java.util.*;
 
@@ -12,20 +13,19 @@ import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 
 public class CreateProhibitionOp extends ProhibitionOp {
 
-    public CreateProhibitionOp(String name, ProhibitionSubject subject, AccessRightSet accessRightSet,
-                               boolean intersection, Collection<ContainerCondition> containers) {
-        super("create_prohibition", name, subject, accessRightSet, intersection, containers,
-              CREATE_PROCESS_PROHIBITION, CREATE_PROHIBITION);
-    }
-
     public CreateProhibitionOp() {
-        super("create_prohibition", CREATE_PROCESS_PROHIBITION, CREATE_PROHIBITION);
-    }
+        super("create_prohibition", CREATE_PROCESS_PROHIBITION, CREATE_PROHIBITION,
+              (pap, operands) -> {
+                  pap.modify().prohibitions().create(
+                          (String) operands.get(0),
+                          (ProhibitionSubject) operands.get(1),
+                          (AccessRightSet) operands.get(2),
+                          (Boolean) operands.get(3),
+                          (Collection<ContainerCondition>) operands.get(4)
+                  );
 
-    @Override
-    public Void execute(PAP pap) throws PMException {
-        pap.modify().prohibitions().create(name, subject, accessRightSet, intersection, containers);
-
-        return null;
+                  return null;
+              }
+        );
     }
 }

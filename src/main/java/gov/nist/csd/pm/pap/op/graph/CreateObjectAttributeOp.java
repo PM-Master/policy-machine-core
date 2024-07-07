@@ -3,29 +3,35 @@ package gov.nist.csd.pm.pap.op.graph;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.AdminAccessRights;
+import gov.nist.csd.pm.pap.op.RequiredCapability;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import static gov.nist.csd.pm.common.graph.node.NodeType.OA;
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.CREATE_OBJECT_ATTRIBUTE;
 
 public class CreateObjectAttributeOp extends CreateNodeOp{
-    public CreateObjectAttributeOp(String name,
-                                   Map<String, String> properties,
-                                   Collection<String> descendants) {
-        super("create_object_attribute", name, OA, properties, descendants, CREATE_OBJECT_ATTRIBUTE);
-
-    }
-
     public CreateObjectAttributeOp() {
-        super("create_object_attribute", CREATE_OBJECT_ATTRIBUTE);
-    }
+        super(
+                "create_object_attribute",
+                List.of(
+                        new RequiredCapability("name"),
+                        new RequiredCapability("type"),
+                        new RequiredCapability("properties"),
+                        new RequiredCapability("descendants", List.of(CREATE_OBJECT_ATTRIBUTE))
+                ),
+                (pap, operands) -> {
+                    pap.modify().graph().createObjectAttribute(
+                            (String) operands.get(0),
+                            (Map<String, String>) operands.get(1),
+                            (Collection<String>) operands.get(2)
+                    );
 
-    @Override
-    public Void execute(PAP pap) throws PMException {
-        pap.modify().graph().createObjectAttribute(name, properties, descendants);
+                    return null;
+                }
+                );
 
-        return null;
     }
 }

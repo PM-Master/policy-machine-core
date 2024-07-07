@@ -12,54 +12,18 @@ import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
 
 public class AssociateOp extends GraphOp {
 
-    private String ua;
-    private String target;
-    private AccessRightSet accessRightSet;
-
     public AssociateOp() {
         super("associate",
               List.of(
                       new RequiredCapability("ua", List.of(ASSOCIATE)),
                       new RequiredCapability("target", List.of(ASSOCIATE_TO)),
                       new RequiredCapability("accessRightSet")
-              ));
-    }
+              ),
+              (pap, operands) -> {
+                  pap.modify().graph().associate((String) operands.get(0), (String) operands.get(1), (AccessRightSet) operands.get(2));
 
-    public AssociateOp(String ua, String target, AccessRightSet accessRightSet) {
-        super("associate",
-              List.of(
-                      new RequiredCapability("ua", List.of(ASSOCIATE)),
-                      new RequiredCapability("target", List.of(ASSOCIATE_TO)),
-                      new RequiredCapability("accessRightSet")
-              ));
-        setOperands(ua, target, accessRightSet);
-    }
-
-    @Override
-    public void setOperands(List<Object> operands) {
-        super.setOperands(operands);
-
-        ua = (String) operands.get(0);
-        target = (String) operands.get(1);
-        accessRightSet = (AccessRightSet) operands.get(2);
-    }
-
-    @Override
-    public Void execute(PAP pap) throws PMException {
-        pap.modify().graph().associate(ua, target, accessRightSet);
-
-        return null;
-    }
-
-    public String getUa() {
-        return ua;
-    }
-
-    public String getTarget() {
-        return target;
-    }
-
-    public AccessRightSet getAccessRightSet() {
-        return accessRightSet;
+                  return null;
+              }
+        );
     }
 }

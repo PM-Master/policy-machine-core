@@ -10,8 +10,4 @@ public class DeleteUserOp extends DeleteNodeOp{
     public DeleteUserOp() {
         super("delete_user", DELETE_USER);
     }
-
-    public DeleteUserOp(String name, NodeType type, Collection<String> descendants) {
-        super("delete_user", name, type, descendants, DELETE_USER);
-    }
 }

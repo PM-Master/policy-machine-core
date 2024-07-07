@@ -11,18 +11,15 @@ import static gov.nist.csd.pm.pap.op.AdminAccessRights.CREATE_OBLIGATION;
 
 public class UpdateObligationOp extends ObligationOp {
 
-    public UpdateObligationOp(UserContext author, String name, Collection<Rule> rules) {
-        super("update_obligation", author, name, rules, CREATE_OBLIGATION);
-    }
-
     public UpdateObligationOp() {
-        super("update_obligation", CREATE_OBLIGATION);
-    }
+        super("update_obligation", CREATE_OBLIGATION, (pap, operands) -> {
+            pap.modify().obligations().update(
+                    (UserContext) operands.get(0),
+                    (String) operands.get(1),
+                    (Collection<Rule>) operands.get(2)
+            );
 
-    @Override
-    public Void execute(PAP pap) throws PMException {
-        pap.modify().obligations().update(author, name, rules);
-
-        return null;
+            return null;
+        });
     }
 }

@@ -17,9 +17,4 @@ public class DeletePolicyClassOp extends DeleteNodeOp {
     public DeletePolicyClassOp() {
         super("delete_policy_class", DELETE_POLICY_CLASS);
     }
-
-    public DeletePolicyClassOp(String name, NodeType type, Collection<String> descendants) {
-        super("delete_policy_class", name, type, descendants, DELETE_POLICY_CLASS);
-    }
-
 }

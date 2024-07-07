@@ -13,21 +13,15 @@ import static gov.nist.csd.pm.pap.op.AdminAccessRights.CREATE_PROHIBITION;
 
 public class DeleteProhibitionOp extends ProhibitionOp {
 
-
-    public DeleteProhibitionOp(String name, ProhibitionSubject subject, AccessRightSet accessRightSet,
-                               boolean intersection, Collection<ContainerCondition> containers) {
-        super("delete_prohibition", name, subject, accessRightSet, intersection, containers,
-              DELETE_PROCESS_PROHIBITION, DELETE_PROHIBITION);
-    }
-
     public DeleteProhibitionOp() {
-        super("delete_prohibition", DELETE_PROCESS_PROHIBITION, DELETE_PROHIBITION);
-    }
+        super("delete_prohibition", DELETE_PROCESS_PROHIBITION, DELETE_PROHIBITION,
+              (pap, operands) -> {
+                  pap.modify().prohibitions().delete(
+                          (String) operands.get(0)
+                  );
 
-    @Override
-    public Void execute(PAP pap) throws PMException {
-        pap.modify().prohibitions().delete(name);
-
-        return null;
+                  return null;
+              }
+        );
     }
 }

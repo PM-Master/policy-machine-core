@@ -12,18 +12,11 @@ import static gov.nist.csd.pm.pap.op.AdminAccessRights.DELETE_OBLIGATION;
 
 public class DeleteObligationOp extends ObligationOp {
 
-    public DeleteObligationOp(UserContext author, String name, Collection<Rule> rules) {
-        super("delete_obligation", author, name, rules, DELETE_OBLIGATION);
-    }
-
     public DeleteObligationOp() {
-        super("delete_obligation", DELETE_OBLIGATION);
-    }
+        super("delete_obligation", DELETE_OBLIGATION, (pap, operands) -> {
+            pap.modify().obligations().delete((String) operands.get(1));
 
-    @Override
-    public Void execute(PAP pap) throws PMException {
-        pap.modify().obligations().delete(name);
-
-        return null;
+            return null;
+        });
     }
 }
