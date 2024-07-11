@@ -1,0 +1,515 @@
+package gov.nist.csd.pm.pap.pml.compiler.visitor;
+
+import gov.nist.csd.pm.impl.memory.pap.MemoryPAP;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.pml.CompiledPML;
+import gov.nist.csd.pm.pap.pml.PMLCompiler;
+import gov.nist.csd.pm.pap.pml.PMLContextVisitor;
+import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
+import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
+import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
+import gov.nist.csd.pm.pap.pml.expression.reference.ReferenceByID;
+import gov.nist.csd.pm.pap.pml.context.VisitorContext;
+import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
+import gov.nist.csd.pm.pap.pml.scope.CompileGlobalScope;
+import gov.nist.csd.pm.pap.pml.statement.AssociateStatement;
+import gov.nist.csd.pm.pap.pml.statement.CreatePolicyStatement;
+import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
+import gov.nist.csd.pm.pap.pml.type.Type;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static gov.nist.csd.pm.common.graph.node.NodeType.OA;
+import static gov.nist.csd.pm.common.graph.node.NodeType.UA;
+import static gov.nist.csd.pm.pap.pml.PMLUtil.buildArrayLiteral;
+import static gov.nist.csd.pm.pap.pml.PMLUtil.buildMapLiteral;
+import static gov.nist.csd.pm.pap.pml.compiler.visitor.CompilerTestUtil.testCompilationError;
+import static org.junit.jupiter.api.Assertions.*;
+
+class CreatePolicyStmtVisitorTest {
+
+    @Test
+    void testSuccess() throws PMException {
+        PMLParser.CreatePolicyStatementContext ctx = PMLContextVisitor.toCtx(
+                """
+                create policy class "test"
+                """,
+                PMLParser.CreatePolicyStatementContext.class);
+        VisitorContext visitorCtx = new VisitorContext(new CompileGlobalScope());
+        PMLStatement stmt = new CreatePolicyStmtVisitor(visitorCtx).visitCreatePolicyStatement(ctx);
+        assertEquals(0, visitorCtx.errorLog().getErrors().size());
+        assertEquals(
+                new CreatePolicyStatement(new StringLiteral("test")),
+                stmt
+        );
+    }
+
+
+    @Test
+    void testSuccessWithProperties() throws PMException {
+        PMLParser.CreatePolicyStatementContext ctx = PMLContextVisitor.toCtx(
+                """
+                create policy class "test" with properties {"a": "b"}
+                """,
+                PMLParser.CreatePolicyStatementContext.class);
+        VisitorContext visitorCtx = new VisitorContext(new CompileGlobalScope());
+        PMLStatement stmt = new CreatePolicyStmtVisitor(visitorCtx).visitCreatePolicyStatement(ctx);
+        assertEquals(0, visitorCtx.errorLog().getErrors().size());
+        assertEquals(
+                new CreatePolicyStatement(new StringLiteral("test"), buildMapLiteral("a", "b")),
+                stmt
+        );
+    }
+
+    @Test
+    void testInvalidNameExpression() throws PMException {
+        VisitorContext visitorCtx = new VisitorContext(new CompileGlobalScope());
+
+        testCompilationError(
+                """
+                create policy class ["test"]
+                """, visitorCtx, 1,
+                "expected expression type string, got []string"
+        );
+    }
+
+    @Test
+    void testHierarchyUserAttributesOnly() throws PMException {
+        String pml = """
+                create policy class "test" {
+                    user attributes {
+                        "a"
+                            "a1"
+                            "a2"
+                                "a21"
+                            "a3"
+                        "b"
+                            "b1"
+                    }
+                }
+                """;
+        CompiledPML compiledPML = new PMLCompiler().compilePML(pml);
+        assertEquals(1, compiledPML.stmts().size());
+        CreatePolicyStatement stmt = (CreatePolicyStatement) compiledPML.stmts().get(0);
+        assertEquals(
+                new CreatePolicyStatement(
+                        new StringLiteral("test"),
+                        null,
+                        List.of(
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a"), UA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a1"), UA, new StringLiteral("a")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a2"), UA, new StringLiteral("a")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a21"), UA, new StringLiteral("a2")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a3"), UA, new StringLiteral("a")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("b"), UA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("b1"), UA, new StringLiteral("b"))
+                        ),
+                        List.of(),
+                        List.of()
+                ),
+                stmt
+        );
+    }
+
+    @Test
+    void testHierarchyObjectAttributesOnly() throws PMException {
+        String pml = """
+                create policy class "test" {
+                    object attributes {
+                        "a"
+                            "a1"
+                            "a2"
+                                "a21"
+                            "a3"
+                        "b"
+                            "b1"
+                    }
+                }
+                """;
+        PAP pap = new MemoryPAP();
+        CompiledPML compiledPML = new PMLCompiler().compilePML(pml);
+        assertEquals(1, compiledPML.stmts().size());
+        CreatePolicyStatement stmt = (CreatePolicyStatement) compiledPML.stmts().get(0);
+        assertEquals(
+                new CreatePolicyStatement(
+                        new StringLiteral("test"),
+                        null,
+                        List.of(),
+                        List.of(
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a"), OA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a1"), OA, new StringLiteral("a")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a2"), OA, new StringLiteral("a")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a21"), OA, new StringLiteral("a2")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a3"), OA, new StringLiteral("a")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("b"), OA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("b1"), OA, new StringLiteral("b"))
+                        ),
+                        List.of()
+                ),
+                stmt
+        );
+    }
+
+    @Test
+    void testHierarchyUsingReferenceByID() throws PMException {
+        String pml = """
+                const a = "a"
+                const b = "b"
+                create policy class "test" {
+                    object attributes {
+                        a
+                            "a1"
+                            "a2"
+                                "a21"
+                            "a3"
+                        b
+                            "a21"
+                    }
+                }
+                """;
+        PAP pap = new MemoryPAP();
+        CompiledPML compiledPML = new PMLCompiler().compilePML(pml);
+        assertEquals(1, compiledPML.stmts().size());
+        assertEquals(2, compiledPML.constants().size());
+        assertEquals(0, compiledPML.functions().size());
+        CreatePolicyStatement stmt = (CreatePolicyStatement) compiledPML.stmts().get(0);
+        assertEquals(
+                new CreatePolicyStatement(
+                        new StringLiteral("test"),
+                        null,
+                        List.of(),
+                        List.of(
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new ReferenceByID("a"), OA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a1"), OA, new ReferenceByID("a")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a2"), OA, new ReferenceByID("a")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a21"), OA, new StringLiteral("a2")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a3"), OA, new ReferenceByID("a")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new ReferenceByID("b"), OA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("a21"), OA, new ReferenceByID("b"))
+                        ),
+                        List.of()
+                ),
+                stmt
+        );
+    }
+
+    @Test
+    void testAssociationsOnly() throws PMException {
+        String pml = """
+                const a = "a"
+                create policy class "test" {
+                    associations {
+                        a and "b" with ["read", "write"]
+                        a and "c" with ["read"]
+                        a and "d" with ["read"]
+                    }
+                }
+                """;
+        PAP pap = new MemoryPAP();
+        CompiledPML compiledPML = new PMLCompiler().compilePML(pml);
+        assertEquals(1, compiledPML.stmts().size());
+        assertEquals(1, compiledPML.constants().size());
+        CreatePolicyStatement stmt = (CreatePolicyStatement) compiledPML.stmts().get(0);
+        assertEquals(
+                new CreatePolicyStatement(
+                        new StringLiteral("test"),
+                        null,
+                        List.of(),
+                        List.of(),
+                        List.of(
+                                new AssociateStatement(new ReferenceByID("a"), new StringLiteral("b"), buildArrayLiteral("read", "write")),
+                                new AssociateStatement(new ReferenceByID("a"), new StringLiteral("c"), buildArrayLiteral("read")),
+                                new AssociateStatement(new ReferenceByID("a"), new StringLiteral("d"), buildArrayLiteral("read"))
+                        )
+                ),
+                stmt
+        );
+    }
+
+    @Test
+    void testUserAndObjectAttributeWithAssociationsAndPropertiesHierarchy() throws PMException {
+        String pml = """
+                create policy class "test" with properties {"a": "b"} {
+                    user attributes {
+                        "ua1"
+                            "ua1-1"
+                            "ua1-2"
+                                "ua1-2-1"
+                            "ua1-3"
+                        "ua2"
+                            "ua2-1"
+                    }
+                    object attributes {
+                        "oa1"
+                            "oa1-1"
+                            "oa1-2"
+                                "oa1-2-1"
+                            "oa1-3"
+                        "oa2"
+                            "oa2-1"
+                    }
+                    associations {
+                        "ua1" and "oa1" with ["read", "write"]
+                        "ua1" and "oa1" with [create_policy_class]
+                    }
+                }
+                """;
+        PAP pap = new MemoryPAP();
+        CompiledPML compiledPML = new PMLCompiler().compilePML(pml);
+        assertEquals(1, compiledPML.stmts().size());
+        CreatePolicyStatement stmt = (CreatePolicyStatement) compiledPML.stmts().get(0);
+        assertEquals(
+                new CreatePolicyStatement(
+                        new StringLiteral("test"),
+                        buildMapLiteral("a", "b"),
+                        new ArrayList<>(List.of(
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua1"), UA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua1-1"), UA, new StringLiteral("ua1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua1-2"), UA, new StringLiteral("ua1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua1-2-1"), UA, new StringLiteral("ua1-2")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua1-3"), UA, new StringLiteral("ua1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua2"), UA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua2-1"), UA, new StringLiteral("ua2"))
+                        )),
+                        new ArrayList<>(List.of(
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa1"), OA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa1-1"), OA, new StringLiteral("oa1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa1-2"), OA, new StringLiteral("oa1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa1-2-1"), OA, new StringLiteral("oa1-2")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa1-3"), OA, new StringLiteral("oa1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa2"), OA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa2-1"), OA, new StringLiteral("oa2"))
+                        )),
+                        new ArrayList<>(List.of(
+                                new AssociateStatement(new StringLiteral("ua1"), new StringLiteral("oa1"), buildArrayLiteral("read", "write")),
+                                new AssociateStatement(new StringLiteral("ua1"), new StringLiteral("oa1"),
+                                                       new ArrayLiteral(Type.string(), new ReferenceByID("create_policy_class")))
+                        ))
+                ),
+                stmt
+        );
+    }
+
+    @Test
+    void testAttributeInMultipleAttributesAndPolicyClasses() throws PMException {
+        String pml = """
+                create policy class "test" with properties {"a": "b"} {
+                    user attributes {
+                        "ua1"
+                            "ua3"
+                        "ua2"
+                            "ua3"
+                    }
+                    
+                    object attributes {
+                        "oa1"
+                    }
+                    
+                    
+                    
+                    associations {
+                        "ua1" and "oa1" with ["read", "write"]
+                    }
+                }
+                
+                create policy class "test2" with properties {"a": "b"} {
+                    user attributes {
+                        "ua1"
+                            "ua3"
+                        "ua2"
+                            "ua3"
+                    }
+                    object attributes {
+                        "oa1"
+                    }
+                    associations {
+                        "ua1" and "oa1" with ["read", "write"]
+                    }
+                }
+                """;
+        PAP pap = new MemoryPAP();
+        CompiledPML compiledPML = new PMLCompiler().compilePML(pml);
+        assertEquals(2, compiledPML.stmts().size());
+        CreatePolicyStatement stmt = (CreatePolicyStatement) compiledPML.stmts().get(0);
+        assertEquals(
+                new CreatePolicyStatement(
+                        new StringLiteral("test"),
+                        buildMapLiteral("a", "b"),
+                        new ArrayList<>(List.of(
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua1"), UA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua3"), UA, new StringLiteral("ua1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua2"), UA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua3"), UA, new StringLiteral("ua2"))
+                        )),
+                        new ArrayList<>(List.of(
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa1"), OA, new StringLiteral("test"))
+                        )),
+                        new ArrayList<>(List.of(
+                                new AssociateStatement(new StringLiteral("ua1"), new StringLiteral("oa1"), buildArrayLiteral("read", "write"))
+                        ))
+                ),
+                stmt
+        );
+
+        stmt = (CreatePolicyStatement) compiledPML.stmts().get(1);
+        assertEquals(
+                new CreatePolicyStatement(
+                        new StringLiteral("test2"),
+                        buildMapLiteral("a", "b"),
+                        new ArrayList<>(List.of(
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua1"), UA, new StringLiteral("test2")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua3"), UA, new StringLiteral("ua1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua2"), UA, new StringLiteral("test2")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua3"), UA, new StringLiteral("ua2"))
+                        )),
+                        new ArrayList<>(List.of(
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa1"), OA, new StringLiteral("test2"))
+                        )),
+                        new ArrayList<>(List.of(
+                                new AssociateStatement(new StringLiteral("ua1"), new StringLiteral("oa1"), buildArrayLiteral("read", "write"))
+                        ))
+                ),
+                stmt
+        );
+    }
+
+    @Test
+    void testAttributePropertiesInHierarchy() throws PMException {
+        String pml = """
+                create policy class "test" with properties {"a": "b"} {
+                    user attributes {
+                        "ua1" {"k": "v"}
+                            "ua1-1" {"k1": "v1", "k2": "v2"}
+                            "ua1-2"
+                                "ua1-2-1"
+                            "ua1-3"
+                        "ua2"
+                            "ua2-1"
+                    }
+                    object attributes {
+                        "oa1"
+                            "oa1-1"
+                            "oa1-2"
+                                "oa1-2-1" {"k1": "v1", "k2": "v2"}
+                            "oa1-3"
+                        "oa2" {"k1": "v1", "k2": "v2"}
+                            "oa2-1" {"k1": "v1", "k2": "v2"}
+                    }
+                }
+                """;
+        PAP pap = new MemoryPAP();
+        CompiledPML compiledPML = new PMLCompiler().compilePML(pml);
+        assertEquals(1, compiledPML.stmts().size());
+        CreatePolicyStatement stmt = (CreatePolicyStatement) compiledPML.stmts().get(0);
+        assertEquals(
+                new CreatePolicyStatement(
+                        new StringLiteral("test"),
+                        buildMapLiteral("a", "b"),
+                        new ArrayList<>(List.of(
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua1"), UA, new StringLiteral("test"), buildMapLiteral("k", "v")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua1-1"), UA, new StringLiteral("ua1"), buildMapLiteral("k1", "v1", "k2", "v2")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua1-2"), UA, new StringLiteral("ua1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua1-2-1"), UA, new StringLiteral("ua1-2")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua1-3"), UA, new StringLiteral("ua1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua2"), UA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("ua2-1"), UA, new StringLiteral("ua2"))
+                        )),
+                        new ArrayList<>(List.of(
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa1"), OA, new StringLiteral("test")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa1-1"), OA, new StringLiteral("oa1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa1-2"), OA, new StringLiteral("oa1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa1-2-1"), OA, new StringLiteral("oa1-2"), buildMapLiteral("k1", "v1", "k2", "v2")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa1-3"), OA, new StringLiteral("oa1")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa2"), OA, new StringLiteral("test"), buildMapLiteral("k1", "v1", "k2", "v2")),
+                                new CreatePolicyStatement.CreateOrAssignAttributeStatement(new StringLiteral("oa2-1"), OA, new StringLiteral("oa2"), buildMapLiteral("k1", "v1", "k2", "v2"))
+                        )),
+                        List.of()
+                ),
+                stmt
+        );
+    }
+
+    @Test
+    void testMalformedProperty() throws PMException {
+        String pml = """
+                create policy class "test" {
+                    user attributes {
+                        "a" {"a"}
+                    }
+                }
+                """;
+        PAP pap = new MemoryPAP();
+        PMLCompilationException e = assertThrows(
+                PMLCompilationException.class, () -> new PMLCompiler().compilePML(pml));
+
+        assertEquals(1, e.getErrors().size());
+        assertEquals(
+                "CompileError{position=Position{line=3, start=16, end=0}, errorMessage='mismatched input '}' expecting {':', '||', '&&', '==', '!=', '+'}'}\n",
+                e.getMessage()
+        );
+    }
+
+
+    @Test
+    void testHierarchyWithInvalidIndentation() throws PMException {
+        String pml = """
+                create policy class "test" {
+                    user attributes {
+                    "a"
+                    "b"
+                    }
+                }
+                """;
+        PAP pap = new MemoryPAP();
+        PMLCompilationException e = assertThrows(
+                PMLCompilationException.class, () -> new PMLCompiler().compilePML(pml));
+
+        assertEquals(1, e.getErrors().size());
+        assertEquals(
+                "CompileError{position=Position{line=2, start=21, end=0}, errorMessage='invalid indentation'}\n",
+                e.getMessage()
+        );
+
+
+        String pml2 = """
+                create policy class "test" {
+                    user attributes {
+                        "a"
+                    "b"
+                        "c"
+                    }
+                }
+                """;
+        e = assertThrows(
+                PMLCompilationException.class, () -> new PMLCompiler().compilePML(pml2));
+
+        assertEquals(1, e.getErrors().size());
+        assertEquals(
+                "CompileError{position=Position{line=3, start=11, end=0}, errorMessage='invalid indentation'}\n",
+                e.getMessage()
+        );
+
+
+        String pml3 = """
+                create policy class "test" {
+                    user attributes {
+                        "a"
+                        "b"
+                         "c"
+                    }
+                }
+                """;
+        e = assertThrows(
+                PMLCompilationException.class, () -> new PMLCompiler().compilePML(pml3));
+
+        assertEquals(1, e.getErrors().size());
+        assertEquals(
+                "CompileError{position=Position{line=4, start=11, end=0}, errorMessage='invalid indentation'}\n",
+                e.getMessage()
+        );
+    }
+
+}
