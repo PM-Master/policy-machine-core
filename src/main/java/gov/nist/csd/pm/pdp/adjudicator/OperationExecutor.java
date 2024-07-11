@@ -9,12 +9,12 @@ import gov.nist.csd.pm.pap.query.UserContext;
 
 public class OperationExecutor {
 
-    public void executeOpAndEmitEvent(PAP pap, UserContext userCtx, Operation op, EventEmitter eventEmitter)
+    public void executeOpAndEmitEvent(UserContext userCtx, EventEmitter eventEmitter, Operation op, Object ... operands)
             throws PMException {
-        op.canExecute(pap, userCtx);
-        op.execute(pap);
+        op.canExecute(userCtx, operands);
+        op.execute(operands);
 
-        eventEmitter.emitEvent(new EventContext(userCtx, op));
+        eventEmitter.emitEvent(op.toEventContext(userCtx, op));
     }
 
 }

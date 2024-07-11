@@ -2,22 +2,20 @@ package gov.nist.csd.pm.pap.pml.expression;
 
 import gov.nist.csd.pm.pap.pml.PMLErrorHandler;
 import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
-import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
 import gov.nist.csd.pm.pap.pml.antlr.PMLLexer;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
 import gov.nist.csd.pm.pap.pml.expression.literal.Literal;
 import gov.nist.csd.pm.pap.pml.expression.reference.VariableReference;
-import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
 import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
 import gov.nist.csd.pm.pap.pml.scope.Scope;
+import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
 
-public abstract class Expression extends PMLStatement {
+public abstract class Expression implements PMLStatement {
 
     public static Expression fromString(VisitorContext visitorCtx, String input, Type expectedType) {
         PMLErrorHandler pmlErrorHandler = new PMLErrorHandler();
@@ -93,10 +91,7 @@ public abstract class Expression extends PMLStatement {
         return expression;
     }
 
-    public Expression() {
+    public abstract Type getType(Scope<Variable> scope) throws PMLScopeException;
 
-    }
-
-    public abstract Type getType(Scope<Variable, FunctionSignature> scope) throws PMLScopeException;
 }
 

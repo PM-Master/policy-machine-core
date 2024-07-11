@@ -2,8 +2,8 @@ package gov.nist.csd.pm.pap.pml.function.builtin;
 
 
 import gov.nist.csd.pm.common.graph.node.NodeType;
-import gov.nist.csd.pm.pap.pml.function.FormalArgument;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.function.FormalArg;
+import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.ArrayValue;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
@@ -16,10 +16,10 @@ public class Search extends FunctionDefinitionStatement {
         super(new FunctionDefinitionStatement.Builder("search")
                       .returns(Type.array(Type.string()))
                       .args(
-                              new FormalArgument("type", Type.string()),
-                              new FormalArgument("properties", Type.map(Type.string(), Type.string()))
+                              new FormalArg("type", Type.string(), reqCap),
+                              new FormalArg("properties", Type.map(Type.string(), Type.string()), reqCap)
                       )
-                      .executor((ctx, pap) -> {
+                      .executor((ctx, query) -> {
                           NodeType nodeType = NodeType.toNodeType(ctx.scope().getVariable("type").getStringValue());
 
                           Map<Value, Value> propertiesValue = ctx.scope().getVariable("properties").getMapValue();
@@ -29,7 +29,7 @@ public class Search extends FunctionDefinitionStatement {
                               properties.put(prop.getKey().getStringValue(), prop.getValue().getStringValue());
                           }
 
-                          Collection<String> search = pap.query().graph().search(nodeType, properties);
+                          Collection<String> search = query.graph().search(nodeType, properties);
 
                           List<Value> ret = new ArrayList<>(search.size());
                           for (String s : search) {

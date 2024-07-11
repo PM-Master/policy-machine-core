@@ -2,16 +2,17 @@ package gov.nist.csd.pm.pap.pml.pattern;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.op.pattern.Pattern;
+import gov.nist.csd.pm.common.obligation.pattern.Pattern;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
+import java.util.Collection;
 import java.util.List;
 
-public class DescendantOfPatternFunction extends PMLPatternFunctionStmt{
+public class DescendantOfPatternFunction extends PMLPatternFunction {
 
     public static Pattern pDescendantOf(String varName, String value) throws PMException {
         return new DescendantOfPatternFunction()
@@ -32,7 +33,11 @@ public class DescendantOfPatternFunction extends PMLPatternFunctionStmt{
                 String node = argValues.get(0).getStringValue();
                 String toMatch = Value.fromObject(value).getStringValue();
 
-                return pap.query().graph().isAscendant(toMatch, node);
+
+                Collection<String> attrs = pap.query().graph().getAttributeDescendants(node);
+                Collection<String> pcs = pap.query().graph().getPolicyClassDescendants(node);
+
+                return attrs.contains(toMatch) || pcs.contains(toMatch);
             }
 
             @Override
@@ -42,7 +47,7 @@ public class DescendantOfPatternFunction extends PMLPatternFunctionStmt{
 
                 return new PatternExpression(
                         varName,
-                        new PatternFunctionInvokeExpression(signature.getFunctionName(), signature.getReturnType(), List.of(
+                        new PatternFunctionExpression(signature.getFunctionName(), signature.getReturnType(), List.of(
                                 new StringLiteral(argValues.get(0).getStringValue())
                         ))
                 );

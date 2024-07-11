@@ -18,7 +18,8 @@ public class CreatePolicyClassOp extends CreateNodeOp{
         super(
                 "create_policy_class",
                 List.of(
-
+                        new RequiredCapability("name"),
+                        new RequiredCapability("properties")
                 ),
                 (PAP pap, UserContext userCtx, String opName, List<RequiredCapability> capMap, List<Object> operands) -> {
                     PrivilegeChecker.check(pap, userCtx, AdminPolicyNode.POLICY_CLASS_TARGETS.nodeName(), CREATE_POLICY_CLASS);

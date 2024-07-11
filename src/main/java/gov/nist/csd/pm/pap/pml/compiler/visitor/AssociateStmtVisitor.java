@@ -3,7 +3,7 @@ package gov.nist.csd.pm.pap.pml.compiler.visitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
-import gov.nist.csd.pm.pap.pml.statement.AssociateStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.AssociateStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 
 public class AssociateStmtVisitor extends PMLBaseVisitor<AssociateStatement> {

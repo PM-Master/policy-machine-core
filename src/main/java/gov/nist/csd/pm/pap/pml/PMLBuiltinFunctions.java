@@ -2,7 +2,6 @@ package gov.nist.csd.pm.pap.pml;
 
 import gov.nist.csd.pm.pap.pml.function.builtin.*;
 import gov.nist.csd.pm.pap.pml.pattern.*;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,71 +9,54 @@ import java.util.Map;
 public class PMLBuiltinFunctions {
 
     // util functions
-    private static final FunctionDefinitionStatement concat = new Concat();
-    private static final FunctionDefinitionStatement equals = new Equals();
-    private static final FunctionDefinitionStatement contains = new Contains();
-    private static final FunctionDefinitionStatement containsKey = new ContainsKey();
+    private static final Concat concat = new Concat();
+    private static final Equals equals = new Equals();
+    private static final Contains contains = new Contains();
+    private static final ContainsKey containsKey = new ContainsKey();
 
     // policy functions
-    private static final FunctionDefinitionStatement getAssociationsWithSource = new GetAssociationsWithSource();
-    private static final FunctionDefinitionStatement getAssociationsWithTarget = new GetAssociationsWithTarget();
-    private static final FunctionDefinitionStatement getAdjacentAscendants = new GetAdjacentAscendants();
-    private static final FunctionDefinitionStatement getAdjacentDescendants = new GetAdjacentDescendants();
-    private static final FunctionDefinitionStatement getNodeProperties = new GetNodeProperties();
-    private static final FunctionDefinitionStatement getNodeType = new GetNodeType();
-    private static final FunctionDefinitionStatement getProhibitionsFor = new GetProhibitionsFor();
-    private static final FunctionDefinitionStatement hasPropertyKey = new HasPropertyKey();
-    private static final FunctionDefinitionStatement hasPropertyValue = new HasPropertyValue();
-    private static final FunctionDefinitionStatement nodeExists = new NodeExists();
-    private static final FunctionDefinitionStatement getNode = new GetNode();
-    private static final FunctionDefinitionStatement search = new Search();
-    private static final FunctionDefinitionStatement append = new Append();
-    private static final FunctionDefinitionStatement appendAll = new AppendAll();
-    private static final FunctionDefinitionStatement pcTargetName = new PcTargetName();
+    private static final GetAssociationsWithSource getAssociationsWithSource = new GetAssociationsWithSource();
+    private static final GetAssociationsWithTarget getAssociationsWithTarget = new GetAssociationsWithTarget();
+    private static final GetAdjacentAscendants getAdjacentAscendants = new GetAdjacentAscendants();
+    private static final GetAdjacentDescendants getAdjacentDescendants = new GetAdjacentDescendants();
+    private static final GetNodeProperties getNodeProperties = new GetNodeProperties();
+    private static final GetNodeType getNodeType = new GetNodeType();
+    private static final GetProhibitionsFor getProhibitionsFor = new GetProhibitionsFor();
+    private static final HasPropertyKey hasPropertyKey = new HasPropertyKey();
+    private static final HasPropertyValue hasPropertyValue = new HasPropertyValue();
+    private static final NodeExists nodeExists = new NodeExists();
+    private static final GetNode getNode = new GetNode();
+    private static final Search search = new Search();
+    private static final Append append = new Append();
+    private static final AppendAll appendAll = new AppendAll();
+    private static final PcTargetName pcTargetName = new PcTargetName();
 
-    private static final PMLPatternFunctionStmt pEquals = new EqualsPatternFunction();
-    private static final PMLPatternFunctionStmt pOr = new OrPatternFunction();
-    private static final PMLPatternFunctionStmt pAnd = new AndPatternFunction();
-    private static final PMLPatternFunctionStmt pAny = new AnyPatternFunction();
-    private static final PMLPatternFunctionStmt pIsAscendantOf = new AscendantOfPatternFunction();
-    private static final PMLPatternFunctionStmt pContainedIn = new ContainedInPatternFunction();
-    private static final PMLPatternFunctionStmt pContains = new ContainsPatternFunction();
-
-    private static final Map<String, FunctionDefinitionStatement> BUILTIN_FUNCTIONS = new HashMap<>();
+    private static final Map<String, PMLFunction<?>> BUILTIN_FUNCTIONS = new HashMap<>();
 
     static {
-        BUILTIN_FUNCTIONS.put(concat.getSignature().getFunctionName(), concat);
-        BUILTIN_FUNCTIONS.put(equals.getSignature().getFunctionName(), equals);
-        BUILTIN_FUNCTIONS.put(contains.getSignature().getFunctionName(), contains);
-        BUILTIN_FUNCTIONS.put(containsKey.getSignature().getFunctionName(), containsKey);
+        BUILTIN_FUNCTIONS.put(concat.getOpName(), concat);
+        BUILTIN_FUNCTIONS.put(equals.getOpName(), equals);
+        BUILTIN_FUNCTIONS.put(contains.getOpName(), contains);
+        BUILTIN_FUNCTIONS.put(containsKey.getOpName(), containsKey);
+        BUILTIN_FUNCTIONS.put(appendAll.getOpName(), appendAll);
+        BUILTIN_FUNCTIONS.put(append.getOpName(), append);
 
-        BUILTIN_FUNCTIONS.put(getAssociationsWithSource.getSignature().getFunctionName(), getAssociationsWithSource);
-        BUILTIN_FUNCTIONS.put(getAssociationsWithTarget.getSignature().getFunctionName(), getAssociationsWithTarget);
-        BUILTIN_FUNCTIONS.put(getAdjacentAscendants.getSignature().getFunctionName(), getAdjacentAscendants);
-        BUILTIN_FUNCTIONS.put(getAdjacentDescendants.getSignature().getFunctionName(), getAdjacentDescendants);
-        BUILTIN_FUNCTIONS.put(getNodeProperties.getSignature().getFunctionName(), getNodeProperties);
-        BUILTIN_FUNCTIONS.put(getNodeType.getSignature().getFunctionName(), getNodeType);
-        BUILTIN_FUNCTIONS.put(getProhibitionsFor.getSignature().getFunctionName(), getProhibitionsFor);
-        BUILTIN_FUNCTIONS.put(hasPropertyKey.getSignature().getFunctionName(), hasPropertyKey);
-        BUILTIN_FUNCTIONS.put(hasPropertyValue.getSignature().getFunctionName(), hasPropertyValue);
-        BUILTIN_FUNCTIONS.put(nodeExists.getSignature().getFunctionName(), nodeExists);
-        BUILTIN_FUNCTIONS.put(getNode.getSignature().getFunctionName(), getNode);
-        BUILTIN_FUNCTIONS.put(search.getSignature().getFunctionName(), search);
-        BUILTIN_FUNCTIONS.put(append.getSignature().getFunctionName(), append);
-        BUILTIN_FUNCTIONS.put(appendAll.getSignature().getFunctionName(), appendAll);
-        BUILTIN_FUNCTIONS.put(pcTargetName.getSignature().getFunctionName(), pcTargetName);
-
-        // pattern functions
-        BUILTIN_FUNCTIONS.put(pEquals.getSignature().getFunctionName(), pEquals);
-        BUILTIN_FUNCTIONS.put(pOr.getSignature().getFunctionName(), pOr);
-        BUILTIN_FUNCTIONS.put(pAnd.getSignature().getFunctionName(), pAnd);
-        BUILTIN_FUNCTIONS.put(pAny.getSignature().getFunctionName(), pAny);
-        BUILTIN_FUNCTIONS.put(pIsAscendantOf.getSignature().getFunctionName(), pIsAscendantOf);
-        BUILTIN_FUNCTIONS.put(pContainedIn.getSignature().getFunctionName(), pContainedIn);
-        BUILTIN_FUNCTIONS.put(pContains.getSignature().getFunctionName(), pContains);
+        BUILTIN_FUNCTIONS.put(getAssociationsWithSource.getOpName(), getAssociationsWithSource);
+        BUILTIN_FUNCTIONS.put(getAssociationsWithTarget.getOpName(), getAssociationsWithTarget);
+        BUILTIN_FUNCTIONS.put(getAdjacentAscendants.getOpName(), getAdjacentAscendants);
+        BUILTIN_FUNCTIONS.put(getAdjacentDescendants.getOpName(), getAdjacentDescendants);
+        BUILTIN_FUNCTIONS.put(getNodeProperties.getOpName(), getNodeProperties);
+        BUILTIN_FUNCTIONS.put(getNodeType.getOpName(), getNodeType);
+        BUILTIN_FUNCTIONS.put(getProhibitionsFor.getOpName(), getProhibitionsFor);
+        BUILTIN_FUNCTIONS.put(hasPropertyKey.getOpName(), hasPropertyKey);
+        BUILTIN_FUNCTIONS.put(hasPropertyValue.getOpName(), hasPropertyValue);
+        BUILTIN_FUNCTIONS.put(nodeExists.getOpName(), nodeExists);
+        BUILTIN_FUNCTIONS.put(getNode.getOpName(), getNode);
+        BUILTIN_FUNCTIONS.put(search.getOpName(), search);
+        BUILTIN_FUNCTIONS.put(pcTargetName.getOpName(), pcTargetName);
     }
 
-    public static Map<String, FunctionDefinitionStatement> builtinFunctions() {
+    public static Map<String, PMLFunction<?>> builtinFunctions() {
         return new HashMap<>(BUILTIN_FUNCTIONS);
     }
 

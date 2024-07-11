@@ -2,6 +2,7 @@ package gov.nist.csd.pm.epp;
 
 import gov.nist.csd.pm.common.obligation.EventContext;
 import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.pml.scope.ExecuteGlobalScope;
 import gov.nist.csd.pm.pdp.PDP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.query.UserContext;
@@ -11,7 +12,7 @@ import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
 import gov.nist.csd.pm.pap.pml.scope.Scope;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.ArrayList;
@@ -50,7 +51,8 @@ public class EPP {
 
         @Override
         public void processEvent(EventContext eventCtx) throws PMException {
-            GlobalScope<Value, FunctionDefinitionStatement> globalScope = GlobalScope.forExecute(pap, customFunctions);
+            GlobalScope<Value> globalScope = new ExecuteGlobalScope()
+                    .withFunctions();
             Collection<Obligation> obligations = pap.query().obligations().getAll();
 
             for(Obligation obligation : obligations) {

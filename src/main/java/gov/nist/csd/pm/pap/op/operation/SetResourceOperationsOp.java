@@ -16,7 +16,7 @@ import java.util.Objects;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.SET_RESOURCE_OPERATIONS;
 
-public class SetResourceOperationsOp extends GraphOp {
+public class SetResourceOperationsOp extends Operation<Void> {
     public SetResourceOperationsOp() {
         super(
                 "set_resource_operations",

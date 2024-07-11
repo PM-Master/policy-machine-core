@@ -9,8 +9,6 @@ import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.admin.AdminPolicy;
 import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.serialization.PolicySerializer;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
 

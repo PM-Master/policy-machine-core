@@ -2,6 +2,13 @@ package gov.nist.csd.pm.pdp;
 
 import gov.nist.csd.pm.common.obligation.EventContext;
 import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
+import gov.nist.csd.pm.pap.pml.CompiledPML;
+import gov.nist.csd.pm.pap.pml.PMLCompiler;
+import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
+import gov.nist.csd.pm.pap.pml.scope.ExecuteGlobalScope;
+import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
+import gov.nist.csd.pm.pap.pml.scope.Scope;
+import gov.nist.csd.pm.pap.pml.statement.PMLStatementSerializer;
 import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.pap.serialization.PolicySerializer;
 import gov.nist.csd.pm.epp.EventEmitter;
@@ -11,9 +18,6 @@ import gov.nist.csd.pm.pap.op.Operation;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.exception.BootstrapExistingPolicyException;
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.pml.PMLExecutable;
-import gov.nist.csd.pm.pap.pml.PMLExecutor;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.common.tx.TxRunner;
 import gov.nist.csd.pm.pdp.adjudicator.PolicyModificationAdjudicator;
@@ -152,19 +156,6 @@ public class PDP implements EventEmitter, AccessAdjudication {
         }
 
         @Override
-        public void executePML(UserContext userContext, String input, FunctionDefinitionStatement... functionDefinitionStatements) throws PMException {
-            PMLExecutor.compileAndExecutePML(this, userContext, input, functionDefinitionStatements);
-        }
-
-        @Override
-        public void executePMLFunction(UserContext userContext, String functionName, Value... values) throws PMException {
-            String pml = String.format("%s(%s)", functionName, PMLExecutable.valuesToArgs(values));
-
-            // execute function as pml
-            PMLExecutor.compileAndExecutePML(this, userContext, pml);
-        }
-
-        @Override
         public void beginTx() throws PMException {
             pap.beginTx();
         }
@@ -177,6 +168,27 @@ public class PDP implements EventEmitter, AccessAdjudication {
         @Override
         public void rollback() throws PMException {
             pap.rollback();
+        }
+
+        @Override
+        public void executePML(UserContext author, String input) throws PMException {
+            PMLCompiler pmlCompiler = new PMLCompiler()
+                    .withFunctions(pap.query().operations().getAdminOperations());
+            CompiledPML compiledPML = pmlCompiler.compilePML(input);
+            List<PMLStatementSerializer> stmts = compiledPML.stmts();
+
+             // add the constants and functions to the persisted scope
+            // build a global scope from the policy
+            GlobalScope<Value> globalScope = new ExecuteGlobalScope()
+                    .withFunctions(pmlCompiler.getFunctions());
+
+            // execute other statements
+            ExecutionContext ctx = new ExecutionContext(author, new Scope<>(globalScope))
+                    .withPMLExecutor(new PDPPMLExecutor(userCtx));
+
+            for (PMLStatementSerializer stmt : stmts) {
+                ctx.getExecutor().executeStatement(ctx, this, stmt);
+            }
         }
     }
 

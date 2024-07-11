@@ -2,17 +2,23 @@ package gov.nist.csd.pm.pap;
 
 import gov.nist.csd.pm.pap.admin.AdminPolicy;
 import gov.nist.csd.pm.pap.modification.PolicyModifier;
+import gov.nist.csd.pm.pap.op.Operation;
+import gov.nist.csd.pm.pap.pml.CompiledPML;
+import gov.nist.csd.pm.pap.pml.PMLCompiler;
+import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
+import gov.nist.csd.pm.pap.pml.scope.ExecuteGlobalScope;
+import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
+import gov.nist.csd.pm.pap.pml.scope.Scope;
+import gov.nist.csd.pm.pap.pml.statement.PMLStatementSerializer;
 import gov.nist.csd.pm.pap.query.PolicyQuerier;
 import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.pap.serialization.PolicySerializer;
-import gov.nist.csd.pm.pap.pml.PMLExecutable;
-import gov.nist.csd.pm.pap.pml.PMLExecutor;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.query.UserContext;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.Collection;
+import java.util.List;
 
 public abstract class PAP implements PolicyPoint {
 
@@ -20,21 +26,33 @@ public abstract class PAP implements PolicyPoint {
 
     public abstract PolicyQuerier query();
 
-    @Override
-    public void executePML(UserContext userContext, String input, FunctionDefinitionStatement... functionDefinitionStatements) throws PMException {
-        new PMLExecutor().compileAndExecutePML(this, userContext, input, functionDefinitionStatements);
+    public PAP withTransientAdminOps(Collection<Operation> ops) {
+        query().setTransientAdminOperations(ops);
+        return this;
     }
 
     @Override
-    public void executePMLFunction(UserContext userContext, String functionName, Value... args) throws PMException {
-        String pml = String.format("%s(%s)", functionName, PMLExecutable.valuesToArgs(args));
+    public void executePML(UserContext author, String input) throws PMException {
+        PMLCompiler pmlCompiler = new PMLCompiler()
+                .withFunctions(query().operations().getAdminOperations());
+        CompiledPML compiledPML = pmlCompiler.compilePML(input);
+        List<PMLStatementSerializer> stmts = compiledPML.stmts();
 
-        // execute function as pml
-        PMLExecutor.compileAndExecutePML(this, userContext, pml);
+        // add the constants and functions to the persisted scope
+        // build a global scope from the policy
+        GlobalScope<Value> globalScope = new ExecuteGlobalScope()
+                .withFunctions(pmlCompiler.getFunctions());
+
+        // execute other statements
+        ExecutionContext ctx = new ExecutionContext(author, new Scope<>(globalScope));
+
+        for (PMLStatementSerializer stmt : stmts) {
+            ctx.getExecutor().executeStatement(ctx, this, stmt);
+        }
     }
 
     /**
-     * Serialize the current policy state with the given PolicySerializer.]
+     * Serialize the current policy state with the given PolicySerializer.
      *
      * @param serializer The PolicySerializer used to generate the output String.
      * @return The string representation of the policy.

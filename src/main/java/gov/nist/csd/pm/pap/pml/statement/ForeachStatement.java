@@ -5,15 +5,12 @@ import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
-import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
 import gov.nist.csd.pm.pap.pml.value.*;
 
 import java.util.List;
 import java.util.Objects;
 
-import static gov.nist.csd.pm.pap.pml.PMLExecutor.executeStatementBlock;
-
-public class ForeachStatement extends PMLStatement {
+public class ForeachStatement implements PMLStatement {
 
     private final String varName;
     private final String valueVarName;
@@ -28,33 +25,28 @@ public class ForeachStatement extends PMLStatement {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         if (statements.isEmpty()) {
             return new VoidValue();
         }
 
-        Value iterValue = iter.execute(ctx, policy);
+        Value iterValue = ctx.executeStatement(pap, iter);
         if (iterValue instanceof ArrayValue arrayValue) {
-            return executeArrayIterator(arrayValue, ctx, policy);
+            return executeArrayIterator(ctx, arrayValue, pap);
         } else if (iterValue instanceof MapValue mapValue) {
-            return executeMapIterator(mapValue, ctx, policy);
+            return executeMapIterator(ctx, mapValue, pap);
         }
 
         return new VoidValue();
     }
 
-    private Value executeArrayIterator(ArrayValue iterValue, ExecutionContext ctx, PolicyPoint pap) throws PMException{
+    private Value executeArrayIterator(ExecutionContext ctx, ArrayValue iterValue, PAP pap) throws PMException{
         for (Value v : iterValue.getValue()) {
-            ExecutionContext localExecutionCtx;
-            try {
-                localExecutionCtx = ctx.copy();
-            } catch (PMLScopeException e) {
-                throw new RuntimeException(e);
-            }
+            ExecutionContext localExecutionCtx = ctx.copy();
 
             localExecutionCtx.scope().addVariable(varName, v);
 
-            Value value = executeStatementBlock(localExecutionCtx, pap, statements);
+            Value value = localExecutionCtx.executeStatements(pap, statements);
 
             if (value instanceof BreakValue) {
                 break;
@@ -67,14 +59,9 @@ public class ForeachStatement extends PMLStatement {
         return new VoidValue();
     }
 
-    private Value executeMapIterator(MapValue iterValue, ExecutionContext ctx, PolicyPoint pap) throws PMException{
+    private Value executeMapIterator(ExecutionContext ctx, MapValue iterValue, PAP pap) throws PMException{
         for (Value key : iterValue.getValue().keySet()) {
-            ExecutionContext localExecutionCtx;
-            try {
-                localExecutionCtx = ctx.copy();
-            } catch (PMLScopeException e) {
-                throw new RuntimeException(e);
-            }
+            ExecutionContext localExecutionCtx = ctx.copy();
 
             Value mapValue = iterValue.getMapValue().get(key);
 
@@ -83,7 +70,7 @@ public class ForeachStatement extends PMLStatement {
                 localExecutionCtx.scope().addVariable(valueVarName, mapValue);
             }
 
-            Value value = executeStatementBlock(localExecutionCtx, pap, statements);
+            Value value = localExecutionCtx.executeStatements(pap, statements);
 
             if (value instanceof BreakValue) {
                 break;
@@ -107,15 +94,23 @@ public class ForeachStatement extends PMLStatement {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ForeachStatement that = (ForeachStatement) o;
-        return Objects.equals(varName, that.varName) && Objects.equals(valueVarName, that.valueVarName) && Objects.equals(iter, that.iter) && Objects.equals(statements, that.statements);
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ForeachStatement that)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        return Objects.equals(varName, that.varName) && Objects.equals(
+                valueVarName,
+                that.valueVarName
+        ) && Objects.equals(iter, that.iter) && Objects.equals(statements, that.statements);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(varName, valueVarName, iter, statements);
+        return Objects.hash(super.hashCode(), varName, valueVarName, iter, statements);
     }
-
 }

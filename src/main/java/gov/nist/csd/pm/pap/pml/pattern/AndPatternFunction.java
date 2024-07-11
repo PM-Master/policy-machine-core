@@ -2,9 +2,8 @@ package gov.nist.csd.pm.pap.pml.pattern;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.op.pattern.Pattern;
+import gov.nist.csd.pm.common.obligation.pattern.Pattern;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
-import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.PatternValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
@@ -12,7 +11,7 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AndPatternFunction extends PMLPatternFunctionStmt {
+public class AndPatternFunction extends PMLPatternFunction {
 
     public static Pattern pAnd(String varName, Pattern ... patterns) throws PMException {
         List<Value> patternValues = new ArrayList<>();
@@ -26,13 +25,18 @@ public class AndPatternFunction extends PMLPatternFunctionStmt {
 
     public AndPatternFunction() {
         super("pAnd", List.of(
-                new PMLPatternArg("operands", Type.array(Type.pattern()))
+                new PMLPatternReqCap("operands", Type.array(Type.pattern()))
         ));
     }
 
     @Override
     public PMLPattern getPattern(String varName, List<Value> argValues) throws PMException {
-        return new PMLPattern.Aggregatge(varName, argValues, getSignature()) {
+        return null;
+    }
+
+    @Override
+    public PatternValue execute(PAP pap) throws PMException {
+        new PMLPattern.Aggregatge(varName, argValues, getCapMap()) {
             @Override
             public boolean matches(Object value, PAP pap) throws PMException {
                 for (Value argValue : getPatternValues()) {
@@ -48,7 +52,6 @@ public class AndPatternFunction extends PMLPatternFunctionStmt {
             @Override
             public PatternExpression toPatternExpression() {
                 AndPatternFunction pFunc = new AndPatternFunction();
-                FunctionSignature signature = pFunc.getSignature();
 
                 List<Expression> actualArgs = new ArrayList<>();
                 for (Value arg : argValues) {
@@ -58,9 +61,13 @@ public class AndPatternFunction extends PMLPatternFunctionStmt {
 
                 return new PatternExpression(
                         varName,
-                        new PatternFunctionInvokeExpression(signature.getFunctionName(), signature.getReturnType(), actualArgs)
+                        new PatternFunctionExpression(pFunc.getOpName(), pFunc.getReturnType(), actualArgs)
                 );
             }
         };
+
+
+
+        return new PatternValue();
     }
 }

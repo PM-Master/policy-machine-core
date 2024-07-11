@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pap.pml.expression.literal;
 
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
@@ -28,7 +29,7 @@ public class BoolLiteral extends Literal {
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         return new BoolValue(value);
     }
 

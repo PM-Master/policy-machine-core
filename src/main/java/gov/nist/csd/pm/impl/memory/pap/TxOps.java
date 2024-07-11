@@ -3,7 +3,7 @@ package gov.nist.csd.pm.impl.memory.pap;
 import gov.nist.csd.pm.pap.op.graph.DeleteNodeOp;
 import gov.nist.csd.pm.pap.op.graph.SetNodePropertiesOp;
 import gov.nist.csd.pm.pap.op.graph.DissociateOp;
-import gov.nist.csd.pm.pap.op.graph.SetResourceOperationsOp;
+import gov.nist.csd.pm.pap.op.operation.SetResourceOperationsOp;
 import gov.nist.csd.pm.pap.op.obligation.DeleteObligationOp;
 import gov.nist.csd.pm.pap.op.obligation.UpdateObligationOp;
 import gov.nist.csd.pm.pap.op.prohibition.DeleteProhibitionOp;
@@ -12,8 +12,6 @@ import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.graph.node.Node;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.Collection;
 import java.util.Map;

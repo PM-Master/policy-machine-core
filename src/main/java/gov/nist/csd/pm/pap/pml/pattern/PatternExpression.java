@@ -1,11 +1,9 @@
 package gov.nist.csd.pm.pap.pml.pattern;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.PolicyPoint;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
-import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
-import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
 import gov.nist.csd.pm.pap.pml.scope.Scope;
 import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
@@ -20,29 +18,30 @@ import java.util.Objects;
 public class PatternExpression extends Expression {
 
     private String varName;
-    private PatternFunctionInvokeExpression invokeExpr;
+    private Expression invokeExpr;
 
-    public PatternExpression(String varName, PatternFunctionInvokeExpression invokeExpr) {
+    public PatternExpression(String varName, Expression invokeExpr) {
+        super(new ArrayList<>(), invokeExpr);
         this.varName = varName;
         this.invokeExpr = invokeExpr;
     }
 
     @Override
-    public Type getType(Scope<Variable, FunctionSignature> scope) throws PMLScopeException {
+    public Type getType(Scope<Variable> scope) throws PMLScopeException {
         return Type.bool();
     }
 
     @Override
-    public PatternValue execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+    public Object execute(PAP pap) throws PMException {
         FunctionDefinitionStatement function = ctx.scope().getFunction(invokeExpr.getFunctionName());
-        if (!(function instanceof PMLPatternFunctionStmt pmlFunc)) {
+        if (!(function instanceof PMLPatternFunction pmlFunc)) {
             throw new PMException("Function '" + invokeExpr.getFunctionName() + "' is not a PMLPatternFunctionStmt");
         }
 
         List<Expression> actualArgs = invokeExpr.getActualArgs();
         List<Value> args = new ArrayList<>();
         for (Expression expr : actualArgs) {
-            if (expr instanceof PatternFunctionInvokeExpression funcExpr){
+            if (expr instanceof PatternFunctionExpression funcExpr){
                 args.add(new PatternExpression(varName, funcExpr).execute(ctx, policy));
             } else {
                 args.add(expr.execute(ctx, policy));

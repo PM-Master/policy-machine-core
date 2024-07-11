@@ -12,11 +12,11 @@ import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 import gov.nist.csd.pm.common.tx.Transactional;
 import gov.nist.csd.pm.pap.modification.*;
-import gov.nist.csd.pm.pap.op.Operation;
+import gov.nist.csd.pm.pap.op.PreparedOperation;
 import gov.nist.csd.pm.pap.op.graph.*;
 import gov.nist.csd.pm.pap.op.obligation.CreateObligationOp;
 import gov.nist.csd.pm.pap.op.prohibition.CreateProhibitionOp;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.query.PolicyQuerier;
 import gov.nist.csd.pm.pap.query.UserContext;
@@ -97,8 +97,8 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
     public void rollback() throws PMException {
         tx.rollback();
 
-        List<Operation> events = txOpTracker.getOperations();
-        for (Operation event : events) {
+        List<PreparedOperation<?>> events = txOpTracker.getOperations();
+        for (PreparedOperation<?> event : events) {
             try {
                 TxCmd txCmd = TxCmd.eventToCmd(event);
                 txCmd.rollback(this);
@@ -232,7 +232,7 @@ public class MemoryPolicy extends PolicyModifier implements Transactional {
         @Override
         public String createPolicyClass(String name, Map<String, String> properties) throws PMException {
             String ret = super.createPolicyClass(name, properties);
-            txOpTracker.trackOp(tx, new CreatePolicyClassOp(name, properties));
+            txOpTracker.trackOp(tx, new CreatePolicyClassOp().withOperands(name, properties));
             return ret;
         }
 

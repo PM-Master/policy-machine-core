@@ -91,7 +91,7 @@ public class MemoryGraphQuerier extends GraphQuerier implements GraphQuery {
     }
 
     @Override
-    public boolean isContainedInternal(String subject, String container) throws PMException {
+    public boolean isAscendantInternal(String subject, String container) throws PMException {
         AtomicBoolean found = new AtomicBoolean(false);
 
         new DepthFirstGraphWalker(this)

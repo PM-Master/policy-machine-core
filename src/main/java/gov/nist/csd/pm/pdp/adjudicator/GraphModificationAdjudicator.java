@@ -1,19 +1,18 @@
 package gov.nist.csd.pm.pdp.adjudicator;
 
+import gov.nist.csd.pm.common.obligation.EventContext;
 import gov.nist.csd.pm.epp.EventEmitter;
 import gov.nist.csd.pm.pap.modification.GraphModification;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pap.op.graph.*;
+import gov.nist.csd.pm.pap.op.operation.SetResourceOperationsOp;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.graph.node.NodeType;
 
 import java.util.Collection;
 import java.util.Map;
-
-import static gov.nist.csd.pm.pap.op.AdminAccessRights.*;
-import static gov.nist.csd.pm.common.graph.node.NodeType.PC;
 
 public class GraphModificationAdjudicator extends OperationExecutor implements GraphModification {
 
@@ -29,14 +28,20 @@ public class GraphModificationAdjudicator extends OperationExecutor implements G
 
     @Override
     public void setResourceAccessRights(AccessRightSet accessRightSet) throws PMException {
-        SetResourceOperationsOp op = new SetResourceOperationsOp(accessRightSet);
-        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
+        EventContext event = new SetResourceOperationsOp()
+                .withOperands(accessRightSet)
+                .execute(pap, userCtx);
+
+        eventEmitter.emitEvent(event);
     }
 
     @Override
     public String createPolicyClass(String name, Map<String, String> properties) throws PMException {
         CreatePolicyClassOp op = new CreatePolicyClassOp(name, properties);
-        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
+
+        EventContext event = op.execute(pap, userCtx);
+
+        eventEmitter.emitEvent(event);
 
         return name;
     }
@@ -44,7 +49,10 @@ public class GraphModificationAdjudicator extends OperationExecutor implements G
     @Override
     public String createUserAttribute(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
         CreateUserAttributeOp op = new CreateUserAttributeOp(name, properties, assignments);
-        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
+
+        EventContext event = op.execute(pap, userCtx);
+
+        eventEmitter.emitEvent(event);
 
         return name;
     }
@@ -52,7 +60,10 @@ public class GraphModificationAdjudicator extends OperationExecutor implements G
     @Override
     public String createObjectAttribute(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
         CreateObjectAttributeOp op = new CreateObjectAttributeOp(name, properties, assignments);
-        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
+
+        EventContext event = op.execute(pap, userCtx);
+
+        eventEmitter.emitEvent(event);
 
         return name;
     }
@@ -60,7 +71,10 @@ public class GraphModificationAdjudicator extends OperationExecutor implements G
     @Override
     public String createObject(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
         CreateObjectOp op = new CreateObjectOp(name, properties, assignments);
-        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
+
+        EventContext event = op.execute(pap, userCtx);
+
+        eventEmitter.emitEvent(event);
 
         return name;
     }
@@ -68,7 +82,10 @@ public class GraphModificationAdjudicator extends OperationExecutor implements G
     @Override
     public String createUser(String name, Map<String, String> properties, Collection<String> assignments) throws PMException {
         CreateUserOp op = new CreateUserOp(name, properties, assignments);
-        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
+
+        EventContext event = op.execute(pap, userCtx);
+
+        eventEmitter.emitEvent(event);
 
         return name;
     }
@@ -76,7 +93,10 @@ public class GraphModificationAdjudicator extends OperationExecutor implements G
     @Override
     public void setNodeProperties(String name, Map<String, String> properties) throws PMException {
         SetNodePropertiesOp op = new SetNodePropertiesOp(name, properties);
-        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
+
+        EventContext event = op.execute(pap, userCtx);
+
+        eventEmitter.emitEvent(event);
     }
 
     @Override
@@ -92,7 +112,9 @@ public class GraphModificationAdjudicator extends OperationExecutor implements G
     public void assign(String ascendant, String descendant) throws PMException {
         AssignOp op = new AssignOp(ascendant, descendant);
 
-        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
+        EventContext event = op.execute(pap, userCtx);
+
+        eventEmitter.emitEvent(event);
     }
 
     @Override
@@ -106,7 +128,9 @@ public class GraphModificationAdjudicator extends OperationExecutor implements G
     public void associate(String ua, String target, AccessRightSet accessRights) throws PMException {
         AssociateOp op = new AssociateOp(ua, target, accessRights);
 
-        executeOpAndEmitEvent(pap, userCtx, op, eventEmitter);
+        EventContext event = op.execute(pap, userCtx);
+
+        eventEmitter.emitEvent(event);
     }
 
     @Override

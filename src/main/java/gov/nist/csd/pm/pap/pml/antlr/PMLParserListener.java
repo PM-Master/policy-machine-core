@@ -28,6 +28,26 @@ public interface PMLParserListener extends ParseTreeListener {
 	 */
 	void exitStatement(PMLParser.StatementContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link PMLParser#controlStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterControlStatement(PMLParser.ControlStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PMLParser#controlStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitControlStatement(PMLParser.ControlStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PMLParser#operationStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterOperationStatement(PMLParser.OperationStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PMLParser#operationStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitOperationStatement(PMLParser.OperationStatementContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link PMLParser#statementBlock}.
 	 * @param ctx the parse tree
 	 */
@@ -47,86 +67,6 @@ public interface PMLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitCreatePolicyStatement(PMLParser.CreatePolicyStatementContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link PMLParser#hierarchy}.
-	 * @param ctx the parse tree
-	 */
-	void enterHierarchy(PMLParser.HierarchyContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PMLParser#hierarchy}.
-	 * @param ctx the parse tree
-	 */
-	void exitHierarchy(PMLParser.HierarchyContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link PMLParser#userAttrsHierarchy}.
-	 * @param ctx the parse tree
-	 */
-	void enterUserAttrsHierarchy(PMLParser.UserAttrsHierarchyContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PMLParser#userAttrsHierarchy}.
-	 * @param ctx the parse tree
-	 */
-	void exitUserAttrsHierarchy(PMLParser.UserAttrsHierarchyContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link PMLParser#objectAttrsHierarchy}.
-	 * @param ctx the parse tree
-	 */
-	void enterObjectAttrsHierarchy(PMLParser.ObjectAttrsHierarchyContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PMLParser#objectAttrsHierarchy}.
-	 * @param ctx the parse tree
-	 */
-	void exitObjectAttrsHierarchy(PMLParser.ObjectAttrsHierarchyContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link PMLParser#associationsHierarchy}.
-	 * @param ctx the parse tree
-	 */
-	void enterAssociationsHierarchy(PMLParser.AssociationsHierarchyContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PMLParser#associationsHierarchy}.
-	 * @param ctx the parse tree
-	 */
-	void exitAssociationsHierarchy(PMLParser.AssociationsHierarchyContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link PMLParser#hierarchyBlock}.
-	 * @param ctx the parse tree
-	 */
-	void enterHierarchyBlock(PMLParser.HierarchyBlockContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PMLParser#hierarchyBlock}.
-	 * @param ctx the parse tree
-	 */
-	void exitHierarchyBlock(PMLParser.HierarchyBlockContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link PMLParser#associationsHierarchyBlock}.
-	 * @param ctx the parse tree
-	 */
-	void enterAssociationsHierarchyBlock(PMLParser.AssociationsHierarchyBlockContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PMLParser#associationsHierarchyBlock}.
-	 * @param ctx the parse tree
-	 */
-	void exitAssociationsHierarchyBlock(PMLParser.AssociationsHierarchyBlockContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link PMLParser#hierarchyStatement}.
-	 * @param ctx the parse tree
-	 */
-	void enterHierarchyStatement(PMLParser.HierarchyStatementContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PMLParser#hierarchyStatement}.
-	 * @param ctx the parse tree
-	 */
-	void exitHierarchyStatement(PMLParser.HierarchyStatementContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link PMLParser#associationsHierarchyStatement}.
-	 * @param ctx the parse tree
-	 */
-	void enterAssociationsHierarchyStatement(PMLParser.AssociationsHierarchyStatementContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PMLParser#associationsHierarchyStatement}.
-	 * @param ctx the parse tree
-	 */
-	void exitAssociationsHierarchyStatement(PMLParser.AssociationsHierarchyStatementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PMLParser#createNonPCStatement}.
 	 * @param ctx the parse tree
@@ -324,30 +264,6 @@ public interface PMLParserListener extends ParseTreeListener {
 	 */
 	void exitDeleteProhibition(PMLParser.DeleteProhibitionContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code DeleteFunction}
-	 * labeled alternative in {@link PMLParser#deleteType}.
-	 * @param ctx the parse tree
-	 */
-	void enterDeleteFunction(PMLParser.DeleteFunctionContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code DeleteFunction}
-	 * labeled alternative in {@link PMLParser#deleteType}.
-	 * @param ctx the parse tree
-	 */
-	void exitDeleteFunction(PMLParser.DeleteFunctionContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code DeleteConst}
-	 * labeled alternative in {@link PMLParser#deleteType}.
-	 * @param ctx the parse tree
-	 */
-	void enterDeleteConst(PMLParser.DeleteConstContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code DeleteConst}
-	 * labeled alternative in {@link PMLParser#deleteType}.
-	 * @param ctx the parse tree
-	 */
-	void exitDeleteConst(PMLParser.DeleteConstContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link PMLParser#nodeType}.
 	 * @param ctx the parse tree
 	 */
@@ -483,6 +399,26 @@ public interface PMLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitReturnStatement(PMLParser.ReturnStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PMLParser#opReqCap}.
+	 * @param ctx the parse tree
+	 */
+	void enterOpReqCap(PMLParser.OpReqCapContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PMLParser#opReqCap}.
+	 * @param ctx the parse tree
+	 */
+	void exitOpReqCap(PMLParser.OpReqCapContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PMLParser#idArr}.
+	 * @param ctx the parse tree
+	 */
+	void enterIdArr(PMLParser.IdArrContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PMLParser#idArr}.
+	 * @param ctx the parse tree
+	 */
+	void exitIdArr(PMLParser.IdArrContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PMLParser#functionInvokeStatement}.
 	 * @param ctx the parse tree
@@ -717,18 +653,6 @@ public interface PMLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitParenExpression(PMLParser.ParenExpressionContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code PatternExpression}
-	 * labeled alternative in {@link PMLParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterPatternExpression(PMLParser.PatternExpressionContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code PatternExpression}
-	 * labeled alternative in {@link PMLParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitPatternExpression(PMLParser.PatternExpressionContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code EqualsExpression}
 	 * labeled alternative in {@link PMLParser#expression}.

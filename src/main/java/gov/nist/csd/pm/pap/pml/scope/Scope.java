@@ -1,28 +1,30 @@
 package gov.nist.csd.pm.pap.pml.scope;
 
+import gov.nist.csd.pm.pap.pml.pattern2.PMLPatternFunction;
+
 import java.io.Serializable;
 import java.util.Objects;
 
-public class Scope<V, F> implements Serializable {
+public class Scope<V> implements Serializable {
 
-    private final GlobalScope<V, F> global;
+    private final GlobalScope<V> global;
     private final LocalScope<V> local;
 
-    public Scope(GlobalScope<V, F> global) {
+    public Scope(GlobalScope<V> global) {
         this.global = global;
         this.local = new LocalScope<>();
     }
 
-    public Scope(GlobalScope<V, F> global, LocalScope<V> localScope) {
+    public Scope(GlobalScope<V> global, LocalScope<V> localScope) {
         this.global = global;
         this.local = localScope;
     }
 
-    public Scope<V, F> copy() {
+    public Scope<V> copy() {
         return new Scope<>(global, local.copy());
     }
 
-    public GlobalScope<V, F> global() {
+    public GlobalScope<V> global() {
         return global;
     }
 
@@ -30,8 +32,8 @@ public class Scope<V, F> implements Serializable {
         return local;
     }
 
-    public F getFunction(String name) throws UnknownFunctionInScopeException {
-        F function = global.getFunction(name);
+    public PMLFunction<?> getFunction(String name) throws UnknownFunctionInScopeException {
+        PMLFunction<?> function = global.getFunction(name);
         if (function == null) {
             throw new UnknownFunctionInScopeException(name);
         }
@@ -84,6 +86,15 @@ public class Scope<V, F> implements Serializable {
         return true;
     }
 
+    public PMLPatternFunction getPatternFunction(String functionName) throws PMLScopeException {
+        PMLFunction<?> function = getFunction(functionName);
+        if (!(function instanceof PMLPatternFunction pmlPatternFunction)) {
+            throw new PMLScopeException("expected " + functionName + " to be a pattern function");
+        }
+
+        return pmlPatternFunction;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -92,7 +103,7 @@ public class Scope<V, F> implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Scope<?, ?> scope = (Scope<?, ?>) o;
+        Scope<?> scope = (Scope<?>) o;
         return Objects.equals(global, scope.global) && Objects.equals(local, scope.local);
     }
 

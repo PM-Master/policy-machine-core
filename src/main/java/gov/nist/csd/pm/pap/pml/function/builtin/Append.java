@@ -1,31 +1,31 @@
 package gov.nist.csd.pm.pap.pml.function.builtin;
 
 
-import gov.nist.csd.pm.pap.pml.function.FormalArgument;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.executable.PMLExecutable;
+import gov.nist.csd.pm.pap.pml.function.PMLRequiredCapability;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.ArrayValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.List;
 
-public class Append extends FunctionDefinitionStatement {
+public class Append extends PMLExecutable {
     public Append() {
-        super(new FunctionDefinitionStatement.Builder("append")
-                      .returns(Type.array(Type.any()))
-                      .args(
-                              new FormalArgument("dst", Type.array(Type.any())),
-                              new FormalArgument("src", Type.any())
-                      )
-                      .executor((ctx, pap) -> {
-                          List<Value> valueArr = ctx.scope().getVariable("dst").getArrayValue();
-                          Value srcValue = ctx.scope().getVariable("src");
+        super(
+                "append",
+                Type.array(Type.any()),
+                List.of(
+                        new PMLRequiredCapability("dst", Type.string()),
+                        new PMLRequiredCapability("src", Type.string())
+                ),
+                (pap, operands) -> {
+                    List<Value> valueArr = (List<Value>) operands.get(0);
+                    Value srcValue = (Value) operands.get(1);
 
-                          valueArr.add(srcValue);
+                    valueArr.add(srcValue);
 
-                          return new ArrayValue(valueArr, Type.array(Type.any()));
-                      })
-                      .build()
+                    return new ArrayValue(valueArr, Type.array(Type.any()));
+                }
         );
     }
 }

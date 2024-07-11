@@ -1,114 +1,79 @@
 package gov.nist.csd.pm.pap.pml.scope;
 
-import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.PolicyPoint;
-import gov.nist.csd.pm.pap.op.AdminAccessRights;
-import gov.nist.csd.pm.pap.pml.PMLBuiltinFunctions;
-import gov.nist.csd.pm.pap.pml.compiler.Variable;
-import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.pap.pml.type.Type;
-import gov.nist.csd.pm.pap.pml.value.StringValue;
-import gov.nist.csd.pm.pap.pml.value.Value;
+import gov.nist.csd.pm.pap.pml.pattern.PMLPatternFunction;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static gov.nist.csd.pm.pap.admin.AdminPolicyNode.*;
-import static gov.nist.csd.pm.pap.admin.AdminPolicyNode.OBLIGATIONS_TARGET;
+public abstract class GlobalScope<V> implements Serializable {
 
-public abstract class GlobalScope<V, F> implements Serializable {
-
-    private Map<String, V> builtinConstants;
-    private Map<String, F> builtinFunctions;
-    private Map<String, V> providedConstants;
-    private Map<String, F> providedFunctions;
+    private Map<String, V> constants;
+    private Map<String, PMLFunction<?>> functions;
+    private Map<String, PMLPatternFunction> patternFunctions;
 
     protected GlobalScope() {
-        builtinConstants = new HashMap<>();
-        builtinFunctions = new HashMap<>();
-        providedConstants = new HashMap<>();
-        providedFunctions = new HashMap<>();
+        constants = new HashMap<>();
+        functions = new HashMap<>();
+        patternFunctions = buildPatternFunctions();
     }
 
-    public GlobalScope(Map<String, V> builtinConstants, Map<String, F> builtinFunctions) {
-        this.builtinConstants = builtinConstants;
-        this.builtinFunctions = builtinFunctions;
+    public GlobalScope(Map<String, V> constants, Map<String, PMLFunction<?>> functions) {
+        this.constants = constants;
+        this.functions = functions;
     }
 
-    public GlobalScope<V, F> withProvidedFunctions(Map<String, F> persistedFunctions) {
-        this.providedFunctions = persistedFunctions;
+    public GlobalScope<V> withFunctions(Map<String, PMLFunction<?>> functions) {
+        this.functions = functions;
         return this;
     }
 
-    public GlobalScope<V, F> withProvidedFunction(String funcName, F f) {
-        this.providedFunctions.put(funcName, f);
+    public GlobalScope<V> withConstants(Map<String, V> constants) {
+        this.constants = constants;
         return this;
     }
 
-    public GlobalScope<V, F> withProvidedConstants(Map<String, V> persistedConstants) {
-        this.providedConstants = persistedConstants;
-        return this;
+    public void addConstant(String key, V value) {
+        this.constants.put(key, value);
     }
 
-    public GlobalScope<V, F> withProvidedConstant(String constName, V v) {
-        this.providedConstants.put(constName, v);
-        return this;
+    public void addFunction(String name, PMLFunction<?> operation) {
+        this.functions.put(name, operation);
     }
 
     public V getConstant(String varName) {
-        if (builtinConstants.containsKey(varName)) {
-            return builtinConstants.get(varName);
-        } else if (providedConstants.containsKey(varName)) {
-            return providedConstants.get(varName);
-        }
-
-        return null;
+        return constants.get(varName);
     }
 
-    public F getFunction(String funcName) {
-        if (builtinFunctions.containsKey(funcName)) {
-            return builtinFunctions.get(funcName);
-        } else if (providedFunctions.containsKey(funcName)) {
-            return providedFunctions.get(funcName);
-        }
-
-        return null;
+    public PMLFunction<?> getFunction(String funcName) {
+        return functions.get(funcName);
     }
 
-    public Map<String, V> getBuiltinConstants() {
-        return builtinConstants;
+    public Map<String, PMLFunction<?>> getFunctions() {
+        return functions;
     }
 
-    public void setBuiltinConstants(Map<String, V> builtinConstants) {
-        this.builtinConstants = builtinConstants;
+    public Map<String, V> getConstants() {
+        return constants;
     }
 
-    public Map<String, F> getBuiltinFunctions() {
-        return builtinFunctions;
+    public void addFunctions(Map<String, PMLFunction<?>> funcs) {
+        functions.putAll(funcs);
     }
 
-    public void setBuiltinFunctions(Map<String, F> builtinFunctions) {
-        this.builtinFunctions = builtinFunctions;
+    public void addConstants(Map<String, V> c) {
+        constants.putAll(c);
     }
 
-    public Map<String, V> getProvidedConstants() {
-        return providedConstants;
-    }
+/* TODO -- do I still need this?
+    private Map<String, PMLPatternFunction> buildPatternFunctions() {
+        new
 
-    public void setProvidedConstants(Map<String, V> providedConstants) {
-        this.providedConstants = providedConstants;
+        return Map.of();
     }
+*/
 
-    public Map<String, F> getProvidedFunctions() {
-        return providedFunctions;
-    }
-
-    public void setProvidedFunctions(Map<String, F> providedFunctions) {
-        this.providedFunctions = providedFunctions;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -118,18 +83,12 @@ public abstract class GlobalScope<V, F> implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        GlobalScope<?, ?> that = (GlobalScope<?, ?>) o;
-        return Objects.equals(builtinConstants, that.builtinConstants) && Objects.equals(
-                builtinFunctions,
-                that.builtinFunctions
-        ) && Objects.equals(providedConstants, that.providedConstants) && Objects.equals(
-                providedFunctions,
-                that.providedFunctions
-        );
+        GlobalScope<?> that = (GlobalScope<?>) o;
+        return Objects.equals(constants, that.constants) && Objects.equals(functions, that.functions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(builtinConstants, builtinFunctions, providedConstants, providedFunctions);
+        return Objects.hash(constants, functions);
     }
 }

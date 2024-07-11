@@ -2,15 +2,15 @@ package gov.nist.csd.pm.pap.pml.pattern;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.op.pattern.Pattern;
-import gov.nist.csd.pm.pap.op.pattern.ReferencedNodes;
+import gov.nist.csd.pm.common.obligation.pattern.Pattern;
+import gov.nist.csd.pm.common.obligation.pattern.ReferencedNodes;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AnyPatternFunction extends PMLPatternFunctionStmt {
+public class AnyPatternFunction extends PMLPatternFunction {
 
     public static Pattern pAny(String varName) throws PMException {
         return new AnyPatternFunction()
@@ -40,7 +40,7 @@ public class AnyPatternFunction extends PMLPatternFunctionStmt {
                 FunctionSignature signature = pFunc.getSignature();
                 return new PatternExpression(
                         varName,
-                        new PatternFunctionInvokeExpression(signature.getFunctionName(), signature.getReturnType(), new ArrayList<>())
+                        new PatternFunctionExpression(signature.getFunctionName(), signature.getReturnType(), new ArrayList<>())
                 );
             }
         };

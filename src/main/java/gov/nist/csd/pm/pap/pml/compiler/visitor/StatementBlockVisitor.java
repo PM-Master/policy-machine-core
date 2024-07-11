@@ -4,10 +4,11 @@ import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
 import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.statement.FunctionReturnStatement;
 import gov.nist.csd.pm.pap.pml.statement.IfStatement;
-import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
+import gov.nist.csd.pm.pap.pml.statement.PMLStatementSerializer;
 import gov.nist.csd.pm.pap.pml.type.Type;
 
 import java.util.ArrayList;
@@ -37,19 +38,20 @@ public class StatementBlockVisitor extends PMLBaseVisitor<StatementBlockVisitor.
         }
 
         try {
-            boolean allPathsReturned = allPathsReturned(stmts, returnType);
+            boolean allPathsReturned = checkAllPathsReturned(visitorCtx, stmts, returnType);
             return new Result(allPathsReturned, stmts);
         } catch (PMException e) {
             throw new PMLCompilationRuntimeException(ctx, e.getMessage());
         }
     }
-    private boolean allPathsReturned(List<PMLStatement> statements, Type returnType)
+
+    public static boolean checkAllPathsReturned(VisitorContext visitorCtx, List<PMLStatement> statements, Type returnType)
             throws PMException {
         if (statements.isEmpty()) {
             return false;
         }
 
-        PMLStatement lastStmt = statements.get(statements.size() - 1);
+        PMLStatement lastStmt = statements.getLast();
         if (lastStmt instanceof FunctionReturnStatement functionReturnStatement) {
             if (!functionReturnStatement.matchesReturnType(returnType, visitorCtx.scope())) {
                 throw new PMException("return statement \"" + functionReturnStatement + "\" does not match return type " + returnType);
@@ -75,7 +77,7 @@ public class StatementBlockVisitor extends PMLBaseVisitor<StatementBlockVisitor.
 
                 return true;
             } else if (pmlStatement instanceof IfStatement ifStatement) {
-                if (!allIfStatementPathsReturned(ifStatement, returnType)) {
+                if (!allIfStatementPathsReturned(visitorCtx, ifStatement, returnType)) {
                     return false;
                 } else {
                     allPathsReturned = true;
@@ -86,31 +88,26 @@ public class StatementBlockVisitor extends PMLBaseVisitor<StatementBlockVisitor.
         return allPathsReturned;
     }
 
-    private boolean allIfStatementPathsReturned(IfStatement ifStatement, Type returnType)
+    private static boolean allIfStatementPathsReturned(VisitorContext visitorCtx, IfStatement ifStatement, Type returnType)
             throws PMException {
-        boolean check = allPathsReturned(ifStatement.getIfBlock().block(), returnType);
+        boolean check = checkAllPathsReturned(visitorCtx, ifStatement.getIfBlock().block(), returnType);
         if (!check) {
             return false;
         }
 
         // check else ifs
         for (IfStatement.ConditionalBlock conditionalBlock : ifStatement.getIfElseBlocks()) {
-            check = allPathsReturned(conditionalBlock.block(), returnType);
+            check = checkAllPathsReturned(visitorCtx, conditionalBlock.block(), returnType);
             if (!check) {
                 return false;
             }
         }
 
         // check else
-        check = allPathsReturned(ifStatement.getElseBlock(), returnType);
-        if (!check) {
-            return false;
-        }
-
-        return true;
+        return checkAllPathsReturned(visitorCtx, ifStatement.getElseBlock(), returnType);
     }
 
-    record Result(boolean allPathsReturned, List<PMLStatement> stmts) {
+    public record Result(boolean allPathsReturned, List<PMLStatement> stmts) {
 
     }
 }

@@ -2,8 +2,8 @@ package gov.nist.csd.pm.pap.pml.function.builtin;
 
 
 import gov.nist.csd.pm.common.prohibition.Prohibition;
-import gov.nist.csd.pm.pap.pml.function.FormalArgument;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.function.FormalArg;
+import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.ArrayValue;
 import gov.nist.csd.pm.pap.pml.value.ProhibitionValue;
@@ -22,11 +22,11 @@ public class GetProhibitionsFor extends FunctionDefinitionStatement {
         super(new FunctionDefinitionStatement.Builder("getProhibitionsFor")
                 .returns(returnType)
                 .args(
-                        new FormalArgument("subject", Type.string())
+                        new FormalArg("subject", Type.string(), reqCap)
                 )
-                .executor((ctx, pap) -> {
+                .executor((ctx, query) -> {
                             String subject = ctx.scope().getVariable("subject").getStringValue();
-                            Collection<Prohibition> prohibitions = pap.query().prohibitions().getWithSubject(subject);
+                            Collection<Prohibition> prohibitions = query.prohibitions().getWithSubject(subject);
                             List<Value> prohibitionValues = new ArrayList<>(prohibitions.size());
                             for (Prohibition prohibition : prohibitions) {
                                 prohibitionValues.add(new ProhibitionValue(prohibition).getValue());

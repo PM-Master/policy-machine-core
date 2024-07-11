@@ -39,7 +39,8 @@ public class FunctionReturnStmtVisitor extends PMLBaseVisitor<FunctionReturnStat
     }
 
     private ParserRuleContext getEnclosingContext(ParserRuleContext ctx) {
-        if (ctx instanceof PMLParser.FunctionDefinitionStatementContext || ctx instanceof PMLParser.ResponseContext) {
+        if (ctx instanceof PMLParser.FunctionDefinitionStatementContext ||
+                ctx instanceof PMLParser.ResponseContext) {
             return ctx;
         } else if (ctx == null) {
             return null;

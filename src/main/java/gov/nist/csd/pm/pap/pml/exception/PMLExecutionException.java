@@ -1,10 +1,10 @@
 package gov.nist.csd.pm.pap.pml.exception;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
+import gov.nist.csd.pm.pap.pml.statement.PMLStatementSerializer;
 
 public class PMLExecutionException extends PMException {
-    public PMLExecutionException(PMLStatement stmt, Exception e) {
+    public PMLExecutionException(PMLStatementSerializer stmt, Exception e) {
         super("error executing: " + stmt.toString(), e);
     }
 

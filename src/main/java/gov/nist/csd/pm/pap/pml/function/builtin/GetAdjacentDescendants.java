@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.function.builtin;
 
 
-import gov.nist.csd.pm.pap.pml.function.FormalArgument;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.function.FormalArg;
+import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.ArrayValue;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
@@ -20,10 +20,10 @@ public class GetAdjacentDescendants extends FunctionDefinitionStatement {
         super(new FunctionDefinitionStatement.Builder("getAdjacentDescendants")
                       .returns(returnType)
                       .args(
-                              new FormalArgument("nodeName", Type.string())
+                              new FormalArg("nodeName", Type.string(), reqCap)
                       )
-                      .executor((ctx, pap) -> {
-                          Collection<String> descendants = pap.query().graph().getAdjacentDescendants(ctx.scope().getVariable("nodeName").getStringValue());
+                      .executor((ctx, query) -> {
+                          Collection<String> descendants = query.graph().getAdjacentDescendants(ctx.scope().getVariable("nodeName").getStringValue());
                           List<Value> descValues = new ArrayList<>(descendants.size());
 
                           descendants.forEach(descValue -> descValues.add(new StringValue(descValue)));

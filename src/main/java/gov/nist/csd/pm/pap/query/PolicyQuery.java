@@ -6,4 +6,5 @@ public interface PolicyQuery {
     GraphQuery graph();
     ProhibitionsQuery prohibitions();
     ObligationsQuery obligations();
+    OperationsQuery operations();
 }

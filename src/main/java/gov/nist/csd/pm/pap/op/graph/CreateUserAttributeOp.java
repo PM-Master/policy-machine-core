@@ -19,7 +19,6 @@ public class CreateUserAttributeOp extends CreateNodeOp{
                 "create_user_attribute",
                 List.of(
                         new RequiredCapability("name"),
-                        new RequiredCapability("type"),
                         new RequiredCapability("properties"),
                         new RequiredCapability("descendants", List.of(CREATE_USER_ATTRIBUTE))
                 ),

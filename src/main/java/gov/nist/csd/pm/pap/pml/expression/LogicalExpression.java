@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pap.pml.expression;
 
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -32,6 +33,26 @@ public class LogicalExpression extends Expression {
         this.isAnd = isAnd;
     }
 
+    public Expression getLeft() {
+        return left;
+    }
+
+    public Expression getRight() {
+        return right;
+    }
+
+    public boolean isAnd() {
+        return isAnd;
+    }
+
+    @Override
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        boolean leftValue = ctx.executeStatement(pap, left).getBooleanValue();
+        boolean rightValue = ctx.executeStatement(pap, right).getBooleanValue();
+
+        return new BoolValue(isAnd ? leftValue && rightValue : leftValue || rightValue);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -48,14 +69,6 @@ public class LogicalExpression extends Expression {
     @Override
     public Type getType(Scope scope) throws PMLScopeException {
         return Type.bool();
-    }
-
-    @Override
-    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
-        boolean leftValue = left.execute(ctx, policy).getBooleanValue();
-        boolean rightValue = right.execute(ctx, policy).getBooleanValue();
-
-        return new BoolValue(isAnd ? leftValue && rightValue : leftValue || rightValue);
     }
 
     @Override

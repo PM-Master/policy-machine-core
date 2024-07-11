@@ -144,11 +144,11 @@ public class GraphQueryAdjudicator implements GraphQuery {
     }
 
     @Override
-    public boolean isAscendant(String node, String container) throws PMException {
-        PrivilegeChecker.check(pap, userCtx, node, AdminAccessRights.REVIEW_POLICY);
-        PrivilegeChecker.check(pap, userCtx, container, AdminAccessRights.REVIEW_POLICY);
+    public boolean isAscendant(String ascendant, String descendant) throws PMException {
+        PrivilegeChecker.check(pap, userCtx, ascendant, AdminAccessRights.REVIEW_POLICY);
+        PrivilegeChecker.check(pap, userCtx, descendant, AdminAccessRights.REVIEW_POLICY);
 
-        return pap.query().graph().isAscendant(node, container);
+        return pap.query().graph().isAscendant(ascendant, descendant);
     }
 
     private List<Association> getAssociations(Collection<Association> associations) {

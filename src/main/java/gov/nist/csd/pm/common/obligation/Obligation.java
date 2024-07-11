@@ -1,8 +1,7 @@
 package gov.nist.csd.pm.common.obligation;
 
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.query.UserContext;
-import gov.nist.csd.pm.pap.pml.statement.CreateObligationStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.CreateObligationStatement;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -18,7 +18,6 @@ public class CreateObjectAttributeOp extends CreateNodeOp{
                 "create_object_attribute",
                 List.of(
                         new RequiredCapability("name"),
-                        new RequiredCapability("type"),
                         new RequiredCapability("properties"),
                         new RequiredCapability("descendants", List.of(CREATE_OBJECT_ATTRIBUTE))
                 ),

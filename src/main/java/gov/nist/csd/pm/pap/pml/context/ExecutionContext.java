@@ -1,46 +1,61 @@
 package gov.nist.csd.pm.pap.pml.context;
 
-import gov.nist.csd.pm.pap.exception.PMLFunctionNotDefinedException;
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.pml.PMLExecutor;
+import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
+import gov.nist.csd.pm.pap.pml.statement.PMLStatementSerializer;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
 import gov.nist.csd.pm.pap.pml.scope.Scope;
 import gov.nist.csd.pm.pap.pml.value.Value;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.pap.pml.scope.UnknownVariableInScopeException;
-import gov.nist.csd.pm.pap.pml.scope.UnknownFunctionInScopeException;
-import gov.nist.csd.pm.pap.pml.scope.FunctionAlreadyDefinedInScopeException;
-import gov.nist.csd.pm.pap.pml.scope.VariableAlreadyDefinedInScopeException;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
 public class ExecutionContext implements Serializable {
 
     private final UserContext author;
-    private final Scope<Value, FunctionDefinitionStatement> scope;
+    private final Scope<Value> scope;
+    private PMLExecutor executor;
 
-    public ExecutionContext(UserContext author, Scope<Value, FunctionDefinitionStatement> scope) {
+    public ExecutionContext(UserContext author, Scope<Value> scope) {
         this.author = author;
         this.scope = scope;
+        this.executor = new PMLExecutor();
     }
 
-    public ExecutionContext(UserContext author, GlobalScope<Value, FunctionDefinitionStatement> globalScope) {
+    public ExecutionContext(UserContext author, GlobalScope<Value> globalScope) {
         this.author = author;
         this.scope = new Scope<>(globalScope);
+        this.executor = new PMLExecutor();
     }
 
     public UserContext author() {
         return author;
     }
 
-    public Scope<Value, FunctionDefinitionStatement> scope() {
+    public Scope<Value> scope() {
         return scope;
     }
 
-    public ExecutionContext copy() throws UnknownFunctionInScopeException, FunctionAlreadyDefinedInScopeException,
-                                          UnknownVariableInScopeException, VariableAlreadyDefinedInScopeException,
-                                          PMLFunctionNotDefinedException {
+    public ExecutionContext copy() {
         return new ExecutionContext(this.author, this.scope.copy());
+    }
+
+    public ExecutionContext withPMLExecutor(PMLExecutor executor) {
+        this.executor = executor;
+
+        return this;
+    }
+
+    public Value executeStatement(PAP pap, PMLStatement stmt) throws PMException {
+        return executor.executeStatement(this, pap, stmt);
+    }
+
+    public Value executeStatements(PAP pap, List<PMLStatement> statements) throws PMException {
+        return executor.executeStatements(this, pap, statements);
     }
 
     @Override
@@ -48,11 +63,13 @@ public class ExecutionContext implements Serializable {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof ExecutionContext that)) {
             return false;
         }
-        ExecutionContext that = (ExecutionContext) o;
-        return Objects.equals(author, that.author) && Objects.equals(scope, that.scope);
+        return Objects.equals(author, that.author) && Objects.equals(
+                scope,
+                that.scope
+        ) && Objects.equals(executor, that.executor);
     }
 
     @Override

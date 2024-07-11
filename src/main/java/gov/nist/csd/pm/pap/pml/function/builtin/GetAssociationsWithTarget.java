@@ -2,8 +2,8 @@ package gov.nist.csd.pm.pap.pml.function.builtin;
 
 
 import gov.nist.csd.pm.common.graph.relationship.Association;
-import gov.nist.csd.pm.pap.pml.function.FormalArgument;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.function.FormalArg;
+import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.ArrayValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
@@ -20,11 +20,11 @@ public class GetAssociationsWithTarget extends FunctionDefinitionStatement {
         super(new FunctionDefinitionStatement.Builder("getAssociationsWithTarget")
                       .returns(returnType)
                       .args(
-                              new FormalArgument("target", Type.string())
+                              new FormalArg("target", Type.string(), reqCap)
                       )
-                      .executor((ctx, pap) -> {
+                      .executor((ctx, query) -> {
                           Value target = ctx.scope().getVariable("target");
-                          Collection<Association> associations = pap.query().graph().getAssociationsWithTarget(target.getStringValue());
+                          Collection<Association> associations = query.graph().getAssociationsWithTarget(target.getStringValue());
                           List<Value> associationValues = new ArrayList<>(associations.size());
                           for (Association association : associations) {
                               associationValues.add(Value.fromObject(association));

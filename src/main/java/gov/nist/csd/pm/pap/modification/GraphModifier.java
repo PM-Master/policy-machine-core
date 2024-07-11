@@ -15,7 +15,7 @@ import gov.nist.csd.pm.common.prohibition.Prohibition;
 import gov.nist.csd.pm.pap.admin.AdminPolicy;
 import gov.nist.csd.pm.pap.exception.*;
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.pap.op.pattern.Pattern;
+import gov.nist.csd.pm.common.pattern.Pattern;
 
 import java.util.Collection;
 import java.util.HashMap;

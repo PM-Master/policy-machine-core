@@ -37,4 +37,9 @@ public class PolicyQueryAdjudicator implements PolicyQuery {
         return obligations;
     }
 
+    @Override
+    public OperationsQuery operations() {
+        return null;
+    }
+
 }

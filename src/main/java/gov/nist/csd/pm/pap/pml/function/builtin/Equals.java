@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.function.builtin;
 
 
-import gov.nist.csd.pm.pap.pml.function.FormalArgument;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.function.FormalArg;
+import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.BoolValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
@@ -17,10 +17,10 @@ public class Equals extends FunctionDefinitionStatement {
         super(new FunctionDefinitionStatement.Builder("equals")
                       .returns(Type.bool())
                       .args(
-                              new FormalArgument(VALUE1, Type.any()),
-                              new FormalArgument(VALUE2, Type.any())
+                              new FormalArg(VALUE1, Type.any(), reqCap),
+                              new FormalArg(VALUE2, Type.any(), reqCap)
                       )
-                      .executor((ctx, pap) -> {
+                      .executor((ctx, query) -> {
                           Value v1 = ctx.scope().getVariable(VALUE1);
                           Value v2 = ctx.scope().getVariable(VALUE2);
 

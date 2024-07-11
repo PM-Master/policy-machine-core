@@ -5,12 +5,13 @@ import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
 import gov.nist.csd.pm.pap.pml.statement.IfStatement;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
+import gov.nist.csd.pm.pap.pml.statement.PMLStatementSerializer;
 import gov.nist.csd.pm.pap.pml.type.Type;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class IfStmtVisitor extends PMLBaseVisitor<PMLStatement> {
+public class IfStmtVisitor extends PMLBaseVisitor<PMLStatementSerializer<?>> {
 
     public IfStmtVisitor(VisitorContext visitorCtx) {
         super(visitorCtx);

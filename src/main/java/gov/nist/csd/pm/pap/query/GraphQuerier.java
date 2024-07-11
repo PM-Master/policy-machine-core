@@ -16,7 +16,7 @@ public abstract class GraphQuerier implements GraphQuery{
     protected abstract Collection<Association> getAssociationsWithTargetInternal(String target) throws PMException;
     protected abstract Collection<String> getAttributeContainersInternal(String node) throws PMException;
     protected abstract Collection<String> getPolicyClassContainersInternal(String node) throws PMException;
-    protected abstract boolean isContainedInternal(String node, String container) throws PMException;
+    protected abstract boolean isAscendantInternal(String node, String container) throws PMException;
 
     @Override
     public Node getNode(String name) throws PMException {
@@ -61,10 +61,10 @@ public abstract class GraphQuerier implements GraphQuery{
     }
 
     @Override
-    public boolean isAscendant(String node, String container) throws PMException {
-        checkNodeExists(node);
-        checkNodeExists(container);
-        return isContainedInternal(node, container);
+    public boolean isAscendant(String ascendant, String descendant) throws PMException {
+        checkNodeExists(ascendant);
+        checkNodeExists(descendant);
+        return isAscendantInternal(ascendant, descendant);
     }
 
     /**

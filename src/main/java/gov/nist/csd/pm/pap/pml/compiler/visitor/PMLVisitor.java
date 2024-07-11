@@ -2,15 +2,12 @@ package gov.nist.csd.pm.pap.pml.compiler.visitor;
 
 import gov.nist.csd.pm.pap.pml.CompiledPML;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
-import gov.nist.csd.pm.pap.pml.compiler.Variable;
 import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
-import gov.nist.csd.pm.pap.pml.exception.PMLCompilationException;
-import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
+import gov.nist.csd.pm.pap.pml.statement.*;
+import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.statement.VariableDeclarationStatement;
 
 import java.util.*;
@@ -27,9 +24,9 @@ public class PMLVisitor extends PMLBaseVisitor<CompiledPML> {
 
         // create a separate visitor context for the constants and functions and compile them before anything else
 
-        VisitorContext constAndFuncCtx = visitorCtx.copy();
-        Map<String, Expression> consts = compilePersistedConstants(constAndFuncCtx, sortedStatements.constantCtxs);
-        Map<String, FunctionDefinitionStatement> funcs = compilePersistedFunctions(constAndFuncCtx, sortedStatements.functionCtxs);
+        VisitorContext copy = visitorCtx.copy();
+        Map<String, Expression> consts = compileConstants(copy, sortedStatements.constantCtxs);
+        Map<String, FunctionDefinitionStatement> funcs = compileFunctions(copy, sortedStatements.functionCtxs);
 
         return new CompiledPML(
                 consts,
@@ -44,14 +41,16 @@ public class PMLVisitor extends PMLBaseVisitor<CompiledPML> {
         List<PMLParser.StatementContext> statementCtxs = new ArrayList<>();
 
         for (PMLParser.StatementContext stmtCtx : ctx.statement()) {
-            if (stmtCtx.variableDeclarationStatement() != null) {
-                if (stmtCtx.variableDeclarationStatement() instanceof PMLParser.ConstDeclarationContext) {
-                    constantCtxs.add((PMLParser.ConstDeclarationContext) stmtCtx.variableDeclarationStatement());
-                } else {
-                    statementCtxs.add(stmtCtx);
-                }
-            } else if (stmtCtx.functionDefinitionStatement() != null) {
-                functionCtxs.add(stmtCtx.functionDefinitionStatement());
+            PMLParser.ControlStatementContext controlCtx = stmtCtx.controlStatement();
+            PMLParser.OperationStatementContext operationCtx = stmtCtx.operationStatement();
+
+            if (controlCtx != null &&
+                    controlCtx.variableDeclarationStatement() != null &&
+                    controlCtx.variableDeclarationStatement() instanceof PMLParser.ConstDeclarationContext) {
+                constantCtxs.add((PMLParser.ConstDeclarationContext) controlCtx.variableDeclarationStatement());
+            } else if (operationCtx != null &&
+                    operationCtx.functionDefinitionStatement() != null) {
+                functionCtxs.add(operationCtx.functionDefinitionStatement());
             } else {
                 statementCtxs.add(stmtCtx);
             }
@@ -64,38 +63,12 @@ public class PMLVisitor extends PMLBaseVisitor<CompiledPML> {
                                     List<PMLParser.FunctionDefinitionStatementContext> functionCtxs,
                                     List<PMLParser.StatementContext> statementCtxs) {}
 
-    private Map<String, Variable> constExpressionsToVariables(Map<String, Expression> consts) {
-        Map<String, Variable> persistedConsts = new HashMap<>();
-        for (Map.Entry<String, Expression> e : consts.entrySet()) {
-            try {
-                persistedConsts.put(e.getKey(), new Variable(
-                        e.getKey(),
-                        e.getValue().getType(visitorCtx.scope()),
-                        true
-                ));
-            } catch (PMLScopeException ex) {
-                throw new PMLCompilationRuntimeException(ex);
-            }
-        }
-
-        return persistedConsts;
-    }
-
-    private Map<String, FunctionSignature> funcStmtsToSignatures(Map<String, FunctionDefinitionStatement> funcs) {
-        Map<String, FunctionSignature> signatures = new HashMap<>();
-        for (FunctionDefinitionStatement f : funcs.values()) {
-            signatures.put(f.getSignature().getFunctionName(), f.getSignature());
-        }
-
-        return signatures;
-    }
-
-    private Map<String, FunctionDefinitionStatement> compilePersistedFunctions(VisitorContext visitorCtx, List<PMLParser.FunctionDefinitionStatementContext> functionSignatureCtxs) {
+    private Map<String, FunctionDefinitionStatement> compileFunctions(VisitorContext visitorCtx, List<PMLParser.FunctionDefinitionStatementContext> functionSignatureCtxs) {
         FunctionDefinitionVisitor.FunctionSignatureVisitor functionSignatureVisitor =
-                new FunctionDefinitionVisitor.FunctionSignatureVisitor(visitorCtx);
+                new FunctionDefinitionVisitor.FunctionSignatureVisitor(visitorCtx, isOp);
         // initialize the function signatures map with any signature defined in the policy already
 
-        Map<String, FunctionSignature> functionSignatures = new HashMap<>(visitorCtx.scope().global().getProvidedFunctions());
+        Map<String, FunctionSignature> functionSignatures = new HashMap<>(visitorCtx.scope().global().getFunctions());
         // track the function definitions statements to be processed,
         // any function with an error won't be processed but execution will continue inorder to find anymore errors
         Map<String, PMLParser.FunctionDefinitionStatementContext> validFunctionDefs = new HashMap<>();
@@ -109,7 +82,7 @@ public class PMLVisitor extends PMLBaseVisitor<CompiledPML> {
                 // check that the function isn't already defined in the pml or global scope
                 if (functionSignatures.containsKey(signature.getFunctionName())) {
                     visitorCtx.errorLog().addError(functionDefinitionStatementContext,
-                            "function '" + signature.getFunctionName() + "' already defined in scope");
+                                                   "function '" + signature.getFunctionName() + "' already defined in scope");
                     continue;
                 }
 
@@ -121,7 +94,7 @@ public class PMLVisitor extends PMLBaseVisitor<CompiledPML> {
         }
 
         // store all function signatures for use in compiling function bodies
-        visitorCtx.scope().global().setProvidedFunctions(functionSignatures);
+        visitorCtx.scope().global().withFunctions(functionSignatures);
 
         // compile function bodies
         FunctionDefinitionVisitor functionDefinitionVisitor = new FunctionDefinitionVisitor(visitorCtx);
@@ -142,7 +115,7 @@ public class PMLVisitor extends PMLBaseVisitor<CompiledPML> {
         return funcs;
     }
 
-    private Map<String, Expression> compilePersistedConstants(VisitorContext visitorCtx, List<PMLParser.ConstDeclarationContext> constantCtxs) {
+    private Map<String, Expression> compileConstants(VisitorContext visitorCtx, List<PMLParser.ConstDeclarationContext> constantCtxs) {
         Map<String, Expression> vars = new HashMap<>();
 
         VarStmtVisitor varStmtVisitor = new VarStmtVisitor(visitorCtx);
@@ -162,13 +135,13 @@ public class PMLVisitor extends PMLBaseVisitor<CompiledPML> {
         return vars;
     }
 
-    private List<PMLStatement> compileStatements(List<PMLParser.StatementContext> statementCtxs) {
-        List<PMLStatement> statements = new ArrayList<>();
+    private List<PMLStatementSerializer> compileStatements(List<PMLParser.StatementContext> statementCtxs) {
+        List<PMLStatementSerializer> statements = new ArrayList<>();
         for (PMLParser.StatementContext stmtCtx : statementCtxs) {
             StatementVisitor statementVisitor = new StatementVisitor(visitorCtx);
 
             try {
-                PMLStatement statement = statementVisitor.visitStatement(stmtCtx);
+                PMLStatementSerializer statement = statementVisitor.visitStatement(stmtCtx);
                 statements.add(statement);
             } catch (PMLCompilationRuntimeException e) {
                 visitorCtx.errorLog().addErrors(e.getErrors());

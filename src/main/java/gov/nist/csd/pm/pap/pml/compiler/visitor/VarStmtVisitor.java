@@ -8,12 +8,15 @@ import gov.nist.csd.pm.pap.pml.expression.literal.LiteralVisitor;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
 import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
 import gov.nist.csd.pm.pap.pml.statement.*;
+import gov.nist.csd.pm.pap.pml.statement.ShortDeclarationStatement;
+import gov.nist.csd.pm.pap.pml.statement.VariableAssignmentStatement;
+import gov.nist.csd.pm.pap.pml.statement.VariableDeclarationStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class VarStmtVisitor extends PMLBaseVisitor<PMLStatement> {
+public class VarStmtVisitor extends PMLBaseVisitor<PMLStatementSerializer> {
 
 
     public VarStmtVisitor(VisitorContext visitorCtx) {

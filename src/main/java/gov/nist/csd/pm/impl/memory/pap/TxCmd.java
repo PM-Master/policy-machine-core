@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.impl.memory.pap;
 
 import gov.nist.csd.pm.pap.op.Operation;
+import gov.nist.csd.pm.pap.op.PreparedOperation;
 import gov.nist.csd.pm.pap.op.graph.*;
 import gov.nist.csd.pm.pap.op.obligation.CreateObligationOp;
 import gov.nist.csd.pm.pap.op.prohibition.CreateProhibitionOp;
@@ -11,8 +12,6 @@ import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.common.graph.relationship.Association;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.common.prohibition.Prohibition;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.Collection;
 import java.util.Map;
@@ -36,7 +35,7 @@ abstract class TxCmd implements TxRollbackSupport {
         USER_DEFINED_PML
     }
 
-    static TxCmd eventToCmd(Operation op) throws UnsupportedPolicyEvent {
+    static TxCmd eventToCmd(PreparedOperation<?> op) throws UnsupportedPolicyEvent {
         if (op instanceof AssignOp o) {
             return new TxCmd.AssignTxCmd(
                     o.getAscendant(),

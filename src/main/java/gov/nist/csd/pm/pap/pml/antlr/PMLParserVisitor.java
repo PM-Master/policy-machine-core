@@ -23,6 +23,18 @@ public interface PMLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitStatement(PMLParser.StatementContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link PMLParser#controlStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitControlStatement(PMLParser.ControlStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PMLParser#operationStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOperationStatement(PMLParser.OperationStatementContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link PMLParser#statementBlock}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -34,54 +46,6 @@ public interface PMLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitCreatePolicyStatement(PMLParser.CreatePolicyStatementContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link PMLParser#hierarchy}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitHierarchy(PMLParser.HierarchyContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link PMLParser#userAttrsHierarchy}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitUserAttrsHierarchy(PMLParser.UserAttrsHierarchyContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link PMLParser#objectAttrsHierarchy}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitObjectAttrsHierarchy(PMLParser.ObjectAttrsHierarchyContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link PMLParser#associationsHierarchy}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAssociationsHierarchy(PMLParser.AssociationsHierarchyContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link PMLParser#hierarchyBlock}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitHierarchyBlock(PMLParser.HierarchyBlockContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link PMLParser#associationsHierarchyBlock}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAssociationsHierarchyBlock(PMLParser.AssociationsHierarchyBlockContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link PMLParser#hierarchyStatement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitHierarchyStatement(PMLParser.HierarchyStatementContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link PMLParser#associationsHierarchyStatement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAssociationsHierarchyStatement(PMLParser.AssociationsHierarchyStatementContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PMLParser#createNonPCStatement}.
 	 * @param ctx the parse tree
@@ -200,20 +164,6 @@ public interface PMLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDeleteProhibition(PMLParser.DeleteProhibitionContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code DeleteFunction}
-	 * labeled alternative in {@link PMLParser#deleteType}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDeleteFunction(PMLParser.DeleteFunctionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code DeleteConst}
-	 * labeled alternative in {@link PMLParser#deleteType}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDeleteConst(PMLParser.DeleteConstContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link PMLParser#nodeType}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -294,6 +244,18 @@ public interface PMLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitReturnStatement(PMLParser.ReturnStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PMLParser#opReqCap}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOpReqCap(PMLParser.OpReqCapContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PMLParser#idArr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIdArr(PMLParser.IdArrContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PMLParser#functionInvokeStatement}.
 	 * @param ctx the parse tree
@@ -432,13 +394,6 @@ public interface PMLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitParenExpression(PMLParser.ParenExpressionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code PatternExpression}
-	 * labeled alternative in {@link PMLParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitPatternExpression(PMLParser.PatternExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code EqualsExpression}
 	 * labeled alternative in {@link PMLParser#expression}.

@@ -6,7 +6,7 @@ import gov.nist.csd.pm.common.obligation.Rule;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.op.AdminAccessRights;
 import gov.nist.csd.pm.pap.op.PrivilegeChecker;
-import gov.nist.csd.pm.pap.op.pattern.Pattern;
+import gov.nist.csd.pm.common.pattern.Pattern;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.obligation.Obligation;
 import gov.nist.csd.pm.pap.query.ObligationsQuery;

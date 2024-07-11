@@ -3,8 +3,8 @@ package gov.nist.csd.pm.pap.pml.compiler.visitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
-import gov.nist.csd.pm.pap.pml.statement.CreateObligationStatement;
-import gov.nist.csd.pm.pap.pml.statement.CreateRuleStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.CreateObligationStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.CreateRuleStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 
 import java.util.ArrayList;

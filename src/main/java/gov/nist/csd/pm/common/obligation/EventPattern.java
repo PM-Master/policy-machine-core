@@ -1,11 +1,8 @@
 package gov.nist.csd.pm.common.obligation;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.op.Operation;
-import gov.nist.csd.pm.pap.op.operand.Operand;
-import gov.nist.csd.pm.pap.op.pattern.Pattern;
+import gov.nist.csd.pm.common.pattern.Pattern;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.query.UserContext;
 
 import java.io.Serializable;
 import java.util.*;
@@ -13,18 +10,18 @@ import java.util.*;
 public class EventPattern implements Serializable {
 
     protected Pattern subjectPattern;
-    protected Pattern operationPattern;
+    protected List<String> operationPattern;
     protected List<Pattern> operandPatterns;
 
     public EventPattern(Pattern subjectPattern,
-                        Pattern operationPattern,
+                        List<String> operationPattern,
                         List<Pattern> operandPatterns) {
         this.subjectPattern = subjectPattern;
         this.operationPattern = operationPattern;
         this.operandPatterns = operandPatterns;
     }
 
-    public EventPattern(Pattern subjectPattern, Pattern operationPattern) {
+    public EventPattern(Pattern subjectPattern, List<String> operationPattern) {
         this.subjectPattern = subjectPattern;
         this.operationPattern = operationPattern;
         this.operandPatterns = new ArrayList<>();
@@ -41,11 +38,11 @@ public class EventPattern implements Serializable {
         this.subjectPattern = subjectPattern;
     }
 
-    public Pattern getOperationPattern() {
+    public List<String> getOperationPattern() {
         return operationPattern;
     }
 
-    public void setOperationPattern(Pattern operationPattern) {
+    public void setOperationPattern(List<String> operationPattern) {
         this.operationPattern = operationPattern;
     }
 
@@ -57,19 +54,19 @@ public class EventPattern implements Serializable {
         this.operandPatterns = operandPatterns;
     }
 
-    public boolean userMatches(UserContext userCtx, PAP pap) throws PMException {
-        return subjectPattern.matches(userCtx.getUser(), pap);
+    public boolean userMatches(String user, PAP pap) throws PMException {
+        return subjectPattern.matches(user, pap);
     }
 
-    public boolean processMatches(UserContext userCtx, PAP pap) throws PMException {
-        return subjectPattern.matches(userCtx.getProcess(), pap);
+    public boolean processMatches(String process, PAP pap) throws PMException {
+        return subjectPattern.matches(process, pap);
     }
 
-    public boolean operationMatches(Operation op, PAP pap) throws PMException {
-        return operationPattern.matches(op.getOpName(), pap);
+    public boolean operationMatches(String opName) throws PMException {
+        return operationPattern.contains(opName);
     }
 
-    public boolean operandsMatch(List<Operand> operands, PAP pap) throws PMException {
+    public boolean operandsMatch(List<Object> operands, PAP pap) throws PMException {
         // if more patterns than operands - false
         // if no patterns - true (match everything)
         if (operandPatterns.size() > operands.size()) {
@@ -90,10 +87,10 @@ public class EventPattern implements Serializable {
     }
 
     public boolean matches(EventContext eventCtx, PAP pap) throws PMException {
-        boolean userMatches = userMatches(eventCtx.getUserCtx(), pap);
-        boolean processMatches = processMatches(eventCtx.getUserCtx(), pap);
-        boolean opMatches = operationMatches(eventCtx.getOp(), pap);
-        boolean operandsMatch = operandsMatch(eventCtx.getOp().getOperands(), pap);
+        boolean userMatches = userMatches(eventCtx.user(), pap);
+        boolean processMatches = processMatches(eventCtx.process(), pap);
+        boolean opMatches = operationMatches(eventCtx.opName());
+        boolean operandsMatch = operandsMatch(eventCtx.operands(), pap);
 
         return (userMatches || processMatches) && opMatches && operandsMatch;
     }

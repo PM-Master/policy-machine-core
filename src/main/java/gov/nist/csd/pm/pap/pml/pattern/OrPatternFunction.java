@@ -2,7 +2,7 @@ package gov.nist.csd.pm.pap.pml.pattern;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.op.pattern.Pattern;
+import gov.nist.csd.pm.common.obligation.pattern.Pattern;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.value.PatternValue;
@@ -11,7 +11,7 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrPatternFunction extends PMLPatternFunctionStmt {
+public class OrPatternFunction extends PMLPatternFunction {
 
     public static Pattern pOr(String varName, Pattern ... patterns) throws PMException {
         List<Value> patternValues = new ArrayList<>();
@@ -55,7 +55,7 @@ public class OrPatternFunction extends PMLPatternFunctionStmt {
 
                 return new PatternExpression(
                         varName,
-                        new PatternFunctionInvokeExpression(signature.getFunctionName(), signature.getReturnType(), actualArgs)
+                        new PatternFunctionExpression(signature.getFunctionName(), signature.getReturnType(), actualArgs)
                 );
             }
         };

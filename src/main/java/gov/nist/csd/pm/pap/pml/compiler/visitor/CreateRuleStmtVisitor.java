@@ -5,15 +5,18 @@ import gov.nist.csd.pm.pap.pml.compiler.Variable;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
 import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
+import gov.nist.csd.pm.pap.pml.expression.FunctionInvokeExpression;
+import gov.nist.csd.pm.pap.pml.expression.LogicalExpression;
+import gov.nist.csd.pm.pap.pml.expression.literal.Literal;
+import gov.nist.csd.pm.pap.pml.pattern.PMLPatternFunction;
 import gov.nist.csd.pm.pap.pml.pattern.PatternExpression;
-import gov.nist.csd.pm.pap.pml.pattern.PatternFunctionInvokeExpression;
-import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
-import gov.nist.csd.pm.pap.pml.pattern.PatternFunctionSignature;
+import gov.nist.csd.pm.pap.pml.pattern.PatternFunctionExpression;
 import gov.nist.csd.pm.pap.pml.scope.UnknownFunctionInScopeException;
 import gov.nist.csd.pm.pap.pml.scope.VariableAlreadyDefinedInScopeException;
-import gov.nist.csd.pm.pap.pml.statement.CreateRuleStatement;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
-import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
+import gov.nist.csd.pm.pap.pml.statement.*;
+import gov.nist.csd.pm.pap.pml.statement.operation.CreateOperationStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.CreateRuleStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 
 import java.util.ArrayList;
@@ -57,7 +60,7 @@ public class CreateRuleStmtVisitor extends PMLBaseVisitor<CreateRuleStatement> {
     }
 
 
-    private PatternExpression parsePattern(PMLParser.PatternContext ctx, Type varType)
+    private Expression parsePattern(PMLParser.PatternContext ctx, Type varType)
             throws VariableAlreadyDefinedInScopeException, UnknownFunctionInScopeException {
         if (ctx == null) {
             return null;
@@ -66,18 +69,37 @@ public class CreateRuleStmtVisitor extends PMLBaseVisitor<CreateRuleStatement> {
         VisitorContext copy = visitorCtx.copy();
         String varName = ctx.ID().getText();
         copy.scope().addVariable(varName, new Variable(varName, varType, true));
-        return parseFunctionInvoke(copy, varName, ctx.functionInvoke());
+
+        return parseFunctionInvoke(copy, varName, ctx);
     }
 
-    private PatternExpression parseFunctionInvoke(VisitorContext copy, String varName, PMLParser.FunctionInvokeContext ctx)
+    private PatternExpression parseFunctionInvoke(VisitorContext copy, String varName, PMLParser.PatternContext ctx)
             throws UnknownFunctionInScopeException {
-        PatternFunctionInvokeExpression expression = PatternFunctionInvokeExpression.compile(copy, ctx);
-        FunctionSignature functionSignature = copy.scope().getFunction(expression.getFunctionName());
-        if (!(functionSignature instanceof PatternFunctionSignature pmlFuncSignature)) {
+        Expression expression = Expression.compile(copy, ctx.expression(), Type.bool());
+        checkPatternExpressions(ctx, expression);
+
+        PMLFunction<?> function = copy.scope().getFunction(expression.getFunctionName());
+        if (!(function instanceof PMLPatternFunction)) {
             throw new PMLCompilationRuntimeException(ctx, "only pattern functions are supported here");
         }
 
         return new PatternExpression(varName, expression);
+    }
+
+    private static void checkPatternExpressions(PMLParser.PatternContext ctx, Expression expression) {
+        if (expression instanceof LogicalExpression logicalExpression) {
+            checkPatternExpressions(ctx, logicalExpression.getLeft());
+            checkPatternExpressions(ctx, logicalExpression.getRight());
+        } else if (expression instanceof FunctionInvokeExpression functionInvokeExpression) {
+            List<Expression> actualArgs = functionInvokeExpression.getActualArgs();
+            for (Expression actualArg : actualArgs) {
+                checkPatternExpressions(ctx, actualArg);
+            }
+        } else if (expression instanceof Literal) {
+            return;
+        }
+
+        throw new PMLCompilationRuntimeException(ctx, "pattern expected pattern function invoke or logical expression");
     }
 
     private CreateRuleStatement.ResponseBlock getResponse(PMLParser.ResponseContext ctx) throws VariableAlreadyDefinedInScopeException {
@@ -95,19 +117,21 @@ public class CreateRuleStmtVisitor extends PMLBaseVisitor<CreateRuleStatement> {
         CreateRuleStmtVisitor createRuleStmtVisitor = new CreateRuleStmtVisitor(localVisitorCtx);
         DeleteRuleStmtVisitor deleteRuleStmtVisitor = new DeleteRuleStmtVisitor(localVisitorCtx);
 
-        List<PMLStatement> stmts = new ArrayList<>();
+        List<PMLStatementSerializer> stmts = new ArrayList<>();
         for (PMLParser.ResponseStatementContext responseStmtCtx : responseStmtsCtx) {
-            PMLStatement stmt = null;
+            PMLStatementSerializer stmt = null;
 
             if (responseStmtCtx.statement() != null) {
                 stmt = statementVisitor.visitStatement(responseStmtCtx.statement());
             } else if (responseStmtCtx.createRuleStatement() != null) {
+                create rule might need to be a PMLStatement but it doesnt need to be a OperationStatement
+
                 stmt = createRuleStmtVisitor.visitCreateRuleStatement(responseStmtCtx.createRuleStatement());
             } else if (responseStmtCtx.deleteRuleStatement() != null) {
                 stmt = deleteRuleStmtVisitor.visitDeleteRuleStatement(responseStmtCtx.deleteRuleStatement());
             }
 
-            if (stmt instanceof FunctionDefinitionStatement) {
+            if (stmt instanceof CreateOperationStatement) {
                 throw new PMLCompilationRuntimeException(responseStmtCtx, "functions are not allowed inside response blocks");
             }
 

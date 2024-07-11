@@ -1,26 +1,37 @@
 package gov.nist.csd.pm.pap.pml.function;
 
 import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.PolicyPoint;
-import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
-import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.pml.statement.PMLStatementSerializer;
 import gov.nist.csd.pm.pap.pml.type.Type;
-import gov.nist.csd.pm.pap.pml.value.Value;
+import gov.nist.csd.pm.pap.pml.value.ArrayValue;
+import gov.nist.csd.pm.pap.pml.value.StringValue;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class FunctionSignature extends PMLStatement {
+public class FunctionSignature implements PMLStatementSerializer {
 
+    private boolean isOp;
     private String functionName;
     private Type returnType;
-    private List<FormalArgument> args;
+    private List<PMLRequiredCapability> capMap;
 
-    public FunctionSignature(String functionName, Type returnType, List<FormalArgument> args) {
+    public FunctionSignature(boolean isOp, String functionName, Type returnType, List<PMLRequiredCapability> capMap) {
+        this.isOp = isOp;
         this.functionName = functionName;
         this.returnType = returnType;
-        this.args = args;
+        this.capMap = capMap;
+    }
+
+    public boolean isOp() {
+        return isOp;
+    }
+
+    public void setOp(boolean op) {
+        isOp = op;
     }
 
     public String getFunctionName() {
@@ -39,35 +50,12 @@ public class FunctionSignature extends PMLStatement {
         this.returnType = returnType;
     }
 
-    public List<FormalArgument> getArgs() {
-        return args;
+    public List<PMLRequiredCapability> getCapMap() {
+        return capMap;
     }
 
-    public void setArgs(List<FormalArgument> args) {
-        this.args = args;
-    }
-
-    @Override
-    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
-        return new VoidValue();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        FunctionSignature that = (FunctionSignature) o;
-        return Objects.equals(functionName, that.functionName) && Objects.equals(
-                returnType, that.returnType) && Objects.equals(args, that.args);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(functionName, returnType, args);
+    public void setCapMap(List<PMLRequiredCapability> capMap) {
+        this.capMap = capMap;
     }
 
     @Override
@@ -76,8 +64,9 @@ public class FunctionSignature extends PMLStatement {
 
         String indent = indent(indentLevel);
         return String.format(
-                "%sfunction %s(%s) %s",
+                "%s%s %s(%s) %s",
                 indent,
+                (isOp ? "operation" : "routine"),
                 functionName,
                 argsStr,
                 returnType.isVoid() ? "" : returnType.toString() + " "
@@ -86,12 +75,23 @@ public class FunctionSignature extends PMLStatement {
 
     private String serializeFormalArgs() {
         String pml = "";
-        for (FormalArgument formalArgument : args) {
+        for (PMLRequiredCapability cap : capMap) {
             if (!pml.isEmpty()) {
                 pml += ", ";
             }
 
-            pml += formalArgument.getType().toString() + " " + formalArgument.getName();
+            List<StringValue> arr = new ArrayList<>();
+            for (String c : cap.caps()) {
+                arr.add(new StringValue(c));
+            }
+
+            String capStr = "";
+            if (!arr.isEmpty()) {
+                ArrayValue arrayValue = new ArrayValue(new ArrayList<>(), Type.string());
+                capStr = arrayValue.toString();
+            }
+
+            pml += cap.type().toString() + " " + cap.operand() + " " + (capStr.isEmpty() ? "" : capStr);
         }
         return pml;
     }

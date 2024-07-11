@@ -19,7 +19,6 @@ public class CreateObjectOp extends CreateNodeOp{
                 "create_object",
                 List.of(
                         new RequiredCapability("name"),
-                        new RequiredCapability("type"),
                         new RequiredCapability("properties"),
                         new RequiredCapability("descendants", List.of(CREATE_OBJECT))
                 ),

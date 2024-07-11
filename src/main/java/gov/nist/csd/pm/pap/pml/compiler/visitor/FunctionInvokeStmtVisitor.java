@@ -4,10 +4,9 @@ import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.expression.FunctionInvokeExpression;
-import gov.nist.csd.pm.pap.pml.function.FormalArgument;
+import gov.nist.csd.pm.pap.pml.function.FormalArg;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
-import gov.nist.csd.pm.pap.pml.pattern.PatternFunctionSignature;
 import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
 import gov.nist.csd.pm.pap.pml.scope.UnknownFunctionInScopeException;
 import gov.nist.csd.pm.pap.pml.type.Type;
@@ -58,7 +57,7 @@ public class FunctionInvokeStmtVisitor extends PMLBaseVisitor<FunctionInvokeExpr
         // check that the actual args are correct type only if the function is not a pattern function
         // pattern functions are handled differently because we do not want to invoke them now, just
         // prepare them to be invoked during the event processing flow
-        List<FormalArgument> formalArgs = functionSignature.getArgs();
+        List<FormalArg> formalArgs = functionSignature.getArgs();
         if (formalArgs.size() != actualArgs.size()) {
             throw new PMLCompilationRuntimeException(
                     funcCallCtx,
@@ -70,7 +69,7 @@ public class FunctionInvokeStmtVisitor extends PMLBaseVisitor<FunctionInvokeExpr
                 try {
                     Expression actual = actualArgs.get(i);
                     Type actualType = actual.getType(visitorCtx.scope());
-                    FormalArgument formal = formalArgs.get(i);
+                    FormalArg formal = formalArgs.get(i);
 
                     if (!actual.getType(visitorCtx.scope()).equals(formal.getType())) {
                         throw new PMLCompilationRuntimeException(

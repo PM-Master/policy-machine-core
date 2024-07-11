@@ -4,9 +4,22 @@ options {
 	tokenVocab = PMLLexer;
 }
 
-pml: (statement)* EOF ;
+pml: statement* EOF ;
 
-statement: (
+statement: (controlStatement | operationStatement) ;
+
+controlStatement: (
+    variableAssignmentStatement
+    | variableDeclarationStatement
+    | foreachStatement
+    | returnStatement
+    | breakStatement
+    | continueStatement
+    | functionInvokeStatement
+    | ifStatement
+) ;
+
+operationStatement: (
     createPolicyStatement
     | createNonPCStatement
     | createObligationStatement
@@ -19,28 +32,12 @@ statement: (
     | setResourceAccessRightsStatement
     | deleteStatement
     | deleteRuleStatement
-    | variableAssignmentStatement
-    | variableDeclarationStatement
     | functionDefinitionStatement
-    | returnStatement
-    | foreachStatement
-    | breakStatement
-    | continueStatement
-    | functionInvokeStatement
-    | ifStatement
 ) ;
 
 statementBlock: OPEN_CURLY statement* CLOSE_CURLY ;
 
-createPolicyStatement: CREATE POLICY_CLASS name=expression (WITH_PROPERTIES properties=expression)? hierarchy?;
-hierarchy: OPEN_CURLY userAttrsHierarchy? objectAttrsHierarchy? associationsHierarchy? CLOSE_CURLY ;
-userAttrsHierarchy: USER_ATTRIBUTES hierarchyBlock ;
-objectAttrsHierarchy: OBJECT_ATTRIBUTES hierarchyBlock;
-associationsHierarchy : ASSOCIATIONS associationsHierarchyBlock;
-hierarchyBlock: OPEN_CURLY hierarchyStatement* CLOSE_CURLY ;
-associationsHierarchyBlock: OPEN_CURLY associationsHierarchyStatement* CLOSE_CURLY ;
-hierarchyStatement: name=expression properties=expression?;
-associationsHierarchyStatement: ua=expression AND target=expression WITH arset=expression;
+createPolicyStatement: CREATE POLICY_CLASS name=expression (WITH_PROPERTIES properties=expression)?;
 
 createNonPCStatement:
     CREATE nonPCNodeType name=expression
@@ -54,10 +51,10 @@ createObligationStatement:
 createRuleStatement:
     CREATE RULE ruleName=expression
     WHEN subjectPattern=pattern
-    PERFORMS operationPattern=pattern
+    PERFORMS operationPattern=expression
     (ON operandPatterns=patternArray)?
     response ;
-patternArray: pattern* ;
+patternArray: OPEN_BRACKET (pattern (COMMA pattern)*)? CLOSE_BRACKET ;
 
 response:
     DO OPEN_PAREN ID CLOSE_PAREN responseBlock;
@@ -90,7 +87,7 @@ dissociateStatement:
     DISSOCIATE ua=expression AND target=expression ;
 
 setResourceAccessRightsStatement:
-    SET_RESOURCE_ACCESS_RIGHTS accessRights=expression;
+    SET_RESOURCE_ACCESS_RIGHTS accessRightsArr=idArr;
 
 deleteStatement:
     DELETE deleteType expression ;
@@ -114,10 +111,13 @@ varSpec: ID ASSIGN_EQUALS expression;
 variableAssignmentStatement: ID PLUS? ASSIGN_EQUALS expression;
 
 functionDefinitionStatement: functionSignature statementBlock ;
-functionSignature: FUNCTION ID OPEN_PAREN formalArgList CLOSE_PAREN returnType=variableType? ;
+functionSignature: (ROUTINE | OPERATION) ID OPEN_PAREN formalArgList CLOSE_PAREN returnType=variableType? ;
 formalArgList: (formalArg (COMMA formalArg)*)? ;
-formalArg: variableType ID ;
+formalArg: variableType ID opReqCap?;
 returnStatement: RETURN expression?;
+
+opReqCap: (ID | idArr) ;
+idArr: OPEN_BRACKET (ID (COMMA ID))? CLOSE_BRACKET ;
 
 functionInvokeStatement: functionInvoke;
 
@@ -152,11 +152,10 @@ expression:
     | OPEN_PAREN expression CLOSE_PAREN #ParenExpression
 	| left=expression PLUS right=expression #PlusExpression
     | left=expression (EQUALS | NOT_EQUALS) right=expression #EqualsExpression
-    | left=expression (LOGICAL_AND | LOGICAL_OR) right=expression #LogicalExpression
-    | pattern #PatternExpression;
-expressionList: expression (COMMA expression)*;
+    | left=expression (LOGICAL_AND | LOGICAL_OR) right=expression #LogicalExpression ;
+expressionList: expression (COMMA expression)* ;
 
-pattern: OPEN_PAREN? ID CLOSE_PAREN? PATTERN_OP patternFuncInvoke=functionInvoke;
+pattern: OPEN_PAREN? ID CLOSE_PAREN? expression;
 
 literal:
     stringLit #StringLiteral

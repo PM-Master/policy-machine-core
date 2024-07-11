@@ -48,16 +48,9 @@ public class AdminAccessRights {
     public static final String SET_RESOURCE_OPERATIONS = "set_resource_operations";
     public static final String GET_RESOURCE_OPERATIONS = "get_resource_operations";
 
-    // pml
-    public static final String CREATE_FUNCTION = "create_function";
-    public static final String DELETE_FUNCTION = "delete_function";
-    public static final String GET_FUNCTIONS = "get_functions";
-    public static final String CREATE_CONSTANT = "create_constant";
-    public static final String DELETE_CONSTANT = "delete_constant";
-    public static final String GET_CONSTANTS = "get_constants";
-    public static final String GET_CONTEXT = "get_context";
-    public static final String SERIALIZE_POLICY = "serialize_policy";
-    public static final String DESERIALIZE_POLICY = "deserialize_policy";
+    // operations
+    public static final String CREATE_ADMIN_OPERATION = "create_admin_operation";
+
     public static final String RESET = "reset";
     public static final String ALL_ACCESS_RIGHTS = "*";
     public static final String ALL_ADMIN_ACCESS_RIGHTS = "*a";
@@ -109,16 +102,9 @@ public class AdminAccessRights {
             SET_RESOURCE_OPERATIONS,
             GET_RESOURCE_OPERATIONS,
 
-            // pml
-            CREATE_FUNCTION,
-            DELETE_FUNCTION,
-            GET_FUNCTIONS,
-            CREATE_CONSTANT,
-            DELETE_CONSTANT,
-            GET_CONSTANTS,
-            GET_CONTEXT,
-            SERIALIZE_POLICY,
-            DESERIALIZE_POLICY,
+            // operations
+            CREATE_ADMIN_OPERATION,
+
             RESET,
 
             // review

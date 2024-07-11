@@ -6,16 +6,10 @@ import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.pap.serialization.PolicyDeserializer;
 import gov.nist.csd.pm.pap.serialization.pml.PMLDeserializer;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.pml.expression.Expression;
-import gov.nist.csd.pm.pap.pml.context.VisitorContext;
-import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
-import gov.nist.csd.pm.pap.pml.scope.Scope;
-import gov.nist.csd.pm.pap.pml.statement.VariableDeclarationStatement;
-import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.graph.node.NodeType;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 
 import java.util.*;
 

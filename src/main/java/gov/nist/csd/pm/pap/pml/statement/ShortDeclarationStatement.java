@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -10,7 +11,7 @@ import gov.nist.csd.pm.pap.pml.value.VoidValue;
 import java.util.Objects;
 
 
-public class ShortDeclarationStatement extends PMLStatement{
+public class ShortDeclarationStatement implements PMLStatement {
 
     private String id;
     private Expression expression;
@@ -37,8 +38,8 @@ public class ShortDeclarationStatement extends PMLStatement{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
-        ctx.scope().addVariable(id, expression.execute(ctx, policy));
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
+        ctx.scope().addVariable(id, ctx.executeStatement(pap, expression));
 
         return new VoidValue();
     }

@@ -17,7 +17,7 @@ public interface GraphQuery {
      * @return The resource access rights recognized by this policy.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    AccessRightSet getResourceAccessRights() throws PMException;
+    AccessRightSet mode to operations getResourceAccessRights() throws PMException;
 
     /**
      * Check if a node exists in the graph.
@@ -115,11 +115,11 @@ public interface GraphQuery {
     /**
      * Return true if the node is an ascendant of the container.
      *
-     * @param node The node.
-     * @param container The container.
+     * @param ascendant The node.
+     * @param descendant The container.
      * @return True if the node is an ascendant of the container.
      * @throws PMException If any PM related exceptions occur in the implementing class.
      */
-    boolean isAscendant(String node, String container) throws PMException;
+    boolean isAscendant(String ascendant, String descendant) throws PMException;
 
 }

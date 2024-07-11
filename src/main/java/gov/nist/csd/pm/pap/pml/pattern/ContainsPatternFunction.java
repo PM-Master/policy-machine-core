@@ -2,7 +2,7 @@ package gov.nist.csd.pm.pap.pml.pattern;
 
 import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.op.pattern.Pattern;
+import gov.nist.csd.pm.common.obligation.pattern.Pattern;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
 import gov.nist.csd.pm.pap.pml.type.Type;
@@ -11,7 +11,7 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.List;
 
-public class ContainsPatternFunction extends PMLPatternFunctionStmt {
+public class ContainsPatternFunction extends PMLPatternFunction {
 
     public static Pattern pContains(String varName, String value) throws PMException {
         return new ContainsPatternFunction()
@@ -41,7 +41,7 @@ public class ContainsPatternFunction extends PMLPatternFunctionStmt {
 
                 return new PatternExpression(
                         varName,
-                        new PatternFunctionInvokeExpression(signature.getFunctionName(), signature.getReturnType(), List.of(
+                        new PatternFunctionExpression(signature.getFunctionName(), signature.getReturnType(), List.of(
                                 new StringLiteral(argValues.get(0).getStringValue())
                         ))
                 );

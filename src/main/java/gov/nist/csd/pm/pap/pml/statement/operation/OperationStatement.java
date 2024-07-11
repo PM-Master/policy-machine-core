@@ -1,0 +1,60 @@
+package gov.nist.csd.pm.pap.pml.statement.operation;
+
+import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PAP;
+import gov.nist.csd.pm.pap.op.Operation;
+import gov.nist.csd.pm.pap.op.PreparedOperation;
+import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
+import gov.nist.csd.pm.pap.pml.expression.Expression;
+import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
+import gov.nist.csd.pm.pap.pml.value.VoidValue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+public abstract class OperationStatement extends PreparedOperation<Void> implements PMLStatement {
+
+    protected List<Expression> expressions;
+
+    public OperationStatement(Operation<Void> op) {
+        super(op, new ArrayList<>());
+
+    }
+
+    public abstract List<Object> prepareOperands(ExecutionContext ctx, PAP pap) throws PMException;
+
+    @Override
+    public final VoidValue execute(ExecutionContext ctx, PAP pap) throws PMException {
+        List<Object> prepareOperands = prepareOperands(ctx, pap);
+        setOperands(prepareOperands);
+
+        execute(pap);
+
+        return new VoidValue();
+    }
+
+    @Override
+    public final Void execute(PAP pap) throws PMException  {
+        return super.execute(pap);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof OperationStatement that)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        return Objects.equals(expressions, that.expressions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), expressions);
+    }
+}

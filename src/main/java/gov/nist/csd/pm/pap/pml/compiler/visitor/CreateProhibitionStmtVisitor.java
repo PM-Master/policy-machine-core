@@ -4,7 +4,7 @@ import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
-import gov.nist.csd.pm.pap.pml.statement.CreateProhibitionStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.CreateProhibitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 
 public class CreateProhibitionStmtVisitor extends PMLBaseVisitor<CreateProhibitionStatement> {

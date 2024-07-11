@@ -4,7 +4,7 @@ import gov.nist.csd.pm.common.graph.node.NodeType;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
-import gov.nist.csd.pm.pap.pml.statement.CreateNonPCStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.CreateNonPCStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 
 import static gov.nist.csd.pm.common.graph.node.NodeType.OA;

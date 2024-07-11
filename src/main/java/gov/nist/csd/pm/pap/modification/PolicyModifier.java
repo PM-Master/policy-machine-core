@@ -4,6 +4,7 @@ import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.admin.AdminPolicy;
 import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.exception.PMLConstantAlreadyDefinedException;
+import gov.nist.csd.pm.pap.op.Operation;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
 import gov.nist.csd.pm.common.tx.Transactional;
 
@@ -26,7 +27,13 @@ public abstract class PolicyModifier extends Modifier implements PolicyModificat
 
     @Override
     public abstract ObligationsModifier obligations();
-    
+
+    @Override
+    public abstract OperationsModifier operations();
+
+    @Override
+    public abstract RoutinesModifier routines();
+
     @Override
     public void verifyAdminPolicyClassNode() throws PMException {
         if (!query().graph().nodeExists(AdminPolicyNode.ADMIN_POLICY.nodeName())) {

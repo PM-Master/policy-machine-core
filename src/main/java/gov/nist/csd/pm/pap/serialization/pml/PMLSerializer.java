@@ -12,7 +12,7 @@ import gov.nist.csd.pm.pap.pml.expression.literal.ArrayLiteral;
 import gov.nist.csd.pm.pap.pml.expression.literal.MapLiteral;
 import gov.nist.csd.pm.pap.pml.expression.literal.StringLiteral;
 import gov.nist.csd.pm.pap.pml.expression.reference.ReferenceByID;
-import gov.nist.csd.pm.pap.pml.statement.*;
+import gov.nist.csd.pm.pap.pml.statement.operation.*;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.serialization.PolicySerializer;
 import gov.nist.csd.pm.pap.query.PolicyQuery;
@@ -41,9 +41,6 @@ public class PMLSerializer implements PolicySerializer {
     private String serialize(JSONPolicy jsonPolicy) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("// pml functions and constants\n");
-        sb.append(jsonUserDefinedPMLToPML(jsonPolicy.getPml()));
-
         sb.append("// resource operations\n");
         sb.append(jsonResourceOperations(jsonPolicy.getResourceAccessRights()));
 
@@ -65,7 +62,7 @@ public class PMLSerializer implements PolicySerializer {
             arrayLiteral.add(new StringLiteral(ar));
         }
 
-        return new SetResourceAccessRightsStatement(arrayLiteral).toFormattedString(0) + "\n";
+        return new SetResourceOperationsStatement(arrayLiteral).toFormattedString(0) + "\n";
     }
 
     private String jsonUserDefinedPMLToPML(JSONPML JSONPML) {

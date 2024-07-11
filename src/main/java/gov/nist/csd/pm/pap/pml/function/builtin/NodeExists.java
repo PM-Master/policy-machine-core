@@ -1,8 +1,8 @@
 package gov.nist.csd.pm.pap.pml.function.builtin;
 
 
-import gov.nist.csd.pm.pap.pml.function.FormalArgument;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
+import gov.nist.csd.pm.pap.pml.function.FormalArg;
+import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.BoolValue;
 
@@ -15,10 +15,10 @@ public class NodeExists extends FunctionDefinitionStatement {
         super(new FunctionDefinitionStatement.Builder("nodeExists")
                       .returns(Type.bool())
                       .args(
-                              new FormalArgument(NODE_ARG, Type.string())
+                              new FormalArg(NODE_ARG, Type.string(), reqCap)
                       )
-                      .executor((ctx, pap) -> {
-                          return new BoolValue(pap.query().graph().nodeExists(ctx.scope().getVariable(NODE_ARG).getStringValue()));
+                      .executor((ctx, query) -> {
+                          return new BoolValue(query.graph().nodeExists(ctx.scope().getVariable(NODE_ARG).getStringValue()));
                       })
                       .build()
         );

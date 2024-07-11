@@ -33,4 +33,14 @@ public class PolicyModificationAdjudicator implements PolicyModification {
         return obligations;
     }
 
+    @Override
+    public OperationsModification operations() {
+        return null;
+    }
+
+    @Override
+    public RoutinesModification routines() {
+        return null;
+    }
+
 }

@@ -1,6 +1,7 @@
 package gov.nist.csd.pm.pap.pml.statement;
 
 import gov.nist.csd.pm.common.exception.PMException;
+import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.PolicyPoint;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Objects;
 
 
-public class VariableDeclarationStatement extends PMLStatement{
+public class VariableDeclarationStatement implements PMLStatement {
 
     private boolean isConst;
     private List<Declaration> declarations;
@@ -45,9 +46,9 @@ public class VariableDeclarationStatement extends PMLStatement{
     }
 
     @Override
-    public Value execute(ExecutionContext ctx, PolicyPoint policy) throws PMException {
+    public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
         for (Declaration declaration : declarations) {
-            Value value = declaration.expression.execute(ctx, policy);
+            Value value = ctx.executeStatement(pap, declaration.expression);
 
             ctx.scope().local().addOrOverwriteVariable(declaration.id, value);
         }

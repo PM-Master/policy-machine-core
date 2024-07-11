@@ -1,20 +1,17 @@
 package gov.nist.csd.pm.pap.pml.scope;
 
 import gov.nist.csd.pm.pap.op.AdminAccessRights;
-import gov.nist.csd.pm.pap.pml.PMLBuiltinFunctions;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
-import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
-import gov.nist.csd.pm.pap.pml.statement.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
-import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static gov.nist.csd.pm.pap.admin.AdminPolicyNode.*;
 import static gov.nist.csd.pm.pap.admin.AdminPolicyNode.OBLIGATIONS_TARGET;
+import static gov.nist.csd.pm.pap.pml.PMLBuiltinFunctions.builtinFunctions;
 
-public class CompileGlobalScope extends GlobalScope<Variable, FunctionSignature> {
+public class CompileGlobalScope extends GlobalScope<Variable> {
 
     public CompileGlobalScope() {
         // buitin variables
@@ -33,13 +30,11 @@ public class CompileGlobalScope extends GlobalScope<Variable, FunctionSignature>
         builtinConstants.put(OBLIGATIONS_TARGET.constantName(), new Variable(OBLIGATIONS_TARGET.constantName(), Type.string(), true));
 
         // add built in functions
-        Map<String, FunctionSignature> builtinFunctions = new HashMap<>();
-        Map<String, FunctionDefinitionStatement> functions = PMLBuiltinFunctions.builtinFunctions();
-        for (Map.Entry<String, FunctionDefinitionStatement> e : functions.entrySet()) {
-            builtinFunctions.put(e.getKey(), e.getValue().getSignature());
-        }
+        withConstants(builtinConstants);
 
-        setBuiltinConstants(builtinConstants);
-        setBuiltinFunctions(builtinFunctions);
+        Map<String, PMLFunction> funcs = builtinFunctions();
+        for (Map.Entry<String, PMLFunction> func : funcs.entrySet()) {
+            addFunction(func.getKey(), func.getValue());
+        }
     }
 }

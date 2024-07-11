@@ -1,5 +1,8 @@
 lexer grammar PMLLexer;
 
+OPERATION: 'operation';
+ROUTINE: 'routine';
+
 CREATE      : 'create' ;
 DELETE      : 'delete' ;
 
@@ -13,7 +16,7 @@ AS: 'as' ;
 ON: 'on' ;
 IN: 'in' ;
 DO: 'do' ;
-PATTERN_OP: '=>';
+PATTERN_OP: '->';
 
 INTERSECTION: 'intersection' | 'inter';
 UNION: 'union' ;
@@ -53,8 +56,6 @@ ASSOCIATIONS: 'associations' ;
 
 BREAK                  : 'break';
 DEFAULT                : 'default';
-FUNCTION               : 'function';
-INTERFACE              : 'interface';
 MAP                    : 'map';
 ELSE                   : 'else';
 CONST                  : 'const';

@@ -19,7 +19,6 @@ public class CreateUserOp extends CreateNodeOp{
                 "create_user",
                 List.of(
                         new RequiredCapability("name"),
-                        new RequiredCapability("type"),
                         new RequiredCapability("properties"),
                         new RequiredCapability("descendants", List.of(CREATE_USER))
                 ),

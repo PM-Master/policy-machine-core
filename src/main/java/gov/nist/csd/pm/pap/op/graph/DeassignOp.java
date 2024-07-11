@@ -15,16 +15,18 @@ public class DeassignOp extends GraphOp {
 
     public DeassignOp() {
         super(
-                "create_user",
+                "deassign",
                 List.of(
-                        new RequiredCapability(DEASSIGN),
-                        new RequiredCapability(DEASSIGN_FROM)
+                        new RequiredCapability("ascendant", List.of(DEASSIGN)),
+                        new RequiredCapability("descendants", List.of(DEASSIGN_FROM))
                 ),
                 (pap, operands) -> {
-                    pap.modify().graph().deassign(
-                            (String) operands.get(0),
-                            (String) operands.get(1)
-                    );
+                    String asc = (String) operands.get(0);
+                    List<String> descs = (List<String>) operands.get(1);
+
+                    for (String desc : descs) {
+                        pap.modify().graph().deassign(asc, desc);
+                    }
 
                     return null;
                 }

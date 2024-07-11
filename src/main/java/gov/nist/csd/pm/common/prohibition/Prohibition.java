@@ -1,7 +1,7 @@
 package gov.nist.csd.pm.common.prohibition;
 
 import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
-import gov.nist.csd.pm.pap.pml.statement.CreateProhibitionStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.CreateProhibitionStatement;
 
 import java.io.Serializable;
 import java.util.ArrayList;

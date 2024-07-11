@@ -19,7 +19,7 @@ public interface PolicyPoint extends Transactional, PMLExecutable {
     void reset() throws PMException;
 
     /**
-     * Serialize the current policy state with the given PolicySerializer.]
+     * Serialize the current policy state with the given PolicySerializer.
      *
      * @param serializer The PolicySerializer used to generate the output String.
      * @return The string representation of the policy.
@@ -40,4 +40,5 @@ public interface PolicyPoint extends Transactional, PMLExecutable {
      * @throws PMException If there is an error deserializing the given inputs string.
      */
     void deserialize(UserContext author, Collection<String> input, PolicyDeserializer policyDeserializer) throws PMException;
+
 }

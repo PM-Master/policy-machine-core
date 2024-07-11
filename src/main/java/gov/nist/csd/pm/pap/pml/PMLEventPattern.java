@@ -1,17 +1,6 @@
 package gov.nist.csd.pm.pap.pml;
 
-import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.common.obligation.EventPattern;
-import gov.nist.csd.pm.pap.op.Operation;
-import gov.nist.csd.pm.pap.op.pattern.Pattern;
-import gov.nist.csd.pm.pap.PAP;
-import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
-import gov.nist.csd.pm.pap.pml.scope.GlobalScope;
-import gov.nist.csd.pm.pap.pml.value.StringValue;
-import gov.nist.csd.pm.pap.pml.value.Value;
-import gov.nist.csd.pm.pap.query.UserContext;
-
-import java.util.List;
 
 public class PMLEventPattern extends EventPattern {
 
