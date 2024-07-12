@@ -10,6 +10,7 @@ import gov.nist.csd.pm.pap.pml.expression.Expression;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 
@@ -25,7 +26,7 @@ public class DeleteRuleStatement extends OperationStatement {
     }
 
     @Override
-    public List<Object> prepareOperands(ExecutionContext ctx, PAP pap) throws PMException {
+    public Map<String, Object> prepareOperands(ExecutionContext ctx, PAP pap) throws PMException {
         String ruleName = ctx.executeStatement(pap, ruleExpr).getStringValue();
         String oblName = ctx.executeStatement(pap, oblExpr).getStringValue();
 

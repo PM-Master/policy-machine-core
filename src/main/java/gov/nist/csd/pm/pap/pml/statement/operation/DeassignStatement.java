@@ -9,6 +9,7 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 
@@ -24,7 +25,7 @@ public class DeassignStatement extends OperationStatement {
     }
 
     @Override
-    public List<Object> prepareOperands(ExecutionContext ctx, PAP pap)
+    public Map<String, Object> prepareOperands(ExecutionContext ctx, PAP pap)
             throws PMException {
         String asc = ctx.executeStatement(pap, ascendant).getStringValue();
         List<Value> deassignFromValue = ctx.executeStatement(pap, deassignFrom).getArrayValue();

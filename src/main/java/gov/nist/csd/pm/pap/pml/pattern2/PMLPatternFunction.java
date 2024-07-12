@@ -1,14 +1,18 @@
 package gov.nist.csd.pm.pap.pml.pattern2;
 
+import gov.nist.csd.pm.pap.op.OperationExecutor;
+import gov.nist.csd.pm.pap.pml.function.PMLFunction;
 import gov.nist.csd.pm.pap.pml.function.PMLRequiredCapability;
 import gov.nist.csd.pm.pap.pml.type.Type;
-import gov.nist.csd.pm.pap.pml.value.BoolValue;
+import gov.nist.csd.pm.pap.pml.value.Value;
 
-import java.util.List;
+import java.util.Map;
 
-public abstract class PMLPatternFunction extends PMLFunction<BoolValue> {
+public class PMLPatternFunction extends PMLFunction {
 
-    public PMLPatternFunction(String opName, List<PMLRequiredCapability> capMap) {
-        super(opName, Type.bool(), capMap);
+    public PMLPatternFunction(String name, Type returnType,
+                              Map<String, PMLRequiredCapability> capMap,
+                              OperationExecutor<Value> executor) {
+        super(name, returnType, capMap, executor);
     }
 }

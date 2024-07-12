@@ -31,7 +31,7 @@ public class CreatePolicyStatement extends OperationStatement {
     }
 
     @Override
-    public List<Object> prepareOperands(ExecutionContext ctx, PAP pap)
+    public Map<String, Object> prepareOperands(ExecutionContext ctx, PAP pap)
             throws PMException {
         String pcName = ctx.executeStatement(pap, name).getStringValue();
 

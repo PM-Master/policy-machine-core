@@ -8,16 +8,23 @@ import java.util.Objects;
 
 public class PMLRequiredCapability extends RequiredCapability {
 
-    protected final Type type;
+    private final int order;
+    private final Type type;
 
-    public PMLRequiredCapability(String operand, Type type, List<String> caps) {
-        super(operand, caps);
+    public PMLRequiredCapability(int order, Type type, List<String> caps) {
+        super(caps);
+        this.order = order;
         this.type = type;
     }
 
-    public PMLRequiredCapability(String operand, Type type) {
-        super(operand);
+    public PMLRequiredCapability(int order, Type type) {
+        super();
+        this.order = order;
         this.type = type;
+    }
+
+    public int order() {
+        return order;
     }
 
     public Type type() {
@@ -29,25 +36,25 @@ public class PMLRequiredCapability extends RequiredCapability {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof PMLRequiredCapability that)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        PMLRequiredCapability that = (PMLRequiredCapability) o;
-        return Objects.equals(type, that.type);
+        return order == that.order && Objects.equals(type, that.type);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), type);
+        return Objects.hash(super.hashCode(), order, type);
     }
 
     @Override
     public String toString() {
-        return "PMLRequiredCapability{" +
-                "type=" + type +
+        return "PMLOperationRequiredCapability{" +
+                "order=" + order +
+                ", type=" + type +
                 '}';
     }
 }

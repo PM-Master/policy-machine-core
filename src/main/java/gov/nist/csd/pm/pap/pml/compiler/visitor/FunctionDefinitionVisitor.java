@@ -3,8 +3,9 @@ package gov.nist.csd.pm.pap.pml.compiler.visitor;
 import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.compiler.Variable;
 import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
-import gov.nist.csd.pm.pap.pml.executable.PMLOperation;
-import gov.nist.csd.pm.pap.pml.executable.PMLRoutine;
+import gov.nist.csd.pm.pap.pml.function.PMLOperation;
+import gov.nist.csd.pm.pap.pml.function.PMLRequiredCapability;
+import gov.nist.csd.pm.pap.pml.function.PMLRoutine;
 import gov.nist.csd.pm.pap.pml.function.*;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
@@ -14,10 +15,7 @@ import gov.nist.csd.pm.pap.pml.statement.operation.CreateRoutineStatement;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class FunctionDefinitionVisitor extends PMLBaseVisitor<CreateOperationStatement> {
 
@@ -43,16 +41,19 @@ public class FunctionDefinitionVisitor extends PMLBaseVisitor<CreateOperationSta
     }
 
     private List<PMLStatement> parseBody(PMLParser.FunctionDefinitionStatementContext ctx,
-                                                      List<PMLRequiredCapability> args,
+                                                      Map<String, PMLRequiredCapability> args,
                                                       Type returnType) {
         // create a new scope for the function body
         VisitorContext localVisitorCtx = visitorCtx.copy();
 
         // add the args to the local scope, overwriting any variables with the same ID as the formal args
-        for (PMLRequiredCapability cap : args) {
+        for (Map.Entry<String, PMLRequiredCapability> entry : args.entrySet()) {
+            String key = entry.getKey();
+            PMLRequiredCapability cap = entry.getValue();
+
             localVisitorCtx.scope().addOrOverwriteVariable(
-                    cap.operand(),
-                    new Variable(cap.operand(), cap.type(), false)
+                    key,
+                    new Variable(key, cap.type(), false)
             );
         }
 
@@ -79,17 +80,18 @@ public class FunctionDefinitionVisitor extends PMLBaseVisitor<CreateOperationSta
         @Override
         public FunctionSignature visitFunctionSignature(PMLParser.FunctionSignatureContext ctx) {
             String funcName = ctx.ID().getText();
-            List<PMLRequiredCapability> args = parseFormalArgs(ctx.formalArgList());
+            Map<String, PMLRequiredCapability> args = parseFormalArgs(ctx.formalArgList());
 
             Type returnType = parseReturnType(ctx.returnType);
 
             return new FunctionSignature(isOp, funcName, returnType, args);
         }
 
-        private List<PMLRequiredCapability> parseFormalArgs(PMLParser.FormalArgListContext formalArgListCtx) {
-            List<PMLRequiredCapability> formalArgs = new ArrayList<>();
+        private Map<String, PMLRequiredCapability> parseFormalArgs(PMLParser.FormalArgListContext formalArgListCtx) {
+            Map<String, PMLRequiredCapability> formalArgs = new HashMap<>();
             Set<String> argNames = new HashSet<>();
-            for (PMLParser.FormalArgContext formalArgCtx : formalArgListCtx.formalArg()) {
+            for (int i = 0; i < formalArgListCtx.formalArg().size(); i++) {
+                PMLParser.FormalArgContext formalArgCtx = formalArgListCtx.formalArg().get(i);
                 String name = formalArgCtx.ID().getText();
 
                 // check that two formal args dont have the same name and that there are no constants with the same name
@@ -118,14 +120,14 @@ public class FunctionDefinitionVisitor extends PMLBaseVisitor<CreateOperationSta
                         reqCaps.add(opReqCapContext.ID().getText());
                     } else if (opReqCapContext.idArr() != null && !opReqCapContext.idArr().isEmpty()){
                         List<TerminalNode> id = opReqCapContext.idArr().ID();
-                        for (int i = 0; i < id.size(); i++) {
-                            reqCaps.add(id.get(i).getText());
+                        for (TerminalNode terminalNode : id) {
+                            reqCaps.add(terminalNode.getText());
                         }
                     }
 
-                    formalArgs.add(new PMLRequiredCapability(name, type, reqCaps));
+                    formalArgs.put(name, new PMLRequiredCapability(i, type, reqCaps));
                 } else {
-                    formalArgs.add(new PMLRequiredCapability(name, type));
+                    formalArgs.put(name, new PMLRequiredCapability(i, type));
                 }
 
                 argNames.add(name);

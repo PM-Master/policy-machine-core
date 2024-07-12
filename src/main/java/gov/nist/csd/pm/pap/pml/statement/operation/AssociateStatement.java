@@ -9,7 +9,12 @@ import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+
+import static gov.nist.csd.pm.pap.op.graph.AssociateOp.UA_OPERAND;
+import static gov.nist.csd.pm.pap.op.graph.AssociateOp.TARGET_OPERAND;
+import static gov.nist.csd.pm.pap.op.prohibition.ProhibitionOp.ARSET_OPERAND;
 
 
 public class AssociateStatement extends OperationStatement {
@@ -27,7 +32,7 @@ public class AssociateStatement extends OperationStatement {
     }
 
     @Override
-    public List<Object> prepareOperands(ExecutionContext ctx, PAP pap) throws PMException {
+    public Map<String, Object> prepareOperands(ExecutionContext ctx, PAP pap) throws PMException {
         Value uaValue = ctx.executeStatement(pap, ua);
         Value targetValue = ctx.executeStatement(pap, target);
         Value accessRightsValue = ctx.executeStatement(pap, accessRights);
@@ -37,7 +42,7 @@ public class AssociateStatement extends OperationStatement {
             accessRightSet.add(v.getStringValue());
         }
 
-        return List.of(uaValue.getStringValue(), targetValue.getStringValue(), accessRightSet);
+        return Map.of(UA_OPERAND, uaValue.getStringValue(), TARGET_OPERAND, targetValue.getStringValue(), ARSET_OPERAND, accessRightSet);
     }
 
     @Override

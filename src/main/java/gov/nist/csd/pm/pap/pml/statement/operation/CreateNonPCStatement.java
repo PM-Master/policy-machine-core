@@ -14,6 +14,8 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.*;
 
+import static gov.nist.csd.pm.pap.op.graph.CreateNodeOp.*;
+
 
 public class CreateNonPCStatement extends OperationStatement {
     private Expression name;
@@ -38,7 +40,7 @@ public class CreateNonPCStatement extends OperationStatement {
     }
 
     @Override
-    public List<Object> prepareOperands(ExecutionContext ctx, PAP pap) throws PMException {
+    public Map<String, Object> prepareOperands(ExecutionContext ctx, PAP pap) throws PMException {
         Value nameValue = ctx.executeStatement(pap, name);
         Value assignToValue = ctx.executeStatement(pap, assignTo);
 
@@ -57,10 +59,10 @@ public class CreateNonPCStatement extends OperationStatement {
             }
         }
 
-        return List.of(
-                nameValue.getStringValue(),
-                properties,
-                descendants
+        return Map.of(
+                NAME_OPERAND, nameValue.getStringValue(),
+                PROPERTIES_OPERAND, properties,
+                DESCENDANTS_OPERAND, descendants
         );
     }
     

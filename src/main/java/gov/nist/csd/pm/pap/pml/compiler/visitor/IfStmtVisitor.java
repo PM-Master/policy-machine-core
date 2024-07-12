@@ -11,7 +11,7 @@ import gov.nist.csd.pm.pap.pml.type.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IfStmtVisitor extends PMLBaseVisitor<PMLStatementSerializer<?>> {
+public class IfStmtVisitor extends PMLBaseVisitor<PMLStatement> {
 
     public IfStmtVisitor(VisitorContext visitorCtx) {
         super(visitorCtx);

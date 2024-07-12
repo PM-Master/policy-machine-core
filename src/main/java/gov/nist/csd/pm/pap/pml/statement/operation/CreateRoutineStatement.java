@@ -1,12 +1,12 @@
 package gov.nist.csd.pm.pap.pml.statement.operation;
 
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
-import gov.nist.csd.pm.pap.pml.executable.PMLRoutine;
+import gov.nist.csd.pm.pap.pml.function.PMLRoutine;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatementBlock;
 
 import java.util.Objects;
 
-public class CreateRoutineStatement extends CreateOperationStatement{
+public class CreateRoutineStatement extends CreateOperationStatement {
 
     private PMLRoutine op;
 

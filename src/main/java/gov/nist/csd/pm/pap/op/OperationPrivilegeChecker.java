@@ -4,7 +4,7 @@ import gov.nist.csd.pm.common.exception.PMException;
 import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.query.UserContext;
 
-import java.util.List;
+import java.util.Map;
 
 public interface OperationPrivilegeChecker {
 
@@ -12,7 +12,7 @@ public interface OperationPrivilegeChecker {
             PAP pap,
             UserContext userCtx,
             String opName,
-            List<RequiredCapability> capMap,
-            List<Object> operands) throws PMException;
+            Map<String, RequiredCapability> capMap,
+            Map<String, Object> operands) throws PMException;
 
 }

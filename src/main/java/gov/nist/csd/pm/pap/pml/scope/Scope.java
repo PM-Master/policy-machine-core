@@ -1,5 +1,6 @@
 package gov.nist.csd.pm.pap.pml.scope;
 
+import gov.nist.csd.pm.pap.pml.function.PMLFunction;
 import gov.nist.csd.pm.pap.pml.pattern2.PMLPatternFunction;
 
 import java.io.Serializable;
@@ -32,8 +33,8 @@ public class Scope<V> implements Serializable {
         return local;
     }
 
-    public PMLFunction<?> getFunction(String name) throws UnknownFunctionInScopeException {
-        PMLFunction<?> function = global.getFunction(name);
+    public PMLFunction getFunction(String name) throws UnknownFunctionInScopeException {
+        PMLFunction function = global.getFunction(name);
         if (function == null) {
             throw new UnknownFunctionInScopeException(name);
         }

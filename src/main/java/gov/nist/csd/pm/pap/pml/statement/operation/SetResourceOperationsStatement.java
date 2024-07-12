@@ -9,6 +9,7 @@ import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 
@@ -23,7 +24,7 @@ public class SetResourceOperationsStatement extends OperationStatement {
     }
 
     @Override
-    public List<Object> prepareOperands(ExecutionContext ctx, PAP pap)
+    public Map<String, Object> prepareOperands(ExecutionContext ctx, PAP pap)
             throws PMException {
         Value arValue = ctx.executeStatement(pap, ops);
         AccessRightSet accessRightSet = new AccessRightSet();

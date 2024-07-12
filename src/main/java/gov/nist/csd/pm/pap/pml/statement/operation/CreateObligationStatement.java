@@ -18,7 +18,10 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+
+import static gov.nist.csd.pm.pap.op.obligation.ObligationOp.*;
 
 
 public class CreateObligationStatement extends OperationStatement {
@@ -33,7 +36,7 @@ public class CreateObligationStatement extends OperationStatement {
     }
 
     @Override
-    public List<Object> prepareOperands(ExecutionContext ctx, PAP pap)
+    public Map<String, Object> prepareOperands(ExecutionContext ctx, PAP pap)
             throws PMException {
         UserContext author = ctx.author();
         String nameStr = ctx.executeStatement(pap, name).getStringValue();
@@ -45,7 +48,7 @@ public class CreateObligationStatement extends OperationStatement {
             rules.add(rule);
         }
 
-        return List.of(author, nameStr, rules);
+        return Map.of(AUTHOR_OPERAND, author, NAME_OPERAND, nameStr, RULES_OPERAND, rules);
     }
 
     @Override

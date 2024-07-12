@@ -26,10 +26,10 @@ import java.util.Set;
 
 public class PMLPattern extends Pattern {
 
-    private Expression expression;
+    private PatternExpression expression;
 
     public PMLPattern(VisitorContext visitorContext, PMLParser.PatternContext ctx) {
-        this.expression = Expression.compile(visitorContext, ctx.expression(), Type.bool());
+        this.expression = new PatternExpression(Expression.compile(visitorContext, ctx.expression(), Type.bool()));
 
         checkPatternExpressions(ctx, expression);
     }
@@ -64,8 +64,8 @@ public class PMLPattern extends Pattern {
         if (expression instanceof LogicalExpression logicalExpression) {
             checkPatternExpressions(ctx, logicalExpression.getLeft());
             checkPatternExpressions(ctx, logicalExpression.getRight());
-        } else if (expression instanceof FunctionInvokeExpression functionInvokeExpression) {
-            List<Expression> actualArgs = functionInvokeExpression.getActualArgs();
+        } else if (expression instanceof PatternFunctionInvokeExpression patternInvoke) {
+            List<Expression> actualArgs = patternInvoke.getActualArgs();
             for (Expression actualArg : actualArgs) {
                 checkPatternExpressions(ctx, actualArg);
             }
@@ -81,11 +81,9 @@ public class PMLPattern extends Pattern {
     @Override
     public boolean matches(Object value, PAP pap) throws PMException {
         ExecutionContext executionContext = new ExecutionContext(new UserContext(), new ExecuteGlobalScope());
-
-        executionContext.scope().local().addVariable("patternValue", Value.fromObject(value));
-
-        return expression
-                .execute(executionContext, pap).getBooleanValue();
+        executionContext.scope().local().addVariable("value", Value.fromObject(value));
+        return expression.execute(executionContext, pap)
+                         .getBooleanValue();
     }
 
     @Override

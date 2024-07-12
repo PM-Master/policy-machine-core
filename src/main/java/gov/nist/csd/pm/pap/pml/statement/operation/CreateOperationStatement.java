@@ -6,21 +6,21 @@ import gov.nist.csd.pm.pap.op.PreparedOperation;
 import gov.nist.csd.pm.pap.op.operation.CreateAdminOperationOp;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.function.FunctionSignature;
-import gov.nist.csd.pm.pap.pml.executable.PMLOperation;
+import gov.nist.csd.pm.pap.pml.function.PMLOperation;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatementBlock;
 import gov.nist.csd.pm.pap.pml.value.Value;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
 
-import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 
-public class CreateOperationStatement extends PreparedOperation<Void> implements PMLStatement {
+public class CreateOperationStatement extends PreparedOperation<Void> implements CreateFunctionStatement {
 
     private PMLOperation op;
 
     public CreateOperationStatement(PMLOperation op) {
-        super(new CreateAdminOperationOp(), Collections.singletonList(op));
+        super(new CreateAdminOperationOp(), Map.of("operation", op));
 
         this.op = op;
     }
@@ -36,7 +36,7 @@ public class CreateOperationStatement extends PreparedOperation<Void> implements
 
     @Override
     public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
-        pap.modify().operations().createAdminOperation(op);
+        super.execute(pap);
 
         ctx.scope().global().addFunction(op.getName(), op);
 

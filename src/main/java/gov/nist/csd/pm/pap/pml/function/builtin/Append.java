@@ -1,26 +1,26 @@
 package gov.nist.csd.pm.pap.pml.function.builtin;
 
-
-import gov.nist.csd.pm.pap.pml.executable.PMLExecutable;
+import gov.nist.csd.pm.pap.pml.function.PMLFunction;
 import gov.nist.csd.pm.pap.pml.function.PMLRequiredCapability;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.ArrayValue;
 import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.List;
+import java.util.Map;
 
-public class Append extends PMLExecutable {
+public class Append extends PMLFunction {
     public Append() {
         super(
                 "append",
                 Type.array(Type.any()),
-                List.of(
-                        new PMLRequiredCapability("dst", Type.string()),
-                        new PMLRequiredCapability("src", Type.string())
+                Map.of(
+                        "dst", new PMLRequiredCapability(0, Type.string()),
+                        "src", new PMLRequiredCapability(1, Type.string())
                 ),
                 (pap, operands) -> {
-                    List<Value> valueArr = (List<Value>) operands.get(0);
-                    Value srcValue = (Value) operands.get(1);
+                    List<Value> valueArr = (List<Value>) operands.get("dst");
+                    Value srcValue = (Value) operands.get("src");
 
                     valueArr.add(srcValue);
 

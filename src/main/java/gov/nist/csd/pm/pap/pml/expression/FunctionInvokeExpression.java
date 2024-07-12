@@ -8,7 +8,10 @@ import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.exception.PMLExecutionException;
 import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
+import gov.nist.csd.pm.pap.pml.function.PMLFunction;
 import gov.nist.csd.pm.pap.pml.function.PMLRequiredCapability;
+import gov.nist.csd.pm.pap.pml.pattern2.PMLPatternFunction;
+import gov.nist.csd.pm.pap.pml.pattern2.PatternFunctionInvokeExpression;
 import gov.nist.csd.pm.pap.pml.scope.PMLScopeException;
 import gov.nist.csd.pm.pap.pml.scope.Scope;
 import gov.nist.csd.pm.pap.pml.scope.UnknownFunctionInScopeException;
@@ -35,7 +38,7 @@ public class FunctionInvokeExpression extends Expression {
             throw new PMLCompilationRuntimeException(functionInvokeContext, e.getMessage());
         }
 
-        List<PMLRequiredCapability> formalArgs = function.getPmlCapMap();
+        Map<String, PMLRequiredCapability> capMap = function.getPMLCapMap();
         Type returnType = function.getReturnType();
 
         PMLParser.FunctionInvokeArgsContext funcCallArgsCtx = functionInvokeContext.functionInvokeArgs();
@@ -45,43 +48,40 @@ public class FunctionInvokeExpression extends Expression {
             argExpressions = expressionListContext.expression();
         }
 
-        if (formalArgs.size() != argExpressions.size()) {
+        if (capMap.size() != argExpressions.size()) {
             throw new PMLCompilationRuntimeException(
                     functionInvokeContext,
                     "wrong number of args for function call " + funcName + ": " +
-                            "expected " + formalArgs.size() + ", got " + argExpressions.size()
+                            "expected " + capMap.size() + ", got " + argExpressions.size()
             );
         }
 
         List<Expression> actualArgs = new ArrayList<>();
         for (int i = 0; i < argExpressions.size(); i++) {
             PMLParser.ExpressionContext exprCtx = argExpressions.get(i);
-            Type formArgType = formalArgs.get(i).type();
+            Map.Entry<String, PMLRequiredCapability> entry = getReqCapAtIndex(i, capMap);
 
-            Expression expr = Expression.compile(visitorCtx, exprCtx, formArgType);
+            Expression expr = Expression.compile(visitorCtx, exprCtx, entry.getValue().type());
             actualArgs.add(expr);
         }
 
-
-        return new FunctionInvokeExpression(funcName, returnType, actualArgs);
+        if (function instanceof PMLPatternFunction) {
+            return new PatternFunctionInvokeExpression(function, actualArgs);
+        } else {
+            return new FunctionInvokeExpression(function, actualArgs);
+        }
     }
 
-    private String functionName;
-    private Type result;
+    private PMLFunction function;
     private List<Expression> actualArgs;
 
-    public FunctionInvokeExpression(String functionName, Type result, List<Expression> actualArgs) {
-        this.functionName = functionName;
-        this.result = result;
+    public FunctionInvokeExpression(PMLFunction function, List<Expression> actualArgs) {
+        this.function = function;
         this.actualArgs = actualArgs;
     }
 
-    public String getFunctionName() {
-        return functionName;
-    }
-
-    public Type getResult() {
-        return result;
+    public PMLFunction getFunction() {
+        return function;
     }
 
     public List<Expression> getActualArgs() {
@@ -90,55 +90,47 @@ public class FunctionInvokeExpression extends Expression {
 
     @Override
     public Value execute(ExecutionContext ctx, PAP pap) throws PMException {
-        PMLFunction funcDef = ctx.scope().getFunction(functionName);
-
-        ExecutionContext invokeCtx = prepareFunctionInvoke(ctx, pap, funcDef);
-
-        List<Value> values = new ArrayList<>();
-        for (Expression e : actualArgs) {
-            Value value = e.execute(ctx, pap);
-
-            values.add(value);
-        }
-
-        Value value = funcDef.withCtx(invokeCtx)
-                             .withOperands(values)
-                             .execute(pap);
-
-        ctx.scope().local().overwriteFromLocalScope(invokeCtx.scope().local());
-
-        return value;
-    }
-
-    private ExecutionContext prepareFunctionInvoke(ExecutionContext ctx, PAP pap, PMLFunction funcDef)
-            throws PMException {
-        String funcName = funcDef.getName();
-        List<PMLRequiredCapability> formalArgs = funcDef.getPmlCapMap();
-
-        if (formalArgs.size() != actualArgs.size()) {
-            throw new PMLExecutionException("expected " + formalArgs.size() + " args for function \""
-                    + funcName + "\", got " + actualArgs.size());
-        }
-
+        Map<String, PMLRequiredCapability> capMap = function.getPMLCapMap();
         ExecutionContext funcInvokeExecCtx = ctx.copy();
+        Map<String, Object> operands = new HashMap<>();
 
         for (int i = 0; i < actualArgs.size(); i++) {
             Expression argExpr = actualArgs.get(i);
             Value argValue = funcInvokeExecCtx.executeStatement(pap, argExpr);
-            PMLRequiredCapability formalArg = formalArgs.get(i);
+            Map.Entry<String, PMLRequiredCapability> cap = getReqCapAtIndex(i, capMap);
 
-            if (!argValue.getType().equals(formalArg.type())) {
-                throw new PMLExecutionException("expected " + formalArg.type() + " for arg " + i + " for function \""
-                        + funcName + "\", got " + argValue.getType());
+            if (cap == null) {
+                throw new PMLExecutionException("arg index " + i + " out of bounds for function " + function.getName());
+            } else if (!argValue.getType().equals(cap.getValue().type())) {
+                throw new PMLExecutionException("expected " + cap.getValue().type() + " for arg " + i + " for function \""
+                                                        + function.getName() + "\", got " + argValue.getType());
+            }
+
+            operands.put(cap.getKey(), argValue);
+        }
+
+        Value value = function.withOperands(operands)
+                             .withCtx(ctx)
+                             .execute(pap);
+
+        ctx.scope().local().overwriteFromLocalScope(funcInvokeExecCtx.scope().local());
+
+        return value;
+    }
+
+    protected static Map.Entry<String, PMLRequiredCapability> getReqCapAtIndex(int index, Map<String, PMLRequiredCapability> capMap) {
+        for (Map.Entry<String, PMLRequiredCapability> entry : capMap.entrySet()) {
+            if (index == entry.getValue().order()) {
+                return entry;
             }
         }
 
-        return funcInvokeExecCtx;
+        return null;
     }
 
     @Override
     public String toFormattedString(int indentLevel) {
-        return String.format("%s(%s)", functionName, argsToString());
+        return String.format("%s(%s)", function.getName(), argsToString());
     }
 
     private String argsToString() {
@@ -158,21 +150,19 @@ public class FunctionInvokeExpression extends Expression {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof FunctionInvokeExpression that)) {
             return false;
         }
-        FunctionInvokeExpression that = (FunctionInvokeExpression) o;
-        return Objects.equals(functionName, that.functionName) && Objects.equals(
-                result, that.result) && Objects.equals(actualArgs, that.actualArgs);
+        return Objects.equals(function, that.function) && Objects.equals(actualArgs, that.actualArgs);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(functionName, result, actualArgs);
+        return Objects.hash(function, actualArgs);
     }
 
     @Override
     public Type getType(Scope<Variable> scope) throws PMLScopeException {
-        return result;
+        return function.getReturnType();
     }
 }

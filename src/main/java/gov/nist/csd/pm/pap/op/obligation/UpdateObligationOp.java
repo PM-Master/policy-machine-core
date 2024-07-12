@@ -1,7 +1,5 @@
 package gov.nist.csd.pm.pap.op.obligation;
 
-import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.query.UserContext;
 import gov.nist.csd.pm.common.obligation.Rule;
 
@@ -14,9 +12,9 @@ public class UpdateObligationOp extends ObligationOp {
     public UpdateObligationOp() {
         super("update_obligation", CREATE_OBLIGATION, (pap, operands) -> {
             pap.modify().obligations().update(
-                    (UserContext) operands.get(0),
-                    (String) operands.get(1),
-                    (Collection<Rule>) operands.get(2)
+                    (UserContext) operands.get(AUTHOR_OPERAND),
+                    (String) operands.get(NAME_OPERAND),
+                    (Collection<Rule>) operands.get(RULES_OPERAND)
             );
 
             return null;

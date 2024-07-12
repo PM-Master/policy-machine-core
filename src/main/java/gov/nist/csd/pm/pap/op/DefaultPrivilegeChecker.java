@@ -6,12 +6,12 @@ import gov.nist.csd.pm.pap.exception.InvalidOperationException;
 import gov.nist.csd.pm.pap.query.UserContext;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Map;
 
 public class DefaultPrivilegeChecker implements OperationPrivilegeChecker {
 
     @Override
-    public void canExecute(PAP pap, UserContext userCtx, String opName, List<RequiredCapability> capMap, List<Object> operands) throws PMException {
+    public void canExecute(PAP pap, UserContext userCtx, String opName, Map<String, RequiredCapability> capMap, Map<String, Object> operands) throws PMException {
         if (operands.size() != capMap.size()) {
             throw new InvalidOperationException(opName, capMap, operands);
         }

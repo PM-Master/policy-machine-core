@@ -9,7 +9,11 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+
+import static gov.nist.csd.pm.pap.op.graph.AssignOp.ASCENDANT_OPERAND;
+import static gov.nist.csd.pm.pap.op.graph.AssignOp.DESCENDANT_OPERAND;
 
 
 public class AssignStatement extends OperationStatement {
@@ -25,7 +29,7 @@ public class AssignStatement extends OperationStatement {
     }
 
     @Override
-    public List<Object> prepareOperands(ExecutionContext ctx, PAP pap)
+    public Map<String, Object> prepareOperands(ExecutionContext ctx, PAP pap)
             throws PMException {
         String asc = ctx.executeStatement(pap, ascendant).getStringValue();
         List<Value> assignToValue = ctx.executeStatement(pap, descendants).getArrayValue();
@@ -34,7 +38,7 @@ public class AssignStatement extends OperationStatement {
             descs.add(value.getStringValue());
         }
 
-        return List.of(asc, descs);
+        return Map.of(ASCENDANT_OPERAND, asc, DESCENDANT_OPERAND, descs);
     }
 
     @Override

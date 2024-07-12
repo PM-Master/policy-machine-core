@@ -1,23 +1,23 @@
 package gov.nist.csd.pm.pap.op;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public abstract class Operation<T> {
 
     private String name;
-    private List<RequiredCapability> capMap;
+    private Map<String, RequiredCapability> capMap;
     protected OperationPrivilegeChecker checker;
     protected OperationExecutor<T> executor;
 
-    public Operation(String name, List<RequiredCapability> capMap, OperationExecutor<T> executor) {
+    public Operation(String name, Map<String, RequiredCapability> capMap, OperationExecutor<T> executor) {
         this.name = name;
         this.capMap = capMap;
         this.checker = new DefaultPrivilegeChecker();
         this.executor = executor;
     }
 
-    public Operation(String name, List<RequiredCapability> capMap, OperationPrivilegeChecker checker, OperationExecutor<T> executor) {
+    public Operation(String name, Map<String, RequiredCapability> capMap, OperationPrivilegeChecker checker, OperationExecutor<T> executor) {
         this.name = name;
         this.capMap = capMap;
         this.checker = checker;
@@ -28,7 +28,7 @@ public abstract class Operation<T> {
         return name;
     }
 
-    public List<RequiredCapability> getCapMap() {
+    public Map<String, RequiredCapability> getCapMap() {
         return capMap;
     }
 
@@ -40,12 +40,8 @@ public abstract class Operation<T> {
         return executor;
     }
 
-    public PreparedOperation<T> withOperands(List<Object> operands) {
+    public PreparedOperation<T> withOperands(Map<String, Object> operands) {
         return new PreparedOperation<>(this, operands);
-    }
-
-    public PreparedOperation<T> withOperands(Object ... operands) {
-        return new PreparedOperation<>(this, List.of(operands));
     }
 
     @Override

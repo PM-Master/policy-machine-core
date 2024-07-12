@@ -1,15 +1,11 @@
 package gov.nist.csd.pm.pap.op.prohibition;
 
-import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.common.graph.relationship.AccessRightSet;
 import gov.nist.csd.pm.common.prohibition.ContainerCondition;
 import gov.nist.csd.pm.common.prohibition.ProhibitionSubject;
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.admin.AdminPolicyNode;
 import gov.nist.csd.pm.pap.op.Operation;
 import gov.nist.csd.pm.pap.op.OperationExecutor;
 import gov.nist.csd.pm.pap.op.RequiredCapability;
-import gov.nist.csd.pm.pap.query.UserContext;
 
 import java.util.*;
 
@@ -17,18 +13,25 @@ import static gov.nist.csd.pm.pap.op.PrivilegeChecker.check;
 
 public abstract class ProhibitionOp extends Operation<Void> {
 
+    public static final String NAME_OPERAND = "name";
+    public static final String SUBJECT_OPERAND = "subject";
+    public static final String ARSET_OPERAND = "arset";
+    public static final String INTERSECTION_OPERAND = "intersection";
+    public static final String CONTAINERS_OPERAND = "containers";
+
+
     public ProhibitionOp(String opName, String processReqCap, String reqCap, OperationExecutor<Void> operationExecutor) {
         super(
                 opName,
-                List.of(
-                        new RequiredCapability("name"),
-                        new RequiredCapability("subject"),
-                        new RequiredCapability("accessRightSet"),
-                        new RequiredCapability("intersection"),
-                        new RequiredCapability("containers")
+                Map.of(
+                        NAME_OPERAND, new RequiredCapability(),
+                        SUBJECT_OPERAND, new RequiredCapability(),
+                        ARSET_OPERAND, new RequiredCapability(),
+                        INTERSECTION_OPERAND, new RequiredCapability(),
+                        CONTAINERS_OPERAND, new RequiredCapability()
                 ),
                 (pap, userCtx, op, capMap, operands) -> {
-                    ProhibitionSubject subject = (ProhibitionSubject) operands.get(1);
+                    ProhibitionSubject subject = (ProhibitionSubject) operands.get(SUBJECT_OPERAND);
 
                     if (subject.getType() == ProhibitionSubject.Type.PROCESS) {
                         check(pap, userCtx, AdminPolicyNode.PROHIBITIONS_TARGET.nodeName(), processReqCap);
@@ -38,7 +41,7 @@ public abstract class ProhibitionOp extends Operation<Void> {
 
 
                     // check that the user can create a prohibition for each container in the condition
-                    Collection<ContainerCondition> containers = (Collection<ContainerCondition>) operands.get(4);
+                    Collection<ContainerCondition> containers = (Collection<ContainerCondition>) operands.get(CONTAINERS_OPERAND);
                     for (ContainerCondition contCond : containers) {
                         check(pap, userCtx, contCond.getName(), reqCap);
 

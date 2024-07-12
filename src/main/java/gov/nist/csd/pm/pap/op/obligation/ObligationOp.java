@@ -14,19 +14,24 @@ import gov.nist.csd.pm.common.pattern.Pattern;
 import gov.nist.csd.pm.pap.query.UserContext;
 
 import java.util.List;
+import java.util.Map;
 
 public abstract class ObligationOp extends Operation<Void> {
+
+    public static final String AUTHOR_OPERAND = "author";
+    public static final String NAME_OPERAND = "name";
+    public static final String RULES_OPERAND = "rules";
 
     public ObligationOp(String opName, String reqCap, OperationExecutor<Void> operationExecutor) {
         super(
                 opName,
-                List.of(
-                        new RequiredCapability("author"),
-                        new RequiredCapability("name"),
-                        new RequiredCapability("rules")
+                Map.of(
+                        AUTHOR_OPERAND, new RequiredCapability(),
+                        NAME_OPERAND, new RequiredCapability(),
+                        RULES_OPERAND, new RequiredCapability()
                 ),
                 (pap, userCtx, op, capMap, operands) -> {
-                    List<Rule> rules = (List<Rule>) operands.get(2);
+                    List<Rule> rules = (List<Rule>) operands.get(RULES_OPERAND);
                     for (Rule rule : rules) {
                         EventPattern eventPattern = rule.getEventPattern();
 

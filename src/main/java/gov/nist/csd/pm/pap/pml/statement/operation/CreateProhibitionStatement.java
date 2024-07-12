@@ -20,6 +20,7 @@ import gov.nist.csd.pm.pap.pml.value.Value;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static gov.nist.csd.pm.pap.op.AdminAccessRights.isAdminAccessRight;
@@ -45,7 +46,7 @@ public class CreateProhibitionStatement extends OperationStatement {
     }
 
     @Override
-    public List<Object> prepareOperands(ExecutionContext ctx, PAP pap)
+    public Map<String, Object> prepareOperands(ExecutionContext ctx, PAP pap)
             throws PMException {
         Value idValue = this.name .execute(ctx, pap);
         Value subjectValue = this.subject.execute(ctx, pap);

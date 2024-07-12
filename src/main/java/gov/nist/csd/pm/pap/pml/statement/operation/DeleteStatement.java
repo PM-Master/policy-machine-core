@@ -10,6 +10,7 @@ import gov.nist.csd.pm.pap.pml.context.ExecutionContext;
 import gov.nist.csd.pm.pap.pml.expression.Expression;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class DeleteStatement extends OperationStatement {
@@ -24,7 +25,7 @@ public class DeleteStatement extends OperationStatement {
     }
 
     @Override
-    public List<Object> prepareOperands(ExecutionContext ctx, PAP pap) throws PMException {
+    public Map<String, Object> prepareOperands(ExecutionContext ctx, PAP pap) throws PMException {
         String name = ctx.executeStatement(pap, expression).getStringValue();
 
         return List.of(name);

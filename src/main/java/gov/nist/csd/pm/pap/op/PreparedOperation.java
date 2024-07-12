@@ -6,14 +6,15 @@ import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.query.UserContext;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class PreparedOperation<T> implements OperationPrivilegeChecker {
 
     private Operation<T> op;
-    private List<Object> operands;
+    private Map<String, Object> operands;
 
-    public PreparedOperation(Operation<T> op, List<Object> operands) {
+    public PreparedOperation(Operation<T> op, Map<String, Object> operands) {
         this.op = op;
         this.operands = operands;
     }
@@ -26,17 +27,17 @@ public class PreparedOperation<T> implements OperationPrivilegeChecker {
         this.op = op;
     }
 
-    public List<Object> getOperands() {
+    public Map<String, Object> getOperands() {
         return operands;
     }
 
-    public void setOperands(List<Object> operands) {
+    public void setOperands(Map<String, Object> operands) {
         this.operands = operands;
     }
 
     @Override
-    public void canExecute(PAP pap, UserContext userCtx, String opName, List<RequiredCapability> capMap,
-                           List<Object> operands) throws PMException {
+    public void canExecute(PAP pap, UserContext userCtx, String opName, Map<String, RequiredCapability> capMap,
+                           Map<String, Object> operands) throws PMException {
         op.checker.canExecute(pap, userCtx, opName, capMap, operands);
     }
 

@@ -5,24 +5,19 @@ import java.util.List;
 import java.util.Objects;
 
 public class RequiredCapability {
-    private final String operand;
+
     private final List<String> caps;
 
-    public RequiredCapability(String operand, List<String> caps) {
-        this.operand = operand;
+    public RequiredCapability(List<String> caps) {
         this.caps = caps;
     }
 
-    public RequiredCapability(String operand) {
-        this(operand, new ArrayList<>());
+    public RequiredCapability(String ... caps) {
+        this.caps = List.of(caps);
     }
 
     public String[] capsArray() {
         return caps.toArray(String[]::new);
-    }
-
-    public String operand() {
-        return operand;
     }
 
     public List<String> caps() {
@@ -30,29 +25,25 @@ public class RequiredCapability {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (obj == null || obj.getClass() != this.getClass()) {
+        if (!(o instanceof RequiredCapability that)) {
             return false;
         }
-        var that = (RequiredCapability) obj;
-        return Objects.equals(this.operand, that.operand) &&
-                Objects.equals(this.caps, that.caps);
+        return Objects.equals(caps, that.caps);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(operand, caps);
+        return Objects.hashCode(caps);
     }
 
     @Override
     public String toString() {
-        return "RequiredCapability[" +
-                "operand=" + operand + ", " +
-                "caps=" + caps + ']';
+        return "RequiredCapability{" +
+                "caps=" + caps +
+                '}';
     }
-
-
 }

@@ -74,7 +74,9 @@ public abstract class Value implements Serializable {
     public abstract String toString();
 
     public static Value fromObject(Object o) {
-        if (o instanceof String s) {
+        if (o instanceof Value value) {
+            return value;
+        } else if (o instanceof String s) {
             return new StringValue(s);
         } if (o instanceof List list) {
             return toListValue(list);

@@ -1,25 +1,22 @@
 package gov.nist.csd.pm.pap.pml.function;
 
-import gov.nist.csd.pm.common.exception.PMException;
-import gov.nist.csd.pm.pap.PAP;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatementSerializer;
 import gov.nist.csd.pm.pap.pml.type.Type;
 import gov.nist.csd.pm.pap.pml.value.ArrayValue;
 import gov.nist.csd.pm.pap.pml.value.StringValue;
-import gov.nist.csd.pm.pap.pml.value.VoidValue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
 public class FunctionSignature implements PMLStatementSerializer {
 
     private boolean isOp;
     private String functionName;
     private Type returnType;
-    private List<PMLRequiredCapability> capMap;
+    private Map<String, PMLRequiredCapability> capMap;
 
-    public FunctionSignature(boolean isOp, String functionName, Type returnType, List<PMLRequiredCapability> capMap) {
+    public FunctionSignature(boolean isOp, String functionName, Type returnType, Map<String, PMLRequiredCapability> capMap) {
         this.isOp = isOp;
         this.functionName = functionName;
         this.returnType = returnType;
@@ -50,11 +47,11 @@ public class FunctionSignature implements PMLStatementSerializer {
         this.returnType = returnType;
     }
 
-    public List<PMLRequiredCapability> getCapMap() {
+    public Map<String, PMLRequiredCapability> getCapMap() {
         return capMap;
     }
 
-    public void setCapMap(List<PMLRequiredCapability> capMap) {
+    public void setCapMap(Map<String, PMLRequiredCapability> capMap) {
         this.capMap = capMap;
     }
 
@@ -75,10 +72,13 @@ public class FunctionSignature implements PMLStatementSerializer {
 
     private String serializeFormalArgs() {
         String pml = "";
-        for (PMLRequiredCapability cap : capMap) {
+        for (Map.Entry<String, PMLRequiredCapability> entry : capMap.entrySet()) {
             if (!pml.isEmpty()) {
                 pml += ", ";
             }
+
+            String key = entry.getKey();
+            PMLRequiredCapability cap = entry.getValue();
 
             List<StringValue> arr = new ArrayList<>();
             for (String c : cap.caps()) {
@@ -91,7 +91,7 @@ public class FunctionSignature implements PMLStatementSerializer {
                 capStr = arrayValue.toString();
             }
 
-            pml += cap.type().toString() + " " + cap.operand() + " " + (capStr.isEmpty() ? "" : capStr);
+            pml += cap.type().toString() + " " + key + " " + (capStr.isEmpty() ? "" : capStr);
         }
         return pml;
     }

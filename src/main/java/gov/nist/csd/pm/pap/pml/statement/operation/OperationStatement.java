@@ -9,24 +9,22 @@ import gov.nist.csd.pm.pap.pml.expression.Expression;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
 import gov.nist.csd.pm.pap.pml.value.VoidValue;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class OperationStatement extends PreparedOperation<Void> implements PMLStatement {
 
     protected List<Expression> expressions;
 
     public OperationStatement(Operation<Void> op) {
-        super(op, new ArrayList<>());
+        super(op, new HashMap<>());
 
     }
 
-    public abstract List<Object> prepareOperands(ExecutionContext ctx, PAP pap) throws PMException;
+    public abstract Map<String, Object> prepareOperands(ExecutionContext ctx, PAP pap) throws PMException;
 
     @Override
     public final VoidValue execute(ExecutionContext ctx, PAP pap) throws PMException {
-        List<Object> prepareOperands = prepareOperands(ctx, pap);
+        Map<String, Object> prepareOperands = prepareOperands(ctx, pap);
         setOperands(prepareOperands);
 
         execute(pap);

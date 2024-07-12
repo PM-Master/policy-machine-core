@@ -5,6 +5,7 @@ import gov.nist.csd.pm.pap.pml.antlr.PMLParser;
 import gov.nist.csd.pm.pap.pml.context.VisitorContext;
 import gov.nist.csd.pm.pap.pml.exception.PMLCompilationRuntimeException;
 import gov.nist.csd.pm.pap.pml.statement.PMLStatement;
+import gov.nist.csd.pm.pap.pml.statement.operation.CreateFunctionStatement;
 import gov.nist.csd.pm.pap.pml.statement.operation.FunctionDefinitionStatement;
 import gov.nist.csd.pm.pap.pml.statement.FunctionReturnStatement;
 import gov.nist.csd.pm.pap.pml.statement.IfStatement;
@@ -30,7 +31,7 @@ public class StatementBlockVisitor extends PMLBaseVisitor<StatementBlockVisitor.
         for (PMLParser.StatementContext statementContext : ctx.statement()) {
             PMLStatement pmlStatement = statementVisitor.visitStatement(statementContext);
 
-            if (pmlStatement instanceof FunctionDefinitionStatement) {
+            if (pmlStatement instanceof CreateFunctionStatement) {
                 throw new PMLCompilationRuntimeException(statementContext, "functions are not allowed inside statement blocks");
             }
 
